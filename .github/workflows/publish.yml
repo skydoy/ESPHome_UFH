@@ -11,7 +11,35 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  meta:
+    # Decides whether this run is a RELEASE. Automatic: a push to main whose project_version
+    # (devices/ufh-s3-eth.yaml) has no v<version> tag yet is released by this same run (tag,
+    # GitHub Release, Pages, stable). Pushing a v* tag by hand still works too.
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      release: ${{ steps.v.outputs.release }}
+      tag: ${{ steps.v.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - id: v
+        run: |
+          ver=$(grep -oP '^\s*project_version: "\K[^"]+' devices/ufh-s3-eth.yaml)
+          rel=false
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            rel=true
+          elif [[ "$GITHUB_EVENT_NAME" == push && "$GITHUB_REF" == refs/heads/main ]]; then
+            if git ls-remote --exit-code --tags origin "refs/tags/v$ver" >/dev/null; then
+              echo "v$ver already released: build only"
+            else
+              rel=true; echo "New version v$ver: releasing"
+            fi
+          fi
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          echo "release=$rel" >> "$GITHUB_OUTPUT"
+          echo "tag=v$ver" >> "$GITHUB_OUTPUT"
   build:
+    needs: meta
     # One installer build per board; each board has its own folder (and manifest.json) on
     # GitHub Pages (firmware/s3-eth/). The installer firmware is built from the
     # *.factory.yaml (base config + "Firmware Update" entity).
@@ -37,7 +65,7 @@ jobs:
             echo "::error::$BASE_YAML project_version does not match tag $GITHUB_REF_NAME"; exit 1; }
       - name: Record the build source (shown in the "Firmware Version" sensor)
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then src="release"; else src="${GITHUB_REF_NAME} @${GITHUB_SHA::7}"; fi
+          if [[ "${{ needs.meta.outputs.release }}" == true ]]; then src="release"; else src="${GITHUB_REF_NAME} @${GITHUB_SHA::7}"; fi
           sed -i "s|^\(\s*firmware_source:\).*|\1 \"$src\"|" "$BASE_YAML"
           grep -n "firmware_source:\|project_version:" "$BASE_YAML"
       - id: esphome
@@ -58,7 +86,7 @@ jobs:
           path: out
           if-no-files-found: error
   pages:
-    needs: build
+    needs: [meta, build]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -87,8 +115,8 @@ jobs:
   deploy:
     # Publish the installer and the OTA manifests only for release tags (or a manual run), so
     # devices in the field only ever see releases.
-    if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch')
-    needs: pages
+    if: needs.meta.outputs.release == 'true' || github.event_name == 'workflow_dispatch'
+    needs: [meta, pages]
     runs-on: ubuntu-24.04
     permissions:
       pages: write
@@ -101,14 +129,14 @@ jobs:
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
   release:
     # GitHub Release for a v* tag: notes from CHANGELOG.md, firmware images attached.
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    if: needs.meta.outputs.release == 'true'
+    needs: [meta, build]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     env:
       GH_TOKEN: ${{ github.token }}
-      TAG: ${{ github.ref_name }}
+      TAG: ${{ needs.meta.outputs.tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
@@ -150,13 +178,14 @@ jobs:
             gh release edit "$TAG" --title "$TAG" --notes-file notes.md
             gh release upload "$TAG" assets/* --clobber
           else
-            gh release create "$TAG" assets/* --title "$TAG" --notes-file notes.md --verify-tag
+            # Creates the tag on this commit when it does not exist yet (automatic release).
+            gh release create "$TAG" assets/* --title "$TAG" --notes-file notes.md --target "$GITHUB_SHA"
           fi
   stable:
     # Move the "stable" branch to this release tag. Adopted Device Builder configs import
     # devices/ufh-s3-eth.yaml@stable, so "Install" builds the latest release.
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: release
+    if: needs.meta.outputs.release == 'true'
+    needs: [meta, release]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -170,4 +199,4 @@ jobs:
           else
             gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" -f ref=refs/heads/stable -f sha="$GITHUB_SHA"
           fi
-          echo "stable -> $GITHUB_REF_NAME ($GITHUB_SHA)"
+          echo "stable -> ${{ needs.meta.outputs.tag }} ($GITHUB_SHA)"

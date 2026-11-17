@@ -25,5 +25,7 @@ Thanks for helping!
 ## Releasing
 1. Move the **Unreleased** notes to `## [x.y.z] - YYYY-MM-DD` and set `project_version: "x.y.z"`
    in `devices/ufh-s3-eth.yaml`.
-2. Tag `vx.y.z` on `main`. CI builds the firmware, publishes the installer and OTA manifest to
-   GitHub Pages, creates the GitHub Release and moves the `stable` branch to the tag.
+2. Push to `main`. When `vx.y.z` does not exist yet, CI releases automatically: builds the
+   firmware, creates the tag and the GitHub Release, publishes the installer and OTA manifest to
+   GitHub Pages and moves the `stable` branch. Pushes that keep the same version only build.
+   (Pushing a `vx.y.z` tag by hand still works.)
