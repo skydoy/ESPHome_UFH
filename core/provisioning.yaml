@@ -1,0 +1,20 @@
+# Generic firmware: no API key or passwords are baked in, and there is nothing to set up.
+#
+# The board is on Ethernet: plug in the network cable (PoE or a 5 V supply on USB-C) and it
+# gets an address by DHCP. Home Assistant finds it by itself (ESPHome integration, discovery).
+# For a fixed address set `ethernet: manual_ip:` in your adopted config (docs/configuration.md).
+api:
+logger:
+
+ota:
+  - platform: esphome
+    id: ota_esphome
+    on_begin:
+      - logger.log: "OTA update started (do not power off the controller)"
+    on_end:
+      - logger.log: "OTA update finished, rebooting"
+    on_error:
+      - logger.log:
+          level: WARN
+          format: "OTA update failed (error %u), still running the old firmware"
+          args: [x]

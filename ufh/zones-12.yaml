@@ -1,0 +1,4 @@
+# Zones 1-12 (relays 1-12). Set the substitution zone_count to 1..14.
+packages:
+  zones_1_11: !include zones-11.yaml
+  zone12: !include { file: zone.yaml, vars: { zone: 12 } }

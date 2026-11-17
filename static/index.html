@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="pt" data-lang="pt" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ESPHome UFH · Web installer</title>
+  <meta name="description" content="Install the ESPHome UFH firmware from your browser: underfloor heating zones, pump and heat demand in Home Assistant, over Ethernet.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta property="og:title" content="ESPHome UFH">
+  <meta property="og:description" content="Underfloor heating in Home Assistant. Zones, pump and heat demand over Ethernet + PoE.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/skydoy/ESPHome_UFH/main/docs/img/social-preview.png">
+  <meta name="theme-color" content="#1784F7">
+  <script>
+    (function () { var t = null; try { t = localStorage.getItem('theme'); } catch (e) {}
+      if (t !== 'dark' && t !== 'light') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.theme = t; })();
+  </script>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <style>
+    :root { --bg:#f4f8fc; --card:#fff; --text:#0b1b3f; --muted:#52647a; --line:#dce5ef; --g1:#0FE3FA; --g2:#1784F7; --accent:#1784F7; --warn-bg:#fff6e5; --warn:#e69500; --ok-bg:#e8f4fe; --ok:#1784F7; }
+    :root { color-scheme: light; }
+    html[data-theme=dark] { color-scheme: dark; --bg:#0b1220; --card:#131c2e; --text:#e6edf3; --muted:#9aa9bd; --line:#26334a; --accent:#4fb3ff; --warn-bg:#2b2111; --ok-bg:#0f2238; --ok:#4fb3ff; }
+    html[data-theme=dark] .boards img { filter:brightness(.9); }
+    esp-web-install-button { --mdc-theme-primary:#1784F7; }
+    .theme:hover, .lang button:hover { background:#fff3; }
+    html[data-theme=dark] .theme .sun, html:not([data-theme=dark]) .theme .moon { display:none; }
+    .lang .theme { display:inline-flex; align-items:center; justify-content:center; width:2.275rem; padding:0; line-height:1; }
+    .theme svg { display:block; width:14px; height:14px; flex:none; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
+    a { color: var(--accent); }
+    html[data-lang=pt] .en, html[data-lang=en] .pt { display:none !important; }
+    [hidden] { display:none !important; }
+    header { background: linear-gradient(135deg, var(--g1), var(--g2)); color:#fff; padding: 1.25rem 1rem 3.5rem; }
+    .wrap { max-width: 52rem; margin: 0 auto; padding: 0 1rem; }
+    .top { display:flex; align-items:center; gap:.9rem; }
+    .top img { width:56px; height:56px; border-radius:14px; box-shadow: 0 2px 10px rgba(0,0,0,.2); outline:2px solid #fff6; background:#fff2; }
+    .top h1 { font-size:1.6rem; margin:0; line-height:1.1; }
+    .top small { opacity:.92; font-size:.95rem; }
+    .lang { margin-left:auto; flex:none; display:flex; gap:.25rem; }
+    .lang button { border:1px solid #fff8; background:transparent; color:#fff; border-radius:999px; padding:.25rem .7rem; cursor:pointer; font-weight:600; }
+    .lang button[aria-pressed=true] { background:#fff; color:#0f63c4; }
+    .pitch { font-size:1.15rem; margin:1rem 0 0; max-width:40rem; }
+    main { margin-top:-2.5rem; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:1.25rem 1.25rem 1rem; margin-bottom:1rem; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+    .card h2 { margin:0 0 .6rem; font-size:1.2rem; display:flex; align-items:center; gap:.6rem; }
+    .num { flex:none; width:2rem; height:2rem; border-radius:50%; display:inline-grid; place-items:center; color:#fff; font-size:1rem; background: linear-gradient(135deg, var(--g1), var(--g2)); }
+    .boards { display:grid; grid-template-columns: 1fr 1fr; gap:.8rem; }
+    .boards label { display:block; border:2px solid var(--line); border-radius:12px; padding:.6rem; cursor:pointer; transition: border-color .15s; }
+    .boards label:hover { border-color: var(--accent); }
+    .boards label:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+    .boards input { accent-color: var(--accent); }
+    .boards img { width:100%; height:auto; border-radius:8px; margin-top:.4rem; display:block; }
+    .boards .t { font-weight:700; font-size:1.05rem; }
+    .boards .d { color:var(--muted); font-size:.92rem; }
+    .brandline { color:var(--muted); font-size:.92rem; margin:.8rem 0 .2rem; }
+    .install { text-align:center; padding:.5rem 0 .25rem; }
+    .btn { font: inherit; font-size:1.15rem; font-weight:700; color:#fff; border:0; border-radius:12px; padding:.85rem 2.2rem; cursor:pointer; background: linear-gradient(135deg, var(--g1), var(--g2)); box-shadow: 0 4px 14px rgba(23,132,247,.35); }
+    .btn:hover { filter: brightness(1.05); }
+    .ver { color:var(--muted); font-size:.9rem; margin-top:.4rem; }
+    .note { border-radius:10px; padding:.6rem .85rem; margin:.7rem 0; }
+    .warn { background:var(--warn-bg); border-left:4px solid var(--warn); }
+    .ok { background:var(--ok-bg); border-left:4px solid var(--ok); }
+    ol, ul { padding-left:1.25rem; } li { margin:.25rem 0; }
+    code { background: color-mix(in srgb, var(--text) 8%, transparent); padding:.05rem .35rem; border-radius:5px; }
+    details { border-top:1px solid var(--line); padding:.55rem 0; }
+    summary { cursor:pointer; font-weight:600; }
+    details p, details li { color:var(--muted); }
+    details p { margin:.4rem 0 0; }
+    .next a { font-weight:600; }
+    footer { color:var(--muted); font-size:.88rem; padding: 1rem 0 2.5rem; }
+    #nosupport { display:none; }
+    @media (max-width: 38rem) { .boards { grid-template-columns:1fr; } .top h1 { font-size:1.3rem; } }
+    .support { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .6rem; margin:.9rem 0 0; font-size:.95rem; }
+    .support b { font-weight:600; margin-right:.2rem; }
+    .support a { display:inline-flex; align-items:center; gap:.35rem; text-decoration:none; font-weight:700; font-size:.88rem; padding:.3rem .8rem; border-radius:999px; box-shadow:0 1px 4px rgba(0,0,0,.18); }
+    .support a:hover { filter:brightness(1.07); }
+    .support .kofi { background:#FF5E5B; color:#fff; }
+    .support .bmc { background:#FFDD00; color:#0b1b3f; }
+    html[data-theme=dark] .support a { box-shadow:0 1px 4px rgba(0,0,0,.5); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <img src="icon-512.png" alt="ESPHome UFH logo">
+      <div>
+        <h1>ESPHome UFH</h1>
+        <small><span class="pt">Instalador web</span><span class="en">Web installer</span> · Waveshare ESP32-S3-ETH</small>
+      </div>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-set="pt">PT</button>
+        <button type="button" data-set="en">EN</button>
+        <button type="button" class="theme" id="theme-toggle" aria-label="Mudar para modo escuro"><svg class="moon" aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><svg class="sun" aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2" fill="currentColor" stroke="none"/><path d="M12 1.8v2.6M12 19.6v2.6M1.8 12h2.6M19.6 12h2.6M4.8 4.8l1.8 1.8M17.4 17.4l1.8 1.8M4.8 19.2l1.8-1.8M17.4 6.6l1.8-1.8"/></svg></button>
+      </div>
+    </div>
+    <p class="pitch">
+      <span class="pt">O teu piso radiante no Home Assistant: zonas, bomba e pedido de calor, por cabo de rede. Liga por USB, carrega em Instalar, feito.</span>
+      <span class="en">Your underfloor heating in Home Assistant: zones, pump and heat demand, over a network cable. Plug in by USB, click Install, done.</span>
+    </p>
+    <p class="support">
+      <b><span class="pt">Gostas? Ajuda-me a fazer algo ainda melhor.</span><span class="en">Like it? Help me build something better.</span></b>
+      <a class="kofi" href="https://ko-fi.com/skydoy" target="_blank" rel="noopener">☕ Ko-fi</a>
+      <a class="bmc" href="https://buymeacoffee.com/skydoy" target="_blank" rel="noopener">🍪 Buy Me a Coffee</a>
+    </p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="nosupport" class="card note warn">
+    <span class="pt"><b>Este browser não consegue instalar.</b> Abre esta página no <b>Chrome</b> ou <b>Edge</b> num computador.</span>
+    <span class="en"><b>This browser can't install.</b> Open this page in <b>Chrome</b> or <b>Edge</b> on a computer.</span>
+  </div>
+
+  <section class="card">
+    <h2><span class="num">1</span><span class="pt">A placa</span><span class="en">The board</span></h2>
+    <form id="board-form" class="boards" style="grid-template-columns:1fr">
+      <label><input type="radio" name="board" value="firmware/s3-eth/manifest.json" data-board="s3-eth" checked>
+        <span class="t">Waveshare ESP32-S3-ETH</span>
+        <div class="d"><span class="pt">ESP32-S3 · Ethernet W5500 · PoE opcional · USB-C. Com MCP23017 e placa de 16 relés: até 14 zonas, bomba e pedido de calor.</span><span class="en">ESP32-S3 · W5500 Ethernet · optional PoE · USB-C. With an MCP23017 and a 16-relay board: up to 14 zones, pump and heat demand.</span></div></label>
+    </form>
+    <p class="brandline">
+      <span class="pt">Substitui controladores de rede de 16 saídas (ex.: Denkovi DAEnetIP4).</span>
+      <span class="en">Replaces 16-output network controllers (e.g. Denkovi DAEnetIP4).</span>
+      <a href="https://skydoy.github.io/ESPHome_UFH/docs/getting-started/"><span class="pt">O que precisas</span><span class="en">What you need</span></a>
+      ·
+      <a href="https://skydoy.github.io/ESPHome_UFH/docs/wiring/"><span class="pt">Ligações</span><span class="en">Wiring</span></a>
+    </p>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span><span class="pt">Liga por USB</span><span class="en">Connect by USB</span></h2>
+    <p class="pt">Liga a placa ao computador por <b>USB-C</b> com um cabo <b>de dados</b> (muitos só carregam).</p>
+    <p class="en">Connect the board to the computer by <b>USB-C</b> with a <b>data</b> cable (many only charge).</p>
+    <details><summary><span class="pt">A placa não aparece?</span><span class="en">Board not showing up?</span></summary>
+      <ul>
+        <li><span class="pt">Porta “USB JTAG/serial”. Se não aparecer, mantém o botão <b>BOOT</b> carregado ao ligar o cabo.</span><span class="en">Port “USB JTAG/serial”. If it is missing, hold <b>BOOT</b> while plugging in the cable.</span></li>
+      </ul>
+      <p class="pt">Experimenta outro cabo: muitos só carregam.</p>
+      <p class="en">Try another cable: some only charge.</p>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span><span class="pt">Instalar</span><span class="en">Install</span></h2>
+    <p class="pt">Carrega em <b>Instalar</b>, escolhe a porta série e confirma.</p>
+    <p class="en">Press <b>Install</b>, pick the serial port, then confirm.</p>
+    <div class="install">
+      <esp-web-install-button id="install" manifest="firmware/s3-eth/manifest.json">
+        <button slot="activate" class="btn"><span class="pt">⚡ Instalar</span><span class="en">⚡ Install</span></button>
+        <span slot="unsupported"><span class="pt">Usa o Chrome ou o Edge num computador.</span><span class="en">Use Chrome or Edge on a computer.</span></span>
+        <span slot="not-allowed"><span class="pt">A página tem de abrir em https.</span><span class="en">The page must be opened over https.</span></span>
+      </esp-web-install-button>
+      <div class="ver" id="ver"></div>
+    </div>
+    <p class="note ok">✅ <span class="pt"><b>Deves ver:</b> barra de progresso (~1 min) e <i>Installation complete</i>. Não há Wi-Fi para configurar: tira o USB e liga o <b>cabo de rede</b>.</span><span class="en"><b>You should see:</b> a progress bar (~1 min) and <i>Installation complete</i>. There is no Wi-Fi to set up: unplug USB and connect the <b>network cable</b>.</span></p>
+  </section>
+
+  <section class="card next">
+    <h2><span class="pt">A seguir</span><span class="en">Next</span></h2>
+    <ol class="pt">
+      <li><b>Ligar</b> — cabo de rede (PoE, ou 5 V no USB-C), MCP23017 e placa de relés. <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/wiring/">Ligações</a></li>
+      <li><b>Home Assistant</b> — Definições → Dispositivos e serviços → <b>Configurar</b>.</li>
+      <li><b>Problemas?</b> <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/troubleshooting/">Problemas</a> · <a href="https://github.com/skydoy/ESPHome_UFH/issues">pedir ajuda</a></li>
+      <li><b>Documentação</b> — <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/">skydoy.github.io/…/docs</a></li>
+    </ol>
+    <ol class="en">
+      <li><b>Connect</b> — network cable (PoE, or 5 V on USB-C), MCP23017 and relay board. <a href="https://skydoy.github.io/ESPHome_UFH/docs/wiring/">Wiring</a></li>
+      <li><b>Home Assistant</b> — Settings → Devices &amp; services → <b>Configure</b>.</li>
+      <li><b>Stuck?</b> <a href="https://skydoy.github.io/ESPHome_UFH/docs/troubleshooting/">Troubleshooting</a> · <a href="https://github.com/skydoy/ESPHome_UFH/issues">ask for help</a></li>
+      <li><b>Docs</b> — <a href="https://skydoy.github.io/ESPHome_UFH/docs/">skydoy.github.io/…/docs</a></li>
+    </ol>
+    <details>
+      <summary><span class="pt">Dicas rápidas</span><span class="en">Quick tips</span></summary>
+      <p class="pt"><b>LED vermelho:</b> sem rede. <b>Azul:</b> rede sem Home Assistant. <b>Verde:</b> tudo bem.
+        <b>A bomba não arranca:</b> espera o <i>Atraso a ligar a bomba</i> (120 s).
+        <b>Relés ao contrário:</b> <code>relay_inverted: "false"</code>.</p>
+      <p class="en"><b>LED red:</b> no network. <b>Blue:</b> network without Home Assistant. <b>Green:</b> all good.
+        <b>Pump does not start:</b> wait for <i>Pump Start Delay</i> (120 s).
+        <b>Relays inverted:</b> <code>relay_inverted: "false"</code>.</p>
+    </details>
+  </section>
+
+  <footer>
+    <p><span class="pt">Firmware, instalador e logótipo:</span><span class="en">Firmware, installer and logo:</span>
+      <a href="https://github.com/skydoy/ESPHome_UFH">skydoy/ESPHome_UFH</a> · <a href="https://skydoy.github.io/ESPHome_UFH/docs/"><span class="pt">Documentação</span><span class="en">Docs</span></a> ·
+      <a href="https://github.com/skydoy/ESPHome_UFH/blob/main/LICENSE">PolyForm Noncommercial 1.0.0</a>
+      (<span class="pt">uso pessoal e não comercial</span><span class="en">personal and non-commercial use</span>) ·
+      <a href="https://espmaniacs.github.io/">ESPManiacs</a></p>
+    <p><span class="pt">Waveshare e Denkovi são marcas dos respetivos donos. Projeto comunitário independente. Usa por tua conta e risco: a parte de 230 V é para um eletricista.</span>
+      <span class="en">Waveshare and Denkovi are trademarks of their owners. Independent community project. Use at your own risk: leave the 230 V side to an electrician.</span></p>
+  </footer>
+</main>
+
+<script>
+  const root = document.documentElement;
+  const button = document.getElementById('install');
+  const ver = document.getElementById('ver');
+  let manifest = null;
+  async function showVersion() {
+    const url = button.getAttribute('manifest');
+    try {
+      if (!manifest || manifest.url !== url) manifest = { url, data: await (await fetch(url, { cache: 'no-cache' })).json() };
+      const pt = root.dataset.lang === 'pt';
+      ver.textContent = (pt ? 'Versão ' : 'Version ') + manifest.data.version + ' · ' + manifest.data.name;
+    } catch (e) { ver.textContent = ''; }
+  }
+  function setLang(l) {
+    root.dataset.lang = l; root.lang = l;
+    document.querySelectorAll('.lang button[data-set]').forEach(b => b.setAttribute('aria-pressed', b.dataset.set === l));
+    try { localStorage.setItem('lang', l); } catch (e) {}
+    showVersion();
+  }
+  function selectBoard() {
+    const board = document.querySelector('input[name="board"]:checked');
+    button.setAttribute('manifest', board.value);
+    document.querySelectorAll('[data-board]').forEach(el => {
+      if (el.tagName === 'INPUT') return;
+      el.hidden = el.dataset.board !== board.dataset.board;
+    });
+    showVersion();
+  }
+  document.querySelectorAll('.lang button[data-set]').forEach(b => b.addEventListener('click', () => setLang(b.dataset.set)));
+  const tbtn = document.getElementById('theme-toggle');
+  function themeLabel() {
+    const dark = root.dataset.theme === 'dark';
+    const pt = root.dataset.lang === 'pt';
+    tbtn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    const label = pt
+      ? (dark ? 'Mudar para modo claro' : 'Mudar para modo escuro')
+      : (dark ? 'Switch to light mode' : 'Switch to dark mode');
+    tbtn.setAttribute('aria-label', label);
+    tbtn.title = label;
+  }
+  tbtn.addEventListener('click', () => {
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+    themeLabel();
+  });
+  new MutationObserver(themeLabel).observe(root, { attributes: true, attributeFilter: ['data-lang'] });
+  themeLabel();
+  if (!('serial' in navigator)) document.getElementById('nosupport').style.display = 'block';
+  document.getElementById('board-form').addEventListener('change', selectBoard);
+  let saved = null; try { saved = localStorage.getItem('lang'); } catch (e) {}
+  selectBoard();
+  setLang(saved || ((navigator.language || 'en').toLowerCase().startsWith('pt') ? 'pt' : 'en'));
+</script>
+</body>
+</html>

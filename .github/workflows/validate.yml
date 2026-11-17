@@ -1,0 +1,60 @@
+name: Validate
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  config:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        device:
+          - devices/ufh-s3-eth.yaml
+          - devices/ufh-s3-eth.factory.yaml
+          - examples/my-ufh-with-thermostats.yaml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with: { python-version: "3.13" }
+      - run: pip install esphome==2026.10.1
+      - name: esphome config
+        run: |
+          set -o pipefail
+          esphome config ${{ matrix.device }} | tee config.txt
+      - name: Only the factory firmware has the "Firmware Update" entity
+        if: startsWith(matrix.device, 'devices/')
+        run: |
+          if [[ "${{ matrix.device }}" == *.factory.yaml ]]; then
+            grep -q "id: firmware_update" config.txt
+            if grep -q "id: update_check$" config.txt; then
+              echo "::error::Factory configs must drop core/update-check.yaml"; exit 1; fi
+          else
+            if grep -qE "id: (firmware_update|ota_http)$" config.txt; then
+              echo "::error::Base configs (adopted in the Device Builder) must not include auto-update"; exit 1; fi
+            grep -q "id: check_for_update" config.txt
+          fi
+  zone-count:
+    # Every supported zone_count (1-14) must validate; pump and heat relays go to 15 and 16.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with: { python-version: "3.13" }
+      - run: pip install esphome==2026.10.1
+      - run: |
+          for z in $(seq 1 14); do
+            echo "zone_count=$z"
+            esphome -s zone_count $z -s pump_relay 15 -s heat_relay 16 config devices/ufh-s3-eth.yaml > /dev/null
+          done
+  pinned-refs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Adoption follows @stable; no @main in shipped configs; relays after the zones
+        run: |
+          set -e
+          f=devices/ufh-s3-eth.yaml
+          grep -q "package_import_url: github://skydoy/ESPHome_UFH/$f@stable$" "$f"
+          if grep -rn "@main" devices core ufh; then echo "::error::no @main refs"; exit 1; fi
+          z=$(grep -oP '^\s*zone_count: "\K[0-9]+' $f); p=$(grep -oP '^\s*pump_relay: "\K[0-9]+' $f); h=$(grep -oP '^\s*heat_relay: "\K[0-9]+' $f)
+          echo "zones=$z pump=$p heat=$h"; test "$p" -gt "$z"; test "$h" -gt "$z"; test "$p" -ne "$h"; test "$h" -le 16
