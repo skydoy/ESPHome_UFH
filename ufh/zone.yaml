@@ -1,0 +1,37 @@
+# One underfloor heating zone = one relay that opens the zone's thermal actuator(s).
+# Included by ufh/zones-*.yaml with var: zone (number). Relay N = MCP23017 channel N-1.
+#
+# The switch is the actuator: on = the zone is asking for heat (actuator powered, loop
+# opening), off = closed. Home Assistant (or a thermostat package, see ufh/thermostat-zone.yaml)
+# switches it. The state survives a restart or a power cut (RESTORE_DEFAULT_OFF), so the house
+# keeps heating as it was even if Home Assistant is down.
+esphome:
+  on_boot:
+    - priority: 800
+      then:
+        - lambda: "id(zone_switches)[${zone} - 1] = id(zone${zone});"
+
+switch:
+  - platform: gpio
+    id: zone${zone}
+    name: "Zone ${zone}"
+    icon: mdi:heating-coil
+    pin:
+      mcp23xxx: relays
+      number: ${zone - 1}
+      mode:
+        output: true
+      inverted: ${relay_inverted}
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - lambda: |-
+          id(zones_on) |= (1u << (${zone} - 1));
+          ESP_LOGI("ufh", "Zone ${zone}: on");
+      - script.execute: demand_changed
+    on_turn_off:
+      - lambda: |-
+          id(zones_on) &= ~(1u << (${zone} - 1));
+          ESP_LOGI("ufh", "Zone ${zone}: off");
+      - script.execute: demand_changed
+    web_server:
+      sorting_group_id: group_zones

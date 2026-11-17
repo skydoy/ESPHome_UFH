@@ -1,0 +1,111 @@
+site_name: ESPHome UFH
+site_description: Underfloor heating in Home Assistant — docs
+site_url: https://skydoy.github.io/ESPHome_UFH/docs/
+site_author: skydoy
+repo_url: https://github.com/skydoy/ESPHome_UFH
+repo_name: skydoy/ESPHome_UFH
+edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: site-docs
+copyright: PolyForm Noncommercial 1.0.0 · Independent community project
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/skydoy/ESPHome_UFH
+    - icon: fontawesome/solid/mug-hot
+      link: https://ko-fi.com/skydoy
+
+theme:
+  name: material
+  custom_dir: overrides
+  language: en
+  logo: img/icon.png
+  favicon: img/favicon.svg
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: custom/sun
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: custom/moon
+        name: Switch to light mode
+  font: false
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: pt
+          name: Português
+          build: true
+          nav_translations:
+            Home: Início
+            Getting started: Primeiros passos
+            Install: Instalar
+            Wiring: Ligações
+            Configuration: Configuração
+            Home Assistant: Home Assistant
+            Updates: Atualizações
+            Device web page: Página web da placa
+            Troubleshooting: Problemas
+            FAQ: FAQ
+            Security: Segurança
+            Licence & credits: Licença e créditos
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Install: install.md
+  - Wiring: wiring.md
+  - Home Assistant: home-assistant.md
+  - Configuration: configuration.md
+  - Updates: updates.md
+  - Device web page: web-page.md
+  - Troubleshooting: troubleshooting.md
+  - FAQ: faq.md
+  - Security: security.md
+  - Licence & credits: licence.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+validation:
+  omitted_files: warn
+  absolute_links: ignore
+  unrecognized_links: warn

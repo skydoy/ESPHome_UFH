@@ -1,0 +1,26 @@
+name: Hardware test report
+description: Tell us it works (or not) with your relay board and heating system.
+labels: [hardware-report]
+body:
+  - type: input
+    id: hw
+    attributes:
+      label: Relay board, actuators, pump, heat pump / boiler
+  - type: input
+    id: zones
+    attributes:
+      label: Number of zones
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: What works
+      options:
+        - label: Zone N switch opens / closes the actuator
+        - label: Zone states come back after a power cut
+        - label: Pump starts after Pump Start Delay and stops after Pump Stop Delay
+        - label: Heat Demand / heat pump relay
+        - label: Firmware Update installs over the network
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / logs
