@@ -20,7 +20,7 @@ globals:
   # Zone N's switch is zone_switches[N-1] (filled at boot by ufh/zone.yaml), nullptr if absent.
   - id: zone_switches
     type: std::array<esphome::switch_::Switch *, 16>
-    initial_value: "{}"
+    initial_value: "std::array<esphome::switch_::Switch *, 16>{}"
   # Last heat demand handed to the pump logic (to act only when it changes).
   - id: last_demand
     type: int
