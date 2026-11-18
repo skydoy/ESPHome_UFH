@@ -1,63 +1,50 @@
-# Configuração
+# Configuração (assistente)
 
-Primeiro adota a placa no **ESPHome Device Builder** (Home Assistant → ESPHome → *Adopt*). O YAML adotado importa `devices/ufh-s3-eth.yaml@stable`; junta-lhe as linhas abaixo e carrega em **Install**.
+Abre `http://<ip-da-placa>/`. O painel **Piso radiante** mostra o diagrama em tempo real; **Definições** abre o assistente:
 
-## Número de zonas e relés
+1. **Relés** — número de zonas, se os relés ligam com sinal ALTO ou BAIXO e o que faz cada relé extra (bomba, pedido de calor, as duas).
+2. **Zonas e sensores** — nome, *termóstato* (próprio, ou *mesma divisão que* outra zona), sensor de temperatura, limite do pavimento opcional.
+3. **Temperaturas e horários** — modo (Automático / Fixo / Desligado), Conforto e Eco em °C, dois períodos de Conforto por dia.
+4. **Opções** — atrasos da bomba, tempo até "sensor sem dados", temperatura anti-gelo das férias e os extras opcionais.
+5. **Gravar** — a placa reinicia para aplicar os nomes.
+
+## Fontes de temperatura
+
+| Fonte | Como |
+|---|---|
+| **Shelly H&T (Wi-Fi)** | App Shelly → sensor → *Ações* → nova ação, evento **Temperatura mudou**, URL `http://<ip-da-placa>/ufh/temp?zone=N&t=${ev.tC}` (o assistente mostra-o pronto a copiar). |
+| **Sensor do Home Assistant** | Importa o blueprint `blueprints/automation/esphome_ufh_temperature_from_ha.yaml`, uma automação por zona. |
+| **MQTT** | Tópico + campo JSON (Shelly: `tC`, Zigbee2MQTT: `temperature`; vazio para um número simples). O broker configura-se em *Opções*. |
+| **Bluetooth BTHome** | Shelly BLU H&T, Xiaomi com firmware pvvx/ATC (BTHome v2, sem encriptação). O assistente lista os que ouve. |
+| **DS18B20** | Sondas no pino 1-Wire (GPIO44 direto / GPIO15 MCP23017). O assistente lista as encontradas. |
+
+Os Shelly H&T a pilhas só enviam quando a temperatura muda: se uma divisão fica estável muitas horas, aumenta o *Sensor sem dados após* (6 h por omissão) ou liga o sensor por USB (passa a enviar a cada 5 min). Quando um sensor fica sem dados, a zona fecha e aparece um aviso.
+
+## Opções
+
+| Opção | O que faz |
+|---|---|
+| Anti-bloqueio da bomba | Segunda às 10:00, sem aquecimento há 24 h: abre uma zona e roda a bomba 1 min |
+| Anti-bloqueio dos atuadores | À mesma hora abre e fecha todas as zonas |
+| Janela aberta | Queda de 1 °C em 10 min fecha a zona 30 min |
+| Arranque antecipado | Aprende quanto cada zona demora a aquecer e começa até 4 h mais cedo |
+| Excedente solar | +°C nas zonas escolhidas enquanto houver excedente (ação `set_pv_surplus` ou tópico MQTT) |
+| Tarifa bi-horária | +°C nas horas de vazio, −°C no resto do dia |
+| Ligação ao ESPHome_Altherma | Lê a ida e o retorno da outra placa para o diagrama |
+| Limite do pavimento | Por zona: fecha acima de X °C medidos por uma sonda no chão |
+
+## Modos da casa
+
+**Casa** (normal), **Ausente** (Eco em todas as zonas), **Férias** (anti-gelo, 7 °C por omissão), **Verão** (aquecimento e bomba desligados; o anti-bloqueio continua).
+
+## No teu YAML (placa adotada)
 
 ```yaml
 substitutions:
-  zone_count: "8"     # 1-14, zona N = relé N
-  pump_relay: "9"     # depois da última zona
-  heat_relay: "10"
-```
-
-## Placa de relés que liga com a entrada em HIGH
-
-```yaml
-substitutions:
-  relay_inverted: "false"
-```
-
-## MCP23017 noutro endereço
-
-```yaml
-substitutions:
-  mcp23017_address: "0x21"
-```
-
-## Endereço IP fixo { #fixed-ip-address }
-
-```yaml
+  timezone: Europe/Lisbon          # os horários usam SNTP; o Home Assistant também o acerta
+  relay1_pin: GPIO1                # placa direta: mudar um relé de GPIO
 ethernet:
-  manual_ip:
-    static_ip: 192.168.1.50
-    gateway: 192.168.1.1
-    subnet: 255.255.255.0
-    dns1: 192.168.1.1
-```
-
-## Termóstatos na placa { #thermostats-on-the-device }
-
-Opcional: uma entidade de clima por zona que liga o seu relé sozinha, para o aquecimento continuar com o Home Assistant em baixo (a temperatura continua a vir de um sensor do Home Assistant):
-
-```yaml
-packages:
-  thermostat1: !include
-    file: github://skydoy/ESPHome_UFH/ufh/thermostat-zone.yaml@stable
-    vars: { zone: 1, room: "Living Room", temperature_entity: sensor.living_room_temperature }
-```
-
-Predefinições Comfort 21 °C, Eco 18 °C, Away 12 °C; mínimo de 5 min ligada / 5 min desligada por zona. Exemplo completo: [`examples/my-ufh-with-thermostats.yaml`](https://github.com/skydoy/ESPHome_UFH/blob/main/examples/my-ufh-with-thermostats.yaml).
-
-Sondas DS18B20 locais podem ir para o **GPIO15** (1-Wire, reservado no pacote da placa): junta um barramento `one_wire` e sensores `dallas_temp` e aponta o `sensor:` do termóstato para eles.
-
-## Página web com login / sem página web
-
-```yaml
+  manual_ip: { static_ip: 192.168.1.50, gateway: 192.168.1.1, subnet: 255.255.255.0 }
 web_server:
-  auth:
-    username: admin
-    password: !secret web_password
+  auth: { username: admin, password: !secret web_password }
 ```
-
-Para tirar a página: `web_server: !remove`.

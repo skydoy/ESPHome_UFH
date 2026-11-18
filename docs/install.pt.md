@@ -1,12 +1,8 @@
 # Instalar
 
 1. Abre o **[instalador web](https://skydoy.github.io/ESPHome_UFH/)** no **Chrome** ou no **Edge** num computador.
-2. Liga a Waveshare ESP32-S3-ETH por **USB-C** (cabo de dados, não só de carregar) e carrega em **Instalar**.
-   Se a porta não aparecer, mantém o botão **BOOT** carregado ao ligar o cabo.
-3. Tira o USB e liga o **cabo de rede** (PoE, ou uma porta normal e 5 V no USB-C).
-4. O Home Assistant mostra a placa nova em **Definições → Dispositivos e serviços → Descobertos**. Carrega em **Configurar**.
-
-Não há Wi-Fi para configurar: a placa usa Ethernet e recebe o endereço por DHCP.
-
-!!! tip "IP fixo"
-    Reserva um endereço DHCP para a placa no router, ou define um IP fixo depois de a adotares ([Configuração](configuration.md#fixed-ip-address)).
+2. Escolhe a placa: **relés nos pinos do ESP** (até 13, por exemplo a placa de relés Denkovi) ou **MCP23017** (até 16).
+3. Liga a Waveshare ESP32-S3-ETH por **USB-C** e carrega em **Instalar** (mantém o **BOOT** carregado ao ligar o cabo se a porta não aparecer).
+4. Liga o **cabo de rede** (PoE, ou uma porta normal e 5 V no USB-C).
+5. Abre `http://<ip-da-placa>/` (o IP aparece no router ou no Home Assistant em *Descobertos*) e faz o **assistente de configuração**. As zonas ficam desligadas até o terminares.
+6. Opcional: adiciona a placa ao Home Assistant (**Definições → Dispositivos e serviços → Descobertos → Configurar**). Dá nomes às zonas no assistente antes: mudar nomes depois cria entidades novas no Home Assistant.

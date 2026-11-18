@@ -1,16 +1,11 @@
 # FAQ
 
-**Precisa do Home Assistant para continuar a aquecer?**
-Não. O estado das zonas fica guardado na placa e mantém-se depois de reinícios e falhas de luz; a lógica da bomba corre na placa. As decisões dos termóstatos ficam no Home Assistant, a não ser que juntes os [termóstatos na placa](configuration.md#thermostats-on-the-device).
+**Precisa do Home Assistant?** Não. Termóstatos, horários, bomba e pedido de calor correm na placa.
 
-**Wi-Fi?**
-Não, só Ethernet (mais fiável num quadro elétrico). O firmware pré-compilado não liga o Wi-Fi.
+**Wi-Fi?** Não, Ethernet (o Wi-Fi não está ativo).
 
-**Posso usar as minhas sondas de temperatura?**
-Sim, DS18B20 no GPIO15, vê [Configuração](configuration.md#thermostats-on-the-device).
+**Os meus sensores?** Shelly H&T (ações Wi-Fi), Bluetooth BTHome, MQTT, Home Assistant ou DS18B20 — escolhidos por zona.
 
-**Quantas zonas?**
-Até 14 com um MCP23017 / placa de 16 relés (mais a bomba e o pedido de calor).
+**Quantas zonas?** Até 13 nos pinos do ESP, 16 com um MCP23017 (menos os relés da bomba / pedido de calor).
 
-**É grátis?**
-Para uso pessoal e não comercial, sim ([licença](licence.md)).
+**É grátis?** Para uso pessoal e não comercial ([licença](licence.md)).

@@ -1,3 +1,3 @@
 # Device web page
 
-Open `http://<device-ip>/` on your network: zones, pump, settings and live logs, with a **PT · EN** button. It has **no password** by default; see [Configuration](configuration.md) to add one.
+`http://<device-ip>/` shows the **live diagram** (manifold, zones, pump, heat pump), the **setup wizard**, a **schedule editor**, the **zone balance** report and live logs, with a **PT · EN** button. Click a zone to see its sensor and change its target. No password by default ([Configuration](configuration.md)).

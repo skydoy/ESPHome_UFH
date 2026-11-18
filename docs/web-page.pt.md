@@ -1,3 +1,3 @@
 # Página web da placa
 
-Abre `http://<ip-da-placa>/` na tua rede: zonas, bomba, definições e registos em tempo real, com um botão **PT · EN**. Por omissão **não tem palavra-passe**; vê [Configuração](configuration.md) para pôr uma.
+`http://<ip-da-placa>/` mostra o **diagrama em tempo real** (coletor, zonas, bomba, bomba de calor), o **assistente**, o **editor de horários**, o relatório de **equilíbrio das zonas** e os registos, com o botão **PT · EN**. Clica numa zona para ver o sensor e mudar o alvo. Sem palavra-passe por omissão ([Configuração](configuration.md)).

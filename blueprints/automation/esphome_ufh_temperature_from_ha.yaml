@@ -1,0 +1,47 @@
+blueprint:
+  name: "ESPHome UFH: temperature from Home Assistant"
+  description: >-
+    Sends a Home Assistant temperature sensor to one zone of the ESPHome UFH controller
+    (source "Home Assistant sensor" in the setup wizard). Create one automation per zone.
+    The controller keeps running its thermostats on the device; if Home Assistant stops
+    sending, the zone closes after the "sensor stale" time and a warning is raised.
+  domain: automation
+  source_url: https://github.com/skydoy/ESPHome_UFH/blob/main/blueprints/automation/esphome_ufh_temperature_from_ha.yaml
+  input:
+    sensor:
+      name: Temperature sensor
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              device_class: temperature
+    zone:
+      name: Zone number
+      description: Zone number in the controller (1, 2, 3...)
+      selector:
+        number: { min: 1, max: 16, mode: box }
+    action_name:
+      name: Controller action
+      description: >-
+        The "set_zone_temperature" action of your controller, e.g.
+        esphome.esphome_ufh_1a2b3c_set_zone_temperature (Developer tools -> Actions).
+      selector:
+        text: {}
+mode: queued
+triggers:
+  - trigger: state
+    entity_id: !input sensor
+  - trigger: time_pattern
+    minutes: "/30"
+conditions:
+  - condition: template
+    value_template: "{{ states(sensor_entity) | is_number }}"
+variables:
+  sensor_entity: !input sensor
+  zone_number: !input zone
+  action_name: !input action_name
+actions:
+  - action: "{{ action_name }}"
+    data:
+      zone: "{{ zone_number | int }}"
+      temperature: "{{ states(sensor_entity) | float }}"

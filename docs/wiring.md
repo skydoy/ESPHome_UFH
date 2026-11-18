@@ -1,40 +1,34 @@
 # Wiring
 
 !!! danger "Mains voltage"
-    Thermal actuators, pumps and boiler controls usually run on **230 V**. Switch off the circuit breaker before working on them, and have a qualified electrician do the mains side.
+    Thermal actuators, pumps and boiler controls usually run on **230 V**. Switch off the breaker and leave the mains side to a qualified electrician.
 
-## Logic side (low voltage)
+## Option A — relays on the ESP pins (up to 13)
 
-| Waveshare ESP32-S3-ETH | MCP23017 module |
+For relay boards whose inputs work with **3.3 V** logic, such as the Denkovi boards driven by a DAEnetIP4 (its outputs were 0 / 3.3 V). The ESP replaces the DAEnetIP4: the relay board, the 230 V wiring and the numbering stay.
+
+| Relay | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ESP GPIO | 1 | 2 | 15 | 16 | 17 | 18 | 38 | 39 | 40 | 41 | 42 | 47 | 48 |
+
+Also connect **GND** of the ESP to GND of the relay board. Solder the wires from the top of the board (the PoE module sits on top too). In the wizard choose **relays switch on with HIGH**.
+A 1-Wire bus for DS18B20 probes is on **GPIO44** (4.7 kΩ pull-up to 3.3 V).
+
+## Option B — MCP23017 + 16-channel relay board
+
+| ESP32-S3-ETH | MCP23017 |
 |---|---|
-| 3V3 | VCC |
-| GND | GND |
-| GPIO16 | SDA |
-| GPIO17 | SCL |
+| 3V3 / GND | VCC / GND |
+| GPIO16 / GPIO17 | SDA / SCL |
 
-MCP23017 A0, A1, A2 to GND (address `0x20`), RESET to VCC. Channel **GPA0 = relay 1 … GPB7 = relay 16**.
+MCP23017 A0-A2 to GND (address `0x20`). **GPA0…GPB7 = relays 1…16.** On opto-isolated boards remove the **JD-VCC** jumper, feed **VCC** from 3.3 V and **JD-VCC** from the relay supply; choose **LOW** in the wizard. DS18B20 bus: **GPIO15**.
 
-## MCP23017 → relay board
+## Relays after the zones
 
-Most 16-channel relay boards switch a relay **on with a LOW input** (`relay_inverted: "true"`, the default).
-
-1. **Remove the JD-VCC jumper.**
-2. **VCC** (input / opto side) → **3.3 V** of the ESP board. This lets the 3.3 V MCP23017 drive the inputs cleanly.
-3. **JD-VCC** + GND (coil side) → the **relay power supply** (5 V or 12 V, to match the coils).
-4. **IN1 … IN16** → MCP23017 **GPA0 … GPB7**.
-
-Without the jumper the ESP side and the relay coils stay isolated from each other.
-
-## Relays (high voltage)
-
-| Relay | Connect |
+| Function (wizard) | Connect |
 |---|---|
-| 1 … 11 | Live of each zone's thermal actuator(s) through the relay's **COM / NO** |
-| 12 | Circulation pump (through a contactor if the pump draws more than the relay rating) |
-| 13 | Heat pump / boiler **room thermostat input** (dry contact, COM / NO) |
+| Circulation pump | pump (through a contactor if it draws more than the relay rating) |
+| Heat demand | heat pump / boiler **room thermostat input** (dry contact) |
+| Pump + heat demand | one relay for both |
 
-Thermal actuators are usually **NC** (normally closed): powered = open = heating that zone.
-
-## Replacing a Denkovi DAEnetIP4
-
-Keep the same order: Denkovi output N → relay N. Zones 1-11 stay on outputs 1-11 and the pump on output 12, so the field wiring does not change. Remove the Home Assistant integration that talked to the Denkovi (SNMP) and use the new ESPHome entities instead.
+Power: the PoE module (~13 W) powers the ESP only. The relay board keeps its own supply.
