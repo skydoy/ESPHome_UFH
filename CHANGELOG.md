@@ -4,6 +4,10 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Wiring diagrams (images) in the docs: relays on the ESP pins, MCP23017, mains side.
+### Fixed
+- Dark theme: installer step buttons (Back / Start over) and the web panel labels were hard to read.
 
 ## [0.2.0] - 2026-11-18
 ### Added
