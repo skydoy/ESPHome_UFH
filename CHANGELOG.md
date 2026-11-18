@@ -5,7 +5,7 @@ All notable changes to the firmware and installer. Format:
 
 ## [Unreleased]
 
-## [0.2.0] - unreleased
+## [0.2.0] - 2026-11-18
 ### Added
 - **Thermostats on the device** (works without Home Assistant): per-zone Comfort / Eco schedule
   (two periods per day), fixed target or off; Home Assistant climate entities per zone.
