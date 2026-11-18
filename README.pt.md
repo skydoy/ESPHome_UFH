@@ -27,23 +27,26 @@
 
 ## Compatibilidade
 
-**Waveshare ESP32-S3-ETH** (Ethernet W5500, PoE opcional) + **MCP23017** + **placa de 16 relés**: até 14 zonas, a bomba circuladora e um contacto de pedido de calor. Substitui controladores de rede de 16 saídas, como o Denkovi DAEnetIP4.  
+**Waveshare ESP32-S3-ETH** (Ethernet W5500, PoE opcional) com:
+- **relés diretamente nos pinos do ESP** — até 13 (placas com entradas de 3,3 V, por exemplo a placa de relés Denkovi de um DAEnetIP4), ou
+- **MCP23017** + qualquer placa de 16 relés — até 16.
+
 Detalhes: [o que precisas](docs/getting-started.pt.md) · [ligações](docs/wiring.pt.md)
 
 ## Instalar em 3 passos
 
-1. **Instalar o firmware** — Abre o **[instalador web](https://skydoy.github.io/ESPHome_UFH/)**, liga a placa por USB-C → **Instalar**.
-2. **Ligar** — cabo de rede (PoE, ou 5 V no USB-C), MCP23017 e placa de relés ([ligações](docs/wiring.pt.md)).
-3. **Adicionar** — Home Assistant → **Configurar**. Não há Wi-Fi para configurar.
+1. **Instalar o firmware** — Abre o **[instalador web](https://skydoy.github.io/ESPHome_UFH/)**, escolhe a placa, liga-a por USB-C → **Instalar**.
+2. **Ligar** — cabo de rede (PoE, ou 5 V no USB-C) e os relés ([ligações](docs/wiring.pt.md)).
+3. **Configurar** — abre `http://<ip-da-placa>/` e segue o **assistente** (zonas, sensores, horários). O Home Assistant é opcional.
 
 ## O que tens
 
-- Um interruptor por zona (zona N = relé N); o estado mantém-se depois de reinícios e falhas de luz
-- **Bomba** em Automático / Ligada / Desligada, com atrasos para os atuadores abrirem e fecharem
-- **Pedido de calor** para a bomba de calor ou caldeira (pelo Home Assistant, ou pelo relé 13)
-- Termóstatos na própria placa, opcionais
+- **Termóstatos na própria placa**: Conforto / Eco por horário, funciona sem Home Assistant
+- Sensores à escolha por zona: **Shelly H&T** (Wi-Fi), **Bluetooth BTHome**, **MQTT**, **Home Assistant** ou **DS18B20**
+- **Bomba** com atrasos e **pedido de calor** à bomba de calor / caldeira
+- **Diagrama em tempo real** na página web, assistente, editor de horários, equilíbrio das zonas
+- Opcionais: janela aberta, arranque antecipado, excedente solar, tarifa bi-horária, anti-bloqueio, limite do pavimento, ligação ao ESPHome_Altherma
 - Atualizações com um clique (ou automáticas à noite)
-- Página web na rede local (`http://<ip-da-placa>/`)
 
 ## Documentação e mais
 
