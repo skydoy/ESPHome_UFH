@@ -5,6 +5,8 @@
 
 ## Opção A — relés nos pinos do ESP (até 13)
 
+![Relés nos pinos do ESP](img/wiring-direct-pt.svg)
+
 Para placas de relés com entradas de **3,3 V**, como as Denkovi comandadas por um DAEnetIP4 (as saídas dele eram de 0 / 3,3 V). O ESP substitui o DAEnetIP4: a placa de relés, as ligações de 230 V e a numeração ficam iguais.
 
 | Relé | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
@@ -16,6 +18,8 @@ O barramento 1-Wire para sondas DS18B20 fica no **GPIO44** (resistência de 4,7 
 
 ## Opção B — MCP23017 + placa de 16 relés
 
+![MCP23017](img/wiring-mcp23017-pt.svg)
+
 | ESP32-S3-ETH | MCP23017 |
 |---|---|
 | 3V3 / GND | VCC / GND |
@@ -24,6 +28,8 @@ O barramento 1-Wire para sondas DS18B20 fica no **GPIO44** (resistência de 4,7 
 A0-A2 do MCP23017 a GND (endereço `0x20`). **GPA0…GPB7 = relés 1…16.** Nas placas com optoacoplador tira o jumper **JD-VCC**, alimenta o **VCC** com 3,3 V e o **JD-VCC** com a fonte dos relés; no assistente escolhe **BAIXO**. Barramento DS18B20: **GPIO15**.
 
 ## Relés a seguir às zonas
+
+![Lado dos 230 V](img/wiring-mains-pt.svg)
 
 | Função (assistente) | Liga |
 |---|---|
