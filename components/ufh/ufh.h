@@ -165,7 +165,8 @@ class UFHComponent : public Component
   void setup() override;
   void loop() override;
   void dump_config() override;
-  float get_setup_priority() const override { return setup_priority::HARDWARE; }
+  // after the relay outputs (and the I/O expander) are set up, before the API lists entities
+  float get_setup_priority() const override { return setup_priority::HARDWARE - 1.0f; }
   void on_shutdown() override;
 
 #ifdef USE_UFH_BLE
@@ -280,6 +281,8 @@ class UFHComponent : public Component
   bool restart_requested_{false};
   bool restored_{false};
   bool mqtt_started_{false};
+  bool web_registered_{false};
+  bool relays_rewritten_{false};
   uint32_t restart_at_ms_{0};
 
   // cross-thread inbox (HTTP task -> loop)

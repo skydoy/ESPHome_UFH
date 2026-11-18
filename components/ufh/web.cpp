@@ -511,7 +511,12 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
           d++;
         }
       }
-      zr_[i].override_active = false;
+      if (zv["sched"].is<JsonArrayConst>() || zv["mode"].is<int>() || zv["comfort"].is<float>() ||
+          zv["comfort"].is<int>() || zv["eco"].is<float>() || zv["eco"].is<int>())
+        zr_[i].override_active = false;
+      // "target": change the target now (Auto: until the next schedule change)
+      if (zv["target"].is<float>() || zv["target"].is<int>())
+        this->ha_set_zone_target(i + 1, zv["target"].as<float>());
       i++;
     }
   }

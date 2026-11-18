@@ -1,42 +1,32 @@
 # Home Assistant
 
+Optional: the device heats on its own. Home Assistant adds remote control, history and automations.
+
 ## Entities
 
-| Entity | What it does |
+| Entity | |
 |---|---|
-| **Zone 1 … Zone N** (switch) | Opens / closes that zone (relay N) |
-| **All Zones Off** (button) | Closes every zone |
-| **Active Zones** | Which zones are on, e.g. `1, 4, 7` |
-| **Pump Mode** (Auto / On / Off) | *Auto* follows the zones; *On* / *Off* force the pump |
-| **Pump** | The pump relay is on |
-| **Heat Demand** | At least one zone is on |
-| Pump Start Delay / Pump Stop Delay | Seconds (config) |
-| Heat Pump Control | The device drives relay 13 from Heat Demand (config, off by default) |
-| Heat Pump Relay | State of relay 13 (diagnostic) |
-
-## Asking the heat pump for heat (from Home Assistant)
-
-Until *Heat Pump Control* is on, let an automation follow **Heat Demand**:
-
-```yaml
-triggers:
-  - trigger: state
-    entity_id: binary_sensor.esphome_ufh_heat_demand
-actions:
-  - action: "switch.turn_{{ trigger.to_state.state }}"
-    target:
-      entity_id: switch.altherma_heating   # your heat pump / boiler switch
-```
-
-When the heat pump is wired to relay 13, switch **Heat Pump Control** on and remove the automation.
+| **<zone>** (climate) | Off / Heat (fixed target) / Auto (schedule). In Auto a new target holds until the next schedule change |
+| <zone> Heating | Relay of the zone |
+| <zone> Temperature | Room temperature used by the thermostat |
+| <zone> Runtime Today / Total, Duty 24h | Statistics (balance between zones) |
+| House Mode | Home / Away / Holiday / Summer |
+| Pump Mode | Auto / On / Off |
+| Pump, Heat Demand, Problem, Warnings, Active Zones | State |
+| Pump Runtime Today / Total | Statistics |
 
 ## Actions
 
 | Action | Data |
 |---|---|
-| `esphome.<device>_set_zone` | `zone: 3`, `on: true` |
+| `esphome.<device>_set_zone_temperature` | `zone`, `temperature` (source “Home Assistant sensor”) |
+| `esphome.<device>_set_floor_temperature` | `zone`, `temperature` |
+| `esphome.<device>_set_pv_surplus` | `surplus: true/false` (option “Solar surplus”) |
+| `esphome.<device>_set_zone_mode` | `zone`, `mode` (0 off, 1 auto, 2 heat) |
+| `esphome.<device>_set_zone_target` | `zone`, `temperature` |
 | `esphome.<device>_all_zones_off` | — |
 
-## Thermostats
+## Blueprints
 
-The prebuilt firmware only switches relays: the thermostat logic stays in Home Assistant (e.g. a *Generic thermostat* per zone using `switch.<device>_zone_N`). To run the thermostats **on the device**, see [Configuration](configuration.md#thermostats-on-the-device).
+- `esphome_ufh_temperature_from_ha.yaml` — sends a Home Assistant temperature sensor to a zone.
+- `esphome_ufh_update_available.yaml` — notification when a new firmware is out.

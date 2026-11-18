@@ -118,14 +118,17 @@
 
   <section class="card">
     <h2><span class="num">1</span><span class="pt">A placa</span><span class="en">The board</span></h2>
-    <form id="board-form" class="boards" style="grid-template-columns:1fr">
-      <label><input type="radio" name="board" value="firmware/s3-eth/manifest.json" data-board="s3-eth" checked>
-        <span class="t">Waveshare ESP32-S3-ETH</span>
-        <div class="d"><span class="pt">ESP32-S3 · Ethernet W5500 · PoE opcional · USB-C. Com MCP23017 e placa de 16 relés: até 14 zonas, bomba e pedido de calor.</span><span class="en">ESP32-S3 · W5500 Ethernet · optional PoE · USB-C. With an MCP23017 and a 16-relay board: up to 14 zones, pump and heat demand.</span></div></label>
+    <form id="board-form" class="boards">
+      <label><input type="radio" name="board" value="firmware/s3-eth-direct/manifest.json" data-board="s3-eth-direct" checked>
+        <span class="t"><span class="pt">Relés nos pinos do ESP</span><span class="en">Relays on the ESP pins</span></span>
+        <div class="d"><span class="pt">Até 13 relés ligados diretamente (placas com entradas de 3,3 V, ex.: Denkovi do DAEnetIP4).</span><span class="en">Up to 13 relays wired directly (3.3 V input boards, e.g. the Denkovi board of a DAEnetIP4).</span></div></label>
+      <label><input type="radio" name="board" value="firmware/s3-eth/manifest.json" data-board="s3-eth">
+        <span class="t">MCP23017</span>
+        <div class="d"><span class="pt">Até 16 relés através de um MCP23017 (qualquer placa de 16 relés).</span><span class="en">Up to 16 relays through an MCP23017 (any 16-channel relay board).</span></div></label>
     </form>
     <p class="brandline">
-      <span class="pt">Substitui controladores de rede de 16 saídas (ex.: Denkovi DAEnetIP4).</span>
-      <span class="en">Replaces 16-output network controllers (e.g. Denkovi DAEnetIP4).</span>
+      <span class="pt">Waveshare ESP32-S3-ETH (Ethernet, PoE opcional). Substitui controladores como o Denkovi DAEnetIP4.</span>
+      <span class="en">Waveshare ESP32-S3-ETH (Ethernet, optional PoE). Replaces controllers such as the Denkovi DAEnetIP4.</span>
       <a href="https://skydoy.github.io/ESPHome_UFH/docs/getting-started/"><span class="pt">O que precisas</span><span class="en">What you need</span></a>
       ·
       <a href="https://skydoy.github.io/ESPHome_UFH/docs/wiring/"><span class="pt">Ligações</span><span class="en">Wiring</span></a>
@@ -150,27 +153,29 @@
     <p class="pt">Carrega em <b>Instalar</b>, escolhe a porta série e confirma.</p>
     <p class="en">Press <b>Install</b>, pick the serial port, then confirm.</p>
     <div class="install">
-      <esp-web-install-button id="install" manifest="firmware/s3-eth/manifest.json">
+      <esp-web-install-button id="install" manifest="firmware/s3-eth-direct/manifest.json">
         <button slot="activate" class="btn"><span class="pt">⚡ Instalar</span><span class="en">⚡ Install</span></button>
         <span slot="unsupported"><span class="pt">Usa o Chrome ou o Edge num computador.</span><span class="en">Use Chrome or Edge on a computer.</span></span>
         <span slot="not-allowed"><span class="pt">A página tem de abrir em https.</span><span class="en">The page must be opened over https.</span></span>
       </esp-web-install-button>
       <div class="ver" id="ver"></div>
     </div>
-    <p class="note ok">✅ <span class="pt"><b>Deves ver:</b> barra de progresso (~1 min) e <i>Installation complete</i>. Não há Wi-Fi para configurar: tira o USB e liga o <b>cabo de rede</b>.</span><span class="en"><b>You should see:</b> a progress bar (~1 min) and <i>Installation complete</i>. There is no Wi-Fi to set up: unplug USB and connect the <b>network cable</b>.</span></p>
+    <p class="note ok">✅ <span class="pt"><b>Deves ver:</b> barra de progresso (~1 min) e <i>Installation complete</i>. Não há Wi-Fi para configurar: liga o <b>cabo de rede</b> e abre a página da placa para fazer o <b>assistente</b>.</span><span class="en"><b>You should see:</b> a progress bar (~1 min) and <i>Installation complete</i>. No Wi-Fi to set up: connect the <b>network cable</b> and open the device page to run the <b>setup wizard</b>.</span></p>
   </section>
 
   <section class="card next">
     <h2><span class="pt">A seguir</span><span class="en">Next</span></h2>
     <ol class="pt">
       <li><b>Ligar</b> — cabo de rede (PoE, ou 5 V no USB-C), MCP23017 e placa de relés. <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/wiring/">Ligações</a></li>
-      <li><b>Home Assistant</b> — Definições → Dispositivos e serviços → <b>Configurar</b>.</li>
+      <li><b>Assistente</b> — abre <code>http://&lt;ip-da-placa&gt;/</code> e configura zonas, sensores e horários.</li>
+      <li><b>Home Assistant</b> (opcional) — Definições → Dispositivos e serviços → <b>Configurar</b>.</li>
       <li><b>Problemas?</b> <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/troubleshooting/">Problemas</a> · <a href="https://github.com/skydoy/ESPHome_UFH/issues">pedir ajuda</a></li>
       <li><b>Documentação</b> — <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/">skydoy.github.io/…/docs</a></li>
     </ol>
     <ol class="en">
       <li><b>Connect</b> — network cable (PoE, or 5 V on USB-C), MCP23017 and relay board. <a href="https://skydoy.github.io/ESPHome_UFH/docs/wiring/">Wiring</a></li>
-      <li><b>Home Assistant</b> — Settings → Devices &amp; services → <b>Configure</b>.</li>
+      <li><b>Wizard</b> — open <code>http://&lt;device-ip&gt;/</code> and set up zones, sensors and schedules.</li>
+      <li><b>Home Assistant</b> (optional) — Settings → Devices &amp; services → <b>Configure</b>.</li>
       <li><b>Stuck?</b> <a href="https://skydoy.github.io/ESPHome_UFH/docs/troubleshooting/">Troubleshooting</a> · <a href="https://github.com/skydoy/ESPHome_UFH/issues">ask for help</a></li>
       <li><b>Docs</b> — <a href="https://skydoy.github.io/ESPHome_UFH/docs/">skydoy.github.io/…/docs</a></li>
     </ol>
@@ -178,10 +183,10 @@
       <summary><span class="pt">Dicas rápidas</span><span class="en">Quick tips</span></summary>
       <p class="pt"><b>LED vermelho:</b> sem rede. <b>Azul:</b> rede sem Home Assistant. <b>Verde:</b> tudo bem.
         <b>A bomba não arranca:</b> espera o <i>Atraso a ligar a bomba</i> (120 s).
-        <b>Relés ao contrário:</b> <code>relay_inverted: "false"</code>.</p>
+        <b>Relés ao contrário:</b> assistente → Relés → sinal ALTO / BAIXO.</p>
       <p class="en"><b>LED red:</b> no network. <b>Blue:</b> network without Home Assistant. <b>Green:</b> all good.
         <b>Pump does not start:</b> wait for <i>Pump Start Delay</i> (120 s).
-        <b>Relays inverted:</b> <code>relay_inverted: "false"</code>.</p>
+        <b>Relays inverted:</b> wizard → Relays → HIGH / LOW.</p>
     </details>
   </section>
 

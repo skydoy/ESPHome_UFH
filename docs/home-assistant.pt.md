@@ -1,44 +1,32 @@
 # Home Assistant
 
+Opcional: a placa aquece sozinha. O Home Assistant junta controlo remoto, histórico e automações.
+
 ## Entidades
 
-| Entidade | O que faz |
+| Entidade | |
 |---|---|
-| **Zona 1 … Zona N** (interruptor) | Abre / fecha essa zona (relé N) |
-| **Desligar todas as zonas** (botão) | Fecha todas as zonas |
-| **Zonas ativas** | Que zonas estão ligadas, por exemplo `1, 4, 7` |
-| **Modo da bomba** (Automático / Ligada / Desligada) | *Automático* segue as zonas; *Ligada* / *Desligada* forçam a bomba |
-| **Bomba** | O relé da bomba está ligado |
-| **Pedido de calor** | Há pelo menos uma zona ligada |
-| Atraso a ligar / desligar a bomba | Segundos (configuração) |
-| Controlo da bomba de calor | A placa liga o relé 13 conforme o pedido de calor (configuração, desligado por omissão) |
-| Relé da bomba de calor | Estado do relé 13 (diagnóstico) |
-
-No Home Assistant as entidades aparecem com os nomes em inglês (*Zone 1*, *Pump Mode*…). Podes mudar-lhes o nome lá.
-
-## Pedir calor à bomba de calor (a partir do Home Assistant)
-
-Enquanto o *Controlo da bomba de calor* estiver desligado, usa uma automação que siga o **Pedido de calor**:
-
-```yaml
-triggers:
-  - trigger: state
-    entity_id: binary_sensor.esphome_ufh_heat_demand
-actions:
-  - action: "switch.turn_{{ trigger.to_state.state }}"
-    target:
-      entity_id: switch.altherma_heating   # o interruptor da tua bomba de calor / caldeira
-```
-
-Quando a bomba de calor estiver ligada ao relé 13, liga o **Controlo da bomba de calor** e apaga a automação.
+| **<zona>** (clima) | Desligado / Aquecer (alvo fixo) / Automático (horário). Em Automático, um alvo novo vale até à próxima mudança do horário |
+| <zona> Heating | Relé da zona |
+| <zona> Temperature | Temperatura da divisão usada pelo termóstato |
+| <zona> Runtime Today / Total, Duty 24h | Estatísticas (equilíbrio entre zonas) |
+| House Mode | Casa / Ausente / Férias / Verão |
+| Pump Mode | Automático / Ligada / Desligada |
+| Pump, Heat Demand, Problem, Warnings, Active Zones | Estado |
+| Pump Runtime Today / Total | Estatísticas |
 
 ## Ações
 
 | Ação | Dados |
 |---|---|
-| `esphome.<device>_set_zone` | `zone: 3`, `on: true` |
+| `esphome.<device>_set_zone_temperature` | `zone`, `temperature` (fonte “Sensor do Home Assistant”) |
+| `esphome.<device>_set_floor_temperature` | `zone`, `temperature` |
+| `esphome.<device>_set_pv_surplus` | `surplus: true/false` (opção “Excedente solar”) |
+| `esphome.<device>_set_zone_mode` | `zone`, `mode` (0 desligado, 1 automático, 2 aquecer) |
+| `esphome.<device>_set_zone_target` | `zone`, `temperature` |
 | `esphome.<device>_all_zones_off` | — |
 
-## Termóstatos
+## Blueprints
 
-O firmware pré-compilado só liga relés: a lógica dos termóstatos fica no Home Assistant (por exemplo um *Generic thermostat* por zona a usar `switch.<device>_zone_N`). Para correr os termóstatos **na própria placa**, vê [Configuração](configuration.md#thermostats-on-the-device).
+- `esphome_ufh_temperature_from_ha.yaml` — envia um sensor de temperatura do Home Assistant para uma zona.
+- `esphome_ufh_update_available.yaml` — aviso quando sai firmware novo.

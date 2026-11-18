@@ -6,7 +6,7 @@
 [⚡ Open the web installer](https://skydoy.github.io/ESPHome_UFH/){ .md-button .md-button--primary }
 </div>
 
-Runs on a **Waveshare ESP32-S3-ETH** (Ethernet + PoE) with an **MCP23017** and a **16-channel relay board**: up to 14 zones, the pump and a heat demand contact. A drop-in replacement for 16-output network controllers such as the Denkovi DAEnetIP4.
+Runs on a **Waveshare ESP32-S3-ETH** (Ethernet + PoE): thermostats, schedules, pump and heat demand on the device, with or without Home Assistant. Drives up to 13 relays straight from the ESP (e.g. the Denkovi relay board of a DAEnetIP4) or 16 through an MCP23017. Set up from a wizard on the device web page.
 
 ## Start here
 

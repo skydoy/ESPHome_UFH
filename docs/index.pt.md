@@ -6,7 +6,7 @@
 [⚡ Abrir o instalador web](https://skydoy.github.io/ESPHome_UFH/){ .md-button .md-button--primary }
 </div>
 
-Corre numa **Waveshare ESP32-S3-ETH** (Ethernet + PoE) com um **MCP23017** e uma **placa de 16 relés**: até 14 zonas, a bomba e um contacto de pedido de calor. Substitui controladores de rede de 16 saídas, como o Denkovi DAEnetIP4.
+Corre numa **Waveshare ESP32-S3-ETH** (Ethernet + PoE): termóstatos, horários, bomba e pedido de calor na própria placa, com ou sem Home Assistant. Comanda até 13 relés diretamente pelo ESP (por exemplo a placa de relés Denkovi de um DAEnetIP4) ou 16 com um MCP23017. Configura-se num assistente na página web da placa.
 
 ## Começa aqui
 

@@ -176,8 +176,6 @@ void UFHComponent::setup() {
   }
 
   this->apply_entities_();
-  if (web_base_ != nullptr)
-    register_web_handler(this, web_base_);
   this->start_sources_();
   this->last_persist_ms_ = millis();
 }
@@ -547,6 +545,17 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
 // ---------------------------------------------------------------------------------------------
 void UFHComponent::loop() {
   uint32_t now_ms = millis();
+
+  if (!relays_rewritten_) {
+    // outputs that were set up after us may have reset their pins: write every relay again
+    relays_rewritten_ = true;
+    for (uint8_t i = 0; i < relays_.size(); i++)
+      this->write_relay_(i, relay_state_[i]);
+  }
+  if (!web_registered_ && web_base_ != nullptr && network::is_connected()) {
+    web_registered_ = true;
+    register_web_handler(this, web_base_);
+  }
 
   // apply wizard config (from the HTTP task)
   std::string cfg;

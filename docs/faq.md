@@ -1,16 +1,11 @@
 # FAQ
 
-**Does it need Home Assistant to keep heating?**
-No. Zone states are kept on the device and survive restarts and power cuts; the pump logic runs on the device. Thermostat decisions are in Home Assistant unless you add the [on-device thermostats](configuration.md#thermostats-on-the-device).
+**Does it need Home Assistant?** No. Thermostats, schedules, pump and heat demand run on the device.
 
-**Wi-Fi?**
-No, Ethernet only (more reliable in an electrical cabinet). The prebuilt firmware does not enable Wi-Fi.
+**Wi-Fi?** No, Ethernet (Wi-Fi is not enabled).
 
-**Can I use my own temperature probes?**
-Yes, DS18B20 on GPIO15, see [Configuration](configuration.md#thermostats-on-the-device).
+**My sensors?** Shelly H&T (Wi-Fi actions), Bluetooth BTHome, MQTT, Home Assistant or DS18B20 — chosen per zone.
 
-**How many zones?**
-Up to 14 on one MCP23017 / 16-relay board (plus pump and heat demand).
+**How many zones?** Up to 13 on the ESP pins, 16 with an MCP23017 (minus the relays used for pump / heat demand).
 
-**Is it free?**
-For personal and non-commercial use, yes ([licence](licence.md)).
+**Is it free?** For personal and non-commercial use ([licence](licence.md)).
