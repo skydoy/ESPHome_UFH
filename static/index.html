@@ -81,6 +81,15 @@
     .support .kofi { background:#FF5E5B; color:#fff; }
     .support .bmc { background:#FFDD00; color:#0b1b3f; }
     html[data-theme=dark] .support a { box-shadow:0 1px 4px rgba(0,0,0,.5); }
+  /* step-by-step: one card at a time */
+  .wiz-steps{display:flex;gap:6px;justify-content:center;margin:0 0 14px}
+  .wiz-steps button{width:34px;height:34px;border-radius:50%;border:2px solid #c9d6e6;background:#fff;color:#55657a;font-weight:700;cursor:pointer}
+  .wiz-steps button.on{background:linear-gradient(135deg,#0FE3FA,#1784F7);border-color:transparent;color:#fff}
+  .wiz-steps button.done{border-color:#1784F7;color:#1784F7}
+  .wiz-nav{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+  .wiz-nav button{padding:10px 18px;border-radius:999px;border:1px solid #c9d6e6;background:#fff;font:inherit;font-weight:700;cursor:pointer}
+  .wiz-nav button.go{background:linear-gradient(135deg,#0FE3FA,#1784F7);color:#fff;border:0}
+  .wiz-hide{display:none !important}
   </style>
 </head>
 <body>
@@ -116,6 +125,7 @@
     <span class="en"><b>This browser can't install.</b> Open this page in <b>Chrome</b> or <b>Edge</b> on a computer.</span>
   </div>
 
+  <nav class="wiz-steps" id="wiz-steps"></nav>
   <section class="card">
     <h2><span class="num">1</span><span class="pt">A placa</span><span class="en">The board</span></h2>
     <form id="board-form" class="boards">
@@ -253,6 +263,40 @@
   let saved = null; try { saved = localStorage.getItem('lang'); } catch (e) {}
   selectBoard();
   setLang(saved || ((navigator.language || 'en').toLowerCase().startsWith('pt') ? 'pt' : 'en'));
+// Step-by-step installer: one card at a time, "Next" / "Back".
+(function () {
+  const cards = Array.from(document.querySelectorAll('section.card'));
+  const bar = document.getElementById('wiz-steps');
+  let cur = 0;
+  cards.forEach((c, i) => {
+    const nav = document.createElement('div');
+    nav.className = 'wiz-nav';
+    const back = i > 0 ? '<button type="button" data-w="back"><span class="pt">← Anterior</span><span class="en">← Back</span></button>' : '<span></span>';
+    const next = i < cards.length - 1
+      ? '<button type="button" class="go" data-w="next">' + (i === cards.length - 2
+          ? '<span class="pt">Já instalei →</span><span class="en">Installed →</span>'
+          : '<span class="pt">Seguinte →</span><span class="en">Next →</span>') + '</button>'
+      : '<button type="button" data-w="first"><span class="pt">↺ Voltar ao início</span><span class="en">↺ Start over</span></button>';
+    nav.innerHTML = back + next;
+    c.appendChild(nav);
+  });
+  function show(i) {
+    cur = Math.max(0, Math.min(cards.length - 1, i));
+    cards.forEach((c, k) => c.classList.toggle('wiz-hide', k !== cur));
+    bar.innerHTML = cards.map((c, k) => '<button type="button" data-s="' + k + '" class="' + (k === cur ? 'on' : (k < cur ? 'done' : '')) + '">' +
+      (k < cards.length - 1 ? k + 1 : '✓') + '</button>').join('');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-w],[data-s]');
+    if (!t) return;
+    if (t.dataset.s != null) return show(+t.dataset.s);
+    if (t.dataset.w === 'next') show(cur + 1);
+    if (t.dataset.w === 'back') show(cur - 1);
+    if (t.dataset.w === 'first') show(0);
+  });
+  show(0);
+})();
 </script>
 </body>
 </html>
