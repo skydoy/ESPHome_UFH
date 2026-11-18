@@ -1,0 +1,4 @@
+# Entities for zones 1-15 (one per relay of the board).
+packages:
+  zones_1_14: !include zones-14.yaml
+  zone15: !include { file: zone.yaml, vars: { zone: 15 } }

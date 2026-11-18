@@ -1,4 +1,4 @@
-# Zones 1-5 (relays 1-5). Set the substitution zone_count to 1..14.
+# Entities for zones 1-5 (one per relay of the board).
 packages:
   zones_1_4: !include zones-4.yaml
   zone5: !include { file: zone.yaml, vars: { zone: 5 } }

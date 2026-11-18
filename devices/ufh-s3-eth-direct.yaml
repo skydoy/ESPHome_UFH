@@ -1,0 +1,43 @@
+# Device: ESPHome UFH on a Waveshare ESP32-S3-ETH (Ethernet + PoE), relays wired straight to the ESP32 GPIOs (up to 13; e.g. a Denkovi relay board).
+#
+# BASE configuration: this is the file the ESPHome Device Builder adopts (dashboard_import
+# below), so an adopted device keeps its own config (API key, name, extras) and is updated with
+# "Install". "Update Available" / "Latest Version" report new releases (core/update-check.yaml).
+# The web-installer firmware is built from ufh-s3-eth-direct.factory.yaml (adds OTA from GitHub Pages).
+#
+# Everything about the installation (zones, names, relays, sensors, schedules, options) is set in
+# the setup wizard on the device web page, http://<device-ip>/ . Nothing to edit here.
+substitutions:
+  name: esphome-ufh
+  friendly_name: ESPHome UFH
+  project_version: "0.2.0"
+  firmware_source: "self-built"
+  timezone: Europe/Lisbon
+  update_manifest_url: https://skydoy.github.io/ESPHome_UFH/firmware/s3-eth-direct/manifest.json
+  # Where the "ufh" component comes from (CI builds use the local copy).
+  ufh_components: github://skydoy/ESPHome_UFH@stable
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: skydoy.esphome-ufh
+    version: ${project_version}
+
+dashboard_import:
+  package_import_url: github://skydoy/ESPHome_UFH/devices/ufh-s3-eth-direct.yaml@stable
+  import_full_config: false
+
+external_components:
+  - source: ${ufh_components}
+    components: [ufh]
+
+packages:
+  board: !include ../core/boards/waveshare-esp32-s3-eth.yaml
+  relays: !include ../core/relays/direct-13.yaml   # outputs + ufh: + zone entities
+  controller: !include ../ufh/controller.yaml
+  provisioning: !include ../core/provisioning.yaml
+  diagnostics: !include ../core/diagnostics.yaml
+  web_server: !include ../core/web-server.yaml
+  update_check: !include ../core/update-check.yaml

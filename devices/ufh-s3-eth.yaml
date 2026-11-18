@@ -1,30 +1,21 @@
-# Device: ESPHome UFH on a Waveshare ESP32-S3-ETH (Ethernet + PoE) with an MCP23017 and a
-# 16-channel relay board: up to 14 underfloor heating zones, the circulation pump and a heat
-# demand relay for the heat pump / boiler. Replaces 16-output controllers such as the
-# Denkovi DAEnetIP4.
+# Device: ESPHome UFH on a Waveshare ESP32-S3-ETH (Ethernet + PoE), MCP23017 + 16-channel relay board.
 #
 # BASE configuration: this is the file the ESPHome Device Builder adopts (dashboard_import
 # below), so an adopted device keeps its own config (API key, name, extras) and is updated with
-# "Install". It has no "Firmware Update" entity on purpose; "Update Available" / "Latest
-# Version" report new releases (core/update-check.yaml).
-# The firmware in the web installer is built from ufh-s3-eth.factory.yaml, which includes this
-# file and adds core/auto-update.yaml (update entity + OTA from GitHub Pages).
+# "Install". "Update Available" / "Latest Version" report new releases (core/update-check.yaml).
+# The web-installer firmware is built from ufh-s3-eth.factory.yaml (adds OTA from GitHub Pages).
 #
-# A device config only composes packages: board + UFH logic + zones + core services.
+# Everything about the installation (zones, names, relays, sensors, schedules, options) is set in
+# the setup wizard on the device web page, http://<device-ip>/ . Nothing to edit here.
 substitutions:
   name: esphome-ufh
   friendly_name: ESPHome UFH
-  project_version: "0.1.0"
-  # Build source shown in "Firmware Version": CI sets "release" (tags) or "<branch> @<commit>".
+  project_version: "0.2.0"
   firmware_source: "self-built"
-  # How many zones (1-14). Zone N is on relay N.
-  zone_count: "11"
-  # Relay numbers (1-16) of the circulation pump and of the heat demand contact. Must come
-  # after the last zone. Default: zones 1-11, pump 12, heat demand 13 (14-16 free).
-  pump_relay: "12"
-  heat_relay: "13"
-  # Release manifest on GitHub Pages ("Latest Version" / "Update Available").
+  timezone: Europe/Lisbon
   update_manifest_url: https://skydoy.github.io/ESPHome_UFH/firmware/s3-eth/manifest.json
+  # Where the "ufh" component comes from (CI builds use the local copy).
+  ufh_components: github://skydoy/ESPHome_UFH@stable
 
 esphome:
   name: ${name}
@@ -34,21 +25,19 @@ esphome:
     name: skydoy.esphome-ufh
     version: ${project_version}
 
-# Lets the ESPHome Device Builder "adopt" a device flashed from the web installer. The adopted
-# YAML imports this file from the "stable" branch, which CI moves to every release tag, so
-# pressing "Install" builds the latest release with no YAML edits.
 dashboard_import:
   package_import_url: github://skydoy/ESPHome_UFH/devices/ufh-s3-eth.yaml@stable
   import_full_config: false
 
+external_components:
+  - source: ${ufh_components}
+    components: [ufh]
+
 packages:
-  # Hardware (ESP32-S3, W5500 Ethernet, MCP23017 relay expander, status LED)
   board: !include ../core/boards/waveshare-esp32-s3-eth.yaml
-  # UFH logic: pump (Auto / On / Off with delays), heat demand, All Zones Off, actions
+  relays: !include ../core/relays/mcp23017-16.yaml   # outputs + ufh: + zone entities
   controller: !include ../ufh/controller.yaml
-  zones: !include ../ufh/zones-${zone_count}.yaml  # 1 to 14 zones
-  # Board-agnostic services
   provisioning: !include ../core/provisioning.yaml
   diagnostics: !include ../core/diagnostics.yaml
   web_server: !include ../core/web-server.yaml
-  update_check: !include ../core/update-check.yaml   # reports new releases, never installs
+  update_check: !include ../core/update-check.yaml

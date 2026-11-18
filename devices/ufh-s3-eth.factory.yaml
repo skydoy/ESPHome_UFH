@@ -1,12 +1,7 @@
-# FACTORY firmware: ESPHome UFH on a Waveshare ESP32-S3-ETH.
-#
-# Built by GitHub Actions and published to the ESP Web Tools installer at
-# https://skydoy.github.io/ESPHome_UFH/ . It is the base config (ufh-s3-eth.yaml) plus a
-# "Firmware Update" entity that installs new releases from GitHub Pages over the air.
-#
-# Do not adopt or include this file in your own config: the update entity would replace your
-# config with the generic firmware (and drop your API encryption key). Adopting a device in the
-# ESPHome Device Builder imports the base file instead (see dashboard_import there).
+# FACTORY firmware: ESPHome UFH, Waveshare ESP32-S3-ETH + MCP23017 (16 relays).
+# Built by GitHub Actions for the web installer: the base config plus a "Firmware Update" entity
+# that installs new releases from GitHub Pages. Do not adopt or include this file in your own
+# config (adopting imports the base file, see dashboard_import there).
 packages:
   device: !include ufh-s3-eth.yaml
   auto_update: !include ../core/auto-update.yaml

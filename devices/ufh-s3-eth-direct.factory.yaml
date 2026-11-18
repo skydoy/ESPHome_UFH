@@ -1,0 +1,7 @@
+# FACTORY firmware: ESPHome UFH, Waveshare ESP32-S3-ETH, relays on the GPIOs (13 relays).
+# Built by GitHub Actions for the web installer: the base config plus a "Firmware Update" entity
+# that installs new releases from GitHub Pages. Do not adopt or include this file in your own
+# config (adopting imports the base file, see dashboard_import there).
+packages:
+  device: !include ufh-s3-eth-direct.yaml
+  auto_update: !include ../core/auto-update.yaml
