@@ -1,33 +1,9 @@
-# Board: Waveshare ESP32-S3-ETH (ESP32-S3R8, 16 MB flash, 8 MB octal PSRAM) with the
-# optional PoE module, W5500 Ethernet over SPI, plus an MCP23017 16-channel I/O expander
-# on I2C that drives a 16-channel relay board (zones, pump, heat demand).
+# Board: Waveshare ESP32-S3-ETH (ESP32-S3R8, 16 MB flash, 8 MB octal PSRAM), W5500 Ethernet,
+# optional PoE Module (B) on top. The relays are added by one of the packages in core/relays/.
 #
-# Pin map from the Waveshare ESP32-S3-ETH schematic:
-#
-#   GPIO : function                                   notes
-#   9    : W5500 RST                                  on-board, fixed
-#   10   : W5500 INT                                  on-board, fixed
-#   11   : W5500 MOSI                                 on-board, fixed
-#   12   : W5500 MISO                                 on-board, fixed
-#   13   : W5500 SCLK                                 on-board, fixed
-#   14   : W5500 CS                                   on-board, fixed
-#   16   : I2C SDA  -> MCP23017 (relay board)         header, free pin
-#   17   : I2C SCL  -> MCP23017                       header, free pin
-#   15   : 1-Wire (reserved for DS18B20 probes)        header, free (camera D6 if fitted)
-#   21   : on-board WS2812 RGB LED (status)            on-board
-#   4-7  : TF card (not used)       33-37: octal PSRAM (do not use)
-#   19/20: USB D-/D+ (do not use)   1,2,3,38-48: camera / strapping / JTAG (not used)
-#
-# MCP23017 channel N-1 drives relay N (relay 1 = channel 0 = GPA0 ... relay 16 = GPB7).
-# Most opto-isolated relay boards switch ON with a LOW input: relay_inverted "true".
-# For a board that switches ON with HIGH, set relay_inverted: "false" in your config.
+# Fixed on the board:  GPIO9-14 W5500 (RST, INT, MOSI, MISO, SCLK, CS) · GPIO21 RGB LED ·
+# GPIO4-7 TF card · GPIO33-37 octal PSRAM · GPIO19/20 USB · GPIO0/3/45/46 strapping.
 substitutions:
-  board_label: "Waveshare ESP32-S3-ETH"
-  i2c_sda: GPIO16
-  i2c_scl: GPIO17
-  onewire_pin: GPIO15
-  mcp23017_address: "0x20"
-  relay_inverted: "true"
   http_verify_ssl: "true"
 
 esp32:
@@ -41,8 +17,10 @@ psram:
   mode: octal
   speed: 80MHz
 
-# W5500 Ethernet (SPI). With the PoE module fitted, one network cable powers the board.
-# The relay board and the thermal actuators need their OWN supply (PoE 802.3af is ~13 W).
+# Logs go to the USB-C port (USB Serial/JTAG), so GPIO43/44 (UART0) are free for I/O.
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
 ethernet:
   type: W5500
   clk_pin: GPIO13
@@ -52,19 +30,8 @@ ethernet:
   interrupt_pin: GPIO10
   reset_pin: GPIO9
 
-i2c:
-  id: i2c_bus
-  sda: ${i2c_sda}
-  scl: ${i2c_scl}
-  frequency: 100kHz
-  scan: true
-
-mcp23017:
-  - id: relays
-    address: ${mcp23017_address}
-
-# On-board RGB LED: green = Home Assistant connected, blue = network up without Home
-# Assistant, red = no network. "Status LED" (config) turns it off for good.
+# On-board RGB LED: green = Home Assistant connected, blue = network without Home Assistant,
+# red = no network. "Status LED" (config) turns it off.
 light:
   - platform: esp32_rmt_led_strip
     id: status_rgb

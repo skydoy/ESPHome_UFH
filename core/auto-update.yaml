@@ -64,10 +64,6 @@ switch:
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
 
-time:
-  - platform: sntp
-    id: sntp_time
-
 globals:
   - id: auto_update_minute       # 0-59, picked at random on the first tick; 255 = not yet
     type: uint8_t

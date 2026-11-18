@@ -1,291 +1,167 @@
-# Underfloor heating controller logic (board agnostic).
-#
-# Zones are relays (ufh/zone.yaml). This package adds what sits around them:
-#   - the circulation PUMP (relay ${pump_relay}): in Auto it starts when at least one zone is on,
-#     after "Pump Start Delay" (thermal actuators take 2-4 min to open, so the pump does not
-#     push against closed loops), and stops "Pump Stop Delay" after the last zone closes;
-#   - HEAT DEMAND: on while any zone is on. Home Assistant can use it today to ask the heat
-#     pump / boiler for heat. Later the device can do it itself on relay ${heat_relay}
-#     ("Heat Pump Control", off by default);
-#   - All Zones Off, Active Zones, and actions for Home Assistant automations.
-#
-# Needs from the board package: an MCP23017 with id "relays" and the substitution relay_inverted.
-# Needs from the device file: substitutions pump_relay and heat_relay (relay numbers 1-16).
+# UFH controller: global entities, clock, Bluetooth / MQTT listeners and Home Assistant actions.
+# The heating logic is the C++ component in components/ufh (configured by the relay package of
+# the board, see core/relays/). Everything else (zones, names, sensors, schedules, options) is
+# set in the setup wizard on the device web page.
+substitutions:
+  timezone: Europe/Lisbon
 
-globals:
-  # Bit (zone-1) is set while that zone's relay is on.
-  - id: zones_on
-    type: uint32_t
-    initial_value: "0"
-  # Zone N's switch is zone_switches[N-1] (filled at boot by ufh/zone.yaml), nullptr if absent.
-  - id: zone_switches
-    type: std::array<esphome::switch_::Switch *, 16>
-    initial_value: "std::array<esphome::switch_::Switch *, 16>{}"
-  # Last heat demand handed to the pump logic (to act only when it changes).
-  - id: last_demand
-    type: int
-    initial_value: "-1"
+# Clock for schedules: SNTP (works without Home Assistant). Home Assistant also syncs the time
+# and the time zone when it is connected.
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: ${timezone}
 
-switch:
-  # The pump relay itself is internal: use "Pump Mode" (Auto / On / Off) to drive it and
-  # "Pump" to see it. That way nothing can leave the pump running by mistake.
-  - platform: gpio
-    id: pump_relay
-    internal: true
-    pin:
-      mcp23xxx: relays
-      number: ${pump_relay | int - 1}
-      mode:
-        output: true
-      inverted: ${relay_inverted}
-    restore_mode: ALWAYS_OFF
-    on_turn_on:
-      - binary_sensor.template.publish: { id: pump_running, state: true }
-      - logger.log: { tag: ufh, format: "Pump: on" }
-    on_turn_off:
-      - binary_sensor.template.publish: { id: pump_running, state: false }
-      - logger.log: { tag: ufh, format: "Pump: off" }
+# Bluetooth: BTHome v2 thermometers (Shelly BLU H&T, Xiaomi with pvvx/ATC firmware...).
+esp32_ble_tracker:
+  id: ble_tracker
+  scan_parameters:
+    active: false
+    continuous: true
 
-  # Heat demand relay for the heat pump / boiler (dry contact, e.g. the Altherma's external
-  # room thermostat input). Driven only when "Heat Pump Control" is on.
-  - platform: gpio
-    id: heat_relay_out
-    internal: true
-    pin:
-      mcp23xxx: relays
-      number: ${heat_relay | int - 1}
-      mode:
-        output: true
-      inverted: ${relay_inverted}
-    restore_mode: ALWAYS_OFF
-    on_turn_on:
-      - binary_sensor.template.publish: { id: heat_relay_state, state: true }
-    on_turn_off:
-      - binary_sensor.template.publish: { id: heat_relay_state, state: false }
-
-  - platform: template
-    id: heat_pump_control
-    name: "Heat Pump Control"
-    icon: mdi:heat-pump-outline
-    entity_category: config
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
-    on_turn_on:
-      - logger.log: { tag: ufh, format: "Heat Pump Control enabled (relay ${heat_relay})" }
-      - script.execute: { id: pump_eval, immediate: true }
-    on_turn_off:
-      - switch.turn_off: heat_relay_out
-      - logger.log: { tag: ufh, format: "Heat Pump Control disabled" }
-    web_server:
-      sorting_group_id: group_settings
+# MQTT: only connects when the wizard sets a broker and a zone (or the solar signal) uses MQTT.
+# No discovery and no state topics: Home Assistant talks to the device through the API.
+mqtt:
+  broker: mqtt.invalid
+  enable_on_boot: false
+  discovery: false
+  topic_prefix: null
+  log_topic: null
+  reboot_timeout: 0s
 
 select:
+  - platform: template
+    id: house_mode
+    name: "House Mode"
+    icon: mdi:home-switch-outline
+    options: ["Home", "Away", "Holiday", "Summer"]
+    update_interval: 2s
+    lambda: |-
+      static const char *const M[] = {"Home", "Away", "Holiday", "Summer"};
+      return std::string(M[id(ufh_ctl).house_mode() & 3]);
+    set_action:
+      - lambda: |-
+          static const char *const M[] = {"Home", "Away", "Holiday", "Summer"};
+          for (uint8_t i = 0; i < 4; i++) if (x == M[i]) id(ufh_ctl).set_house_mode(i);
+    web_server:
+      sorting_group_id: group_house
   - platform: template
     id: pump_mode
     name: "Pump Mode"
     icon: mdi:pump
     options: ["Auto", "On", "Off"]
-    initial_option: "Auto"
-    optimistic: true
-    restore_value: true
-    on_value:
-      - logger.log:
-          tag: ufh
-          format: "Pump Mode: %s"
-          args: [x.c_str()]
-      - script.execute: { id: pump_eval, immediate: true }
+    update_interval: 2s
+    lambda: |-
+      static const char *const M[] = {"Auto", "On", "Off"};
+      uint8_t m = id(ufh_ctl).pump_mode();
+      return std::string(M[m > 2 ? 0 : m]);
+    set_action:
+      - lambda: |-
+          static const char *const M[] = {"Auto", "On", "Off"};
+          for (uint8_t i = 0; i < 3; i++) if (x == M[i]) id(ufh_ctl).set_pump_mode(i);
     web_server:
-      sorting_group_id: group_pump
-
-number:
-  - platform: template
-    id: pump_start_delay
-    name: "Pump Start Delay"
-    icon: mdi:timer-play-outline
-    unit_of_measurement: s
-    min_value: 0
-    max_value: 900
-    step: 10
-    initial_value: 120
-    mode: box
-    optimistic: true
-    restore_value: true
-    entity_category: config
-    web_server:
-      sorting_group_id: group_settings
-  - platform: template
-    id: pump_stop_delay
-    name: "Pump Stop Delay"
-    icon: mdi:timer-stop-outline
-    unit_of_measurement: s
-    min_value: 0
-    max_value: 900
-    step: 10
-    initial_value: 60
-    mode: box
-    optimistic: true
-    restore_value: true
-    entity_category: config
-    web_server:
-      sorting_group_id: group_settings
+      sorting_group_id: group_house
 
 binary_sensor:
   - platform: template
-    id: heat_demand
-    name: "Heat Demand"
-    device_class: heat
-    icon: mdi:fire
-    lambda: return id(zones_on) != 0;
-    web_server:
-      sorting_group_id: group_pump
-  - platform: template
-    id: pump_running
     name: "Pump"
     device_class: running
     icon: mdi:pump
+    lambda: return id(ufh_ctl).pump_on();
     web_server:
-      sorting_group_id: group_pump
+      sorting_group_id: group_house
   - platform: template
-    id: heat_relay_state
-    name: "Heat Pump Relay"
-    device_class: running
-    icon: mdi:heat-pump
-    entity_category: diagnostic
+    name: "Heat Demand"
+    device_class: heat
+    icon: mdi:fire
+    lambda: return id(ufh_ctl).heat_demand();
     web_server:
-      sorting_group_id: group_pump
+      sorting_group_id: group_house
+  - platform: template
+    name: "Problem"
+    device_class: problem
+    lambda: return id(ufh_ctl).problem();
+    web_server:
+      sorting_group_id: group_house
 
-script:
-  # Called by every zone switch. Re-evaluates the pump only when heat demand changes, so a
-  # zone switching while others are already on does not restart the start/stop timers.
-  - id: demand_changed
-    mode: queued
-    max_runs: 32
-    then:
-      - lambda: |-
-          int d = id(zones_on) != 0 ? 1 : 0;
-          if (d == id(last_demand)) return;
-          id(last_demand) = d;
-          ESP_LOGI("ufh", "Heat demand: %s", d ? "yes" : "no");
-          id(pump_eval)->execute(false);
+text_sensor:
+  - platform: template
+    name: "Warnings"
+    icon: mdi:alert-outline
+    update_interval: 10s
+    lambda: |-
+      const std::string &w = id(ufh_ctl).warnings_text();
+      return w.empty() ? std::string("-") : w;
+    web_server:
+      sorting_group_id: group_house
+  - platform: template
+    name: "Active Zones"
+    icon: mdi:heating-coil
+    update_interval: 5s
+    lambda: return id(ufh_ctl).active_zones_text();
+    web_server:
+      sorting_group_id: group_house
 
-  # Pump + heat pump relay. mode: restart, so a new demand change cancels a pending delay.
-  #   immediate = true skips the delays (Pump Mode / Heat Pump Control changed by hand).
-  - id: pump_eval
-    mode: restart
-    parameters:
-      immediate: bool
-    then:
-      - lambda: |-
-          const std::string m = id(pump_mode).current_option();
-          bool demand = id(zones_on) != 0;
-          // Manual pump modes: the pump follows the mode, the heat relay follows the demand.
-          if (m != "Auto") {
-            if (m == "On") id(pump_relay).turn_on(); else id(pump_relay).turn_off();
-            if (demand && id(heat_pump_control).state) id(heat_relay_out).turn_on();
-            else id(heat_relay_out).turn_off();
-          }
-      - if:
-          condition:
-            lambda: return std::string(id(pump_mode).current_option()) == "Auto";
-          then:
-            - if:
-                condition:
-                  lambda: return id(zones_on) != 0;
-                then:
-                  - if:
-                      condition:
-                        lambda: return !immediate && !id(pump_relay).state;
-                      then:
-                        - logger.log:
-                            tag: ufh
-                            format: "Pump starts in %.0f s (actuators opening)"
-                            args: [id(pump_start_delay).state]
-                        - delay: !lambda "return (uint32_t) (id(pump_start_delay).state * 1000);"
-                  - switch.turn_on: pump_relay
-                  - if:
-                      condition:
-                        switch.is_on: heat_pump_control
-                      then:
-                        - switch.turn_on: heat_relay_out
-                else:
-                  - switch.turn_off: heat_relay_out
-                  - if:
-                      condition:
-                        lambda: return !immediate && id(pump_relay).state;
-                      then:
-                        - logger.log:
-                            tag: ufh
-                            format: "Pump stops in %.0f s"
-                            args: [id(pump_stop_delay).state]
-                        - delay: !lambda "return (uint32_t) (id(pump_stop_delay).state * 1000);"
-                  - switch.turn_off: pump_relay
-
-  - id: all_zones_off
-    mode: single
-    then:
-      - lambda: |-
-          for (auto *sw : id(zone_switches))
-            if (sw != nullptr && sw->state) sw->turn_off();
+sensor:
+  - platform: template
+    name: "Pump Runtime Today"
+    unit_of_measurement: h
+    device_class: duration
+    accuracy_decimals: 2
+    icon: mdi:timer-outline
+    update_interval: 60s
+    lambda: return id(ufh_ctl).pump_today_h();
+    web_server:
+      sorting_group_id: group_stats
+  - platform: template
+    name: "Pump Runtime Total"
+    unit_of_measurement: h
+    device_class: duration
+    state_class: total_increasing
+    accuracy_decimals: 1
+    icon: mdi:timer-sand
+    entity_category: diagnostic
+    update_interval: 300s
+    lambda: return id(ufh_ctl).pump_total_h();
+    web_server:
+      sorting_group_id: group_stats
 
 button:
   - platform: template
     name: "All Zones Off"
     icon: mdi:radiator-off
     on_press:
-      - script.execute: all_zones_off
+      - lambda: id(ufh_ctl).all_zones_off();
     web_server:
-      sorting_group_id: group_zones
+      sorting_group_id: group_house
 
-text_sensor:
-  - platform: template
-    id: active_zones
-    name: "Active Zones"
-    icon: mdi:heating-coil
-    update_interval: 2s
-    lambda: |-
-      std::string s;
-      for (int z = 1; z <= 16; z++) {
-        if (id(zones_on) & (1u << (z - 1))) {
-          if (!s.empty()) s += ", ";
-          s += to_string(z);
-        }
-      }
-      return s.empty() ? std::string("None") : s;
-    filters:
-      - lambda: |-
-          static std::string last;
-          if (x == last) return {};
-          last = x;
-          return x;
-    web_server:
-      sorting_group_id: group_zones
-
-esphome:
-  on_boot:
-    # After the zone switches restored their state: set the pump (no start delay after a
-    # restart if zones were already on, the actuators were open already).
-    - priority: -100
-      then:
-        - lambda: "id(last_demand) = id(zones_on) != 0 ? 1 : 0;"
-        - script.execute: { id: pump_eval, immediate: true }
-
-# Actions for Home Assistant automations and scripts (Developer tools -> Actions):
-#   esphome.<device>_set_zone       {zone: 1, on: true}
-#   esphome.<device>_all_zones_off
+# Actions for Home Assistant (Developer tools -> Actions), e.g. esphome.<device>_set_zone_temperature
 api:
   actions:
-    - action: set_zone
-      variables:
-        zone: int
-        "on": bool
+    # Temperature from any Home Assistant sensor (source "Home Assistant" in the wizard;
+    # blueprint: blueprints/automation/esphome_ufh_temperature_from_ha.yaml)
+    - action: set_zone_temperature
+      variables: { zone: int, temperature: float }
       then:
-        - lambda: |-
-            if (zone < 1 || zone > 16 || id(zone_switches)[zone - 1] == nullptr) {
-              ESP_LOGW("ufh", "set_zone: there is no Zone %d", zone);
-              return;
-            }
-            auto *sw = id(zone_switches)[zone - 1];
-            if (on) sw->turn_on(); else sw->turn_off();
+        - lambda: id(ufh_ctl).ha_set_zone_temperature(zone, temperature);
+    - action: set_floor_temperature
+      variables: { zone: int, temperature: float }
+      then:
+        - lambda: id(ufh_ctl).ha_set_floor_temperature(zone, temperature);
+    # Solar surplus (option "Solar surplus"): true while there is surplus
+    - action: set_pv_surplus
+      variables: { surplus: bool }
+      then:
+        - lambda: id(ufh_ctl).ha_set_pv_surplus(surplus);
+    # mode: 0 = off, 1 = auto (schedule), 2 = heat (fixed target)
+    - action: set_zone_mode
+      variables: { zone: int, mode: int }
+      then:
+        - lambda: id(ufh_ctl).ha_set_zone_mode(zone, mode);
+    - action: set_zone_target
+      variables: { zone: int, temperature: float }
+      then:
+        - lambda: id(ufh_ctl).ha_set_zone_target(zone, temperature);
     - action: all_zones_off
       then:
-        - script.execute: all_zones_off
+        - lambda: id(ufh_ctl).all_zones_off();
