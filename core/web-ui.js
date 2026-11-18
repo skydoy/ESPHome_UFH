@@ -273,7 +273,10 @@
     '@keyframes ufhspin{to{transform:rotate(360deg)}}',
     '.ufh .spin{animation:ufhspin 1.2s linear infinite;transform-box:fill-box;transform-origin:center}',
     '@keyframes ufhflow{to{stroke-dashoffset:-24}}',
-    '.ufh .flow{stroke-dasharray:8 4;animation:ufhflow .8s linear infinite}'
+    '.ufh .flow{stroke-dasharray:8 4;animation:ufhflow .8s linear infinite}',
+    '.ufh .lbl{fill:#555}',
+    '.ufh .warn{color:#b55a00}',
+    '@media (prefers-color-scheme: dark){.ufh .lbl{fill:#c3ccd6}.ufh .chip{background:rgba(79,179,255,.18)}.ufh .warn{background:rgba(255,150,40,.18);color:#ffb35c}.ufh button{background:#2a2d33;color:#eee;border-color:#444}}'
   ].join('\n');
   var MCSS = [
     '.ufhm{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 8px}',
@@ -319,7 +322,7 @@
     var hot = st.any;
     o.push('<rect x="' + mx0 + '" y="20" width="' + (mx1 - mx0) + '" height="10" rx="5" fill="' + (hot ? '#ff7a1a' : '#9aa3ad') + '"/>');
     o.push('<rect x="' + mx0 + '" y="36" width="' + (mx1 - mx0) + '" height="10" rx="5" fill="' + (hot ? '#1784F7' : '#b9c1ca') + '"/>');
-    o.push('<text x="' + (mx1 - 4) + '" y="16" text-anchor="end" font-size="11" fill="#888">' + T('ida', 'flow') + ' / ' + T('retorno', 'return') + '</text>');
+    o.push('<text x="' + (mx1 - 4) + '" y="16" text-anchor="end" font-size="11" class="lbl">' + T('ida', 'flow') + ' / ' + T('retorno', 'return') + '</text>');
     // pump + heat pump on the left
     var pumpOn = st.pump;
     o.push('<line x1="40" y1="25" x2="' + mx0 + '" y2="25" stroke="' + (pumpOn ? '#ff7a1a' : '#9aa3ad') + '" stroke-width="6"' + (pumpOn ? ' class="flow"' : '') + '/>');
@@ -327,14 +330,14 @@
     o.push('<g transform="translate(95,33)"><circle r="17" fill="' + (pumpOn ? '#e8f7ff' : '#f1f3f5') + '" stroke="' + (pumpOn ? '#1784F7' : '#9aa3ad') + '" stroke-width="3"/>' +
       '<g' + (pumpOn ? ' class="spin"' : '') + '><path d="M0-11 L4-2 L-4-2Z M11 0 L2 4 L2-4Z M0 11 L-4 2 L4 2Z M-11 0 L-2-4 L-2 4Z" fill="' + (pumpOn ? '#1784F7' : '#9aa3ad') + '"/></g></g>');
     var pumpTxt = pumpOn ? T('Bomba a trabalhar', 'Pump running') : (st.pump_in != null ? T('Bomba arranca em ', 'Pump starts in ') + st.pump_in + ' s' : T('Bomba parada', 'Pump stopped'));
-    o.push('<text x="95" y="68" text-anchor="middle" font-size="11" fill="#555">' + esc(pumpTxt) + '</text>');
+    o.push('<text x="95" y="68" text-anchor="middle" font-size="11" class="lbl">' + esc(pumpTxt) + '</text>');
     var hasDemand = (st.roles || []).some(function (r) { return r === 2 || r === 3; });
     var hp = st.demand;
     o.push('<g transform="translate(6,6)"><rect width="30" height="52" rx="6" fill="' + (hp ? '#fff1e6' : '#f1f3f5') + '" stroke="' + (hp ? '#ff7a1a' : '#9aa3ad') + '" stroke-width="2"/>' +
       (hp ? '<path d="M15 14c4 5 7 8 7 13a7 7 0 0 1-14 0c0-3 2-5 3-7 0 3 1 4 3 4-1-4 0-7 1-10z" fill="#ff7a1a"/>' : '<circle cx="15" cy="26" r="7" fill="none" stroke="#9aa3ad" stroke-width="2"/>') +
       '<text x="15" y="47" text-anchor="middle" font-size="8" fill="#666">' + (hasDemand ? T('BC', 'HP') : '–') + '</text></g>');
     if (st.altherma && (st.altherma.flow != null || st.altherma.ret != null))
-      o.push('<text x="95" y="84" text-anchor="middle" font-size="11" fill="#555">' + fmt(st.altherma.flow) + '° / ' + fmt(st.altherma.ret) + '°</text>');
+      o.push('<text x="95" y="84" text-anchor="middle" font-size="11" class="lbl">' + fmt(st.altherma.flow) + '° / ' + fmt(st.altherma.ret) + '°</text>');
     // zones: pipes first (behind), then the boxes
     var pos = zs.map(function (z, i) { var c = i % cols, r = Math.floor(i / cols); return [left + c * (zw + gap), 64 + r * (zh + 34)]; });
     zs.forEach(function (z, i) {
