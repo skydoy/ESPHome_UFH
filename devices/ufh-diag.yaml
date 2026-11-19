@@ -1,0 +1,71 @@
+# DIAGNOSTIC firmware (not for normal use): only the Waveshare ESP32-S3-ETH board, Ethernet,
+# logs and OTA. No UFH component, no Bluetooth, no MQTT, no relays. Used to tell an Ethernet /
+# board problem apart from a problem in the UFH firmware.
+esphome:
+  name: ufh-diag
+  name_add_mac_suffix: true
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+  level: VERBOSE
+  hardware_uart: USB_SERIAL_JTAG
+  logs:
+    component: DEBUG
+
+ethernet:
+  type: W5500
+  clk_pin: GPIO13
+  mosi_pin: GPIO11
+  miso_pin: GPIO12
+  cs_pin: GPIO14
+  interrupt_pin: GPIO10
+  reset_pin: GPIO9
+  clock_speed: 20MHz
+
+api:
+ota:
+  - platform: esphome
+web_server:
+  port: 80
+debug:
+  update_interval: 30s
+
+text_sensor:
+  - platform: debug
+    reset_reason:
+      name: "Reset Reason"
+  - platform: ethernet_info
+    ip_address:
+      name: "IP Address"
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: status_rgb
+    pin: GPIO21
+    num_leds: 1
+    chipset: WS2812
+    rgb_order: GRB
+
+interval:
+  - interval: 2s
+    then:
+      - lambda: |-
+          // purple = diagnostic firmware running; green = network up
+          static bool shown = false;
+          bool up = network::is_connected();
+          auto call = id(status_rgb).make_call();
+          call.set_state(true);
+          call.set_brightness(0.3);
+          if (up) call.set_rgb(0, 1, 0); else call.set_rgb(0.6, 0, 1);
+          call.perform();
+          if (!shown && up) { shown = true; ESP_LOGI("diag", "Network up"); }
