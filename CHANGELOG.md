@@ -4,6 +4,8 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.3.0] - 2026-11-20
 ### Changed
 - **New board: M5Stack Unit PoE-P4** (ESP32-P4, IP101 Ethernet, PoE, in its own case) replaces
   the Waveshare ESP32-S3-ETH. Installer firmwares are now `p4-poe-direct` (13 relays on the
@@ -53,5 +55,7 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.0
+[0.2.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.2.0
 [0.1.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.1.0
