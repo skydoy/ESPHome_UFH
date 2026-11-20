@@ -27,7 +27,7 @@
 
 ## Compatibility
 
-**Waveshare ESP32-S3-ETH** (W5500 Ethernet, optional PoE) with:
+**M5Stack Unit PoE-P4** (Ethernet + PoE, in its own case) with:
 - **relays straight on the ESP pins** — up to 13 (3.3 V input boards, e.g. the Denkovi relay board of a DAEnetIP4), or
 - **MCP23017** + any 16-channel relay board — up to 16.
 
@@ -42,7 +42,7 @@ Details: [what you need](docs/getting-started.md) · [wiring](docs/wiring.md)
 ## What you get
 
 - **Thermostats on the device**: Comfort / Eco schedules, works without Home Assistant
-- Sensors per zone: **Shelly H&T** (Wi-Fi), **Bluetooth BTHome**, **MQTT**, **Home Assistant** or **DS18B20**
+- Sensors per zone: **Shelly H&T** (Wi-Fi), **MQTT**, **Home Assistant** or **DS18B20**
 - **Pump** with delays and **heat demand** for the heat pump / boiler
 - **Live diagram** on the web page, setup wizard, schedule editor, zone balance
 - Optional: open window, optimum start, solar surplus, two-rate tariff, anti-seize, floor limit, ESPHome_Altherma link

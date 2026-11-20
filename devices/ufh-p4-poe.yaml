@@ -1,9 +1,9 @@
-# Device: ESPHome UFH on a Waveshare ESP32-S3-ETH (Ethernet + PoE), MCP23017 + 16-channel relay board.
+# Device: ESPHome UFH on an M5Stack Unit PoE-P4 (Ethernet + PoE), MCP23017 + 16-channel relay board.
 #
 # BASE configuration: this is the file the ESPHome Device Builder adopts (dashboard_import
 # below), so an adopted device keeps its own config (API key, name, extras) and is updated with
 # "Install". "Update Available" / "Latest Version" report new releases (core/update-check.yaml).
-# The web-installer firmware is built from ufh-s3-eth.factory.yaml (adds OTA from GitHub Pages).
+# The web-installer firmware is built from ufh-p4-poe.factory.yaml (adds OTA from GitHub Pages).
 #
 # Everything about the installation (zones, names, relays, sensors, schedules, options) is set in
 # the setup wizard on the device web page, http://<device-ip>/ . Nothing to edit here.
@@ -13,7 +13,7 @@ substitutions:
   project_version: "0.2.0"
   firmware_source: "self-built"
   timezone: Europe/Lisbon
-  update_manifest_url: https://skydoy.github.io/ESPHome_UFH/firmware/s3-eth/manifest.json
+  update_manifest_url: https://skydoy.github.io/ESPHome_UFH/firmware/p4-poe/manifest.json
   # Where the "ufh" component comes from (CI builds use the local copy).
   ufh_components: github://skydoy/ESPHome_UFH@stable
 
@@ -26,7 +26,7 @@ esphome:
     version: ${project_version}
 
 dashboard_import:
-  package_import_url: github://skydoy/ESPHome_UFH/devices/ufh-s3-eth.yaml@stable
+  package_import_url: github://skydoy/ESPHome_UFH/devices/ufh-p4-poe.yaml@stable
   import_full_config: false
 
 external_components:
@@ -34,7 +34,7 @@ external_components:
     components: [ufh]
 
 packages:
-  board: !include ../core/boards/waveshare-esp32-s3-eth.yaml
+  board: !include ../core/boards/m5stack-unit-poe-p4.yaml
   relays: !include ../core/relays/mcp23017-16.yaml   # outputs + ufh: + zone entities
   controller: !include ../ufh/controller.yaml
   provisioning: !include ../core/provisioning.yaml

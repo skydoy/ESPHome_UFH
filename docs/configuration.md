@@ -15,8 +15,7 @@ Open `http://<device-ip>/`. The **Underfloor heating** panel shows the live diag
 | **Shelly H&T (Wi-Fi)** | Shelly app → sensor → *Actions* → new action, event **Temperature changed**, URL `http://<device-ip>/ufh/temp?zone=N&t=${ev.tC}` (the wizard shows it ready to copy). |
 | **Home Assistant sensor** | Import the blueprint `blueprints/automation/esphome_ufh_temperature_from_ha.yaml`, one automation per zone. |
 | **MQTT** | Topic + JSON field (Shelly: `tC`, Zigbee2MQTT: `temperature`; empty for a plain number). Set the broker in *Options*. |
-| **Bluetooth BTHome** | Shelly BLU H&T, Xiaomi with pvvx/ATC firmware (BTHome v2, unencrypted). The wizard lists the devices it hears. |
-| **DS18B20** | Probes on the 1-Wire pin (GPIO44 direct / GPIO15 MCP23017). The wizard lists the probes found. |
+| **DS18B20** | Probes on the 1-Wire pin (GPIO11, SDIO header pin 3). The wizard lists the probes found. |
 
 Battery Shelly H&T only report when the temperature changes: if a room is stable for hours, raise *Sensor stale after* (default 6 h) or power the sensor by USB (it then reports every 5 min). When a sensor goes stale the zone closes and a warning is raised.
 
@@ -42,7 +41,7 @@ Battery Shelly H&T only report when the temperature changes: if a room is stable
 ```yaml
 substitutions:
   timezone: Europe/Lisbon          # schedules use SNTP; Home Assistant also sets it
-  relay1_pin: GPIO1                # direct board: move a relay to another GPIO
+  relay1_pin: GPIO44               # direct board: move a relay to another GPIO
 ethernet:
   manual_ip: { static_ip: 192.168.1.50, gateway: 192.168.1.1, subnet: 255.255.255.0 }
 web_server:

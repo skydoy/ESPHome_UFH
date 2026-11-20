@@ -1,4 +1,4 @@
-# UFH controller: global entities, clock, Bluetooth / MQTT listeners and Home Assistant actions.
+# UFH controller: global entities, clock, MQTT listener and Home Assistant actions.
 # The heating logic is the C++ component in components/ufh (configured by the relay package of
 # the board, see core/relays/). Everything else (zones, names, sensors, schedules, options) is
 # set in the setup wizard on the device web page.
@@ -11,13 +11,6 @@ time:
   - platform: sntp
     id: sntp_time
     timezone: ${timezone}
-
-# Bluetooth: BTHome v2 thermometers (Shelly BLU H&T, Xiaomi with pvvx/ATC firmware...).
-esp32_ble_tracker:
-  id: ble_tracker
-  scan_parameters:
-    active: false
-    continuous: true
 
 # MQTT: only connects when the wizard sets a broker and a zone (or the solar signal) uses MQTT.
 # No discovery and no state topics: Home Assistant talks to the device through the API.

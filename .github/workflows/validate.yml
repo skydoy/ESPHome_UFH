@@ -9,10 +9,10 @@ jobs:
       fail-fast: false
       matrix:
         device:
-          - devices/ufh-s3-eth.yaml
-          - devices/ufh-s3-eth.factory.yaml
-          - devices/ufh-s3-eth-direct.yaml
-          - devices/ufh-s3-eth-direct.factory.yaml
+          - devices/ufh-p4-poe.yaml
+          - devices/ufh-p4-poe.factory.yaml
+          - devices/ufh-p4-poe-direct.yaml
+          - devices/ufh-p4-poe-direct.factory.yaml
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
@@ -46,11 +46,11 @@ jobs:
       - name: Adoption and components follow @stable; no @main in shipped configs
         run: |
           set -e
-          for f in devices/ufh-s3-eth.yaml devices/ufh-s3-eth-direct.yaml; do
+          for f in devices/ufh-p4-poe.yaml devices/ufh-p4-poe-direct.yaml; do
             grep -q "package_import_url: github://skydoy/ESPHome_UFH/$f@stable$" "$f"
             grep -q "ufh_components: github://skydoy/ESPHome_UFH@stable$" "$f"
             v=$(grep -oP '^\s*project_version: "\K[^"]+' "$f"); echo "$f $v"
           done
-          test "$(grep -hoP '^\s*project_version: "\K[^"]+' devices/ufh-s3-eth.yaml)" = \
-               "$(grep -hoP '^\s*project_version: "\K[^"]+' devices/ufh-s3-eth-direct.yaml)"
+          test "$(grep -hoP '^\s*project_version: "\K[^"]+' devices/ufh-p4-poe.yaml)" = \
+               "$(grep -hoP '^\s*project_version: "\K[^"]+' devices/ufh-p4-poe-direct.yaml)"
           if grep -rn "@main" devices core ufh components; then echo "::error::no @main refs"; exit 1; fi

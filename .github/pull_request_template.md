@@ -13,6 +13,6 @@
 <!-- Board, relay board, actuators. Write "not tested on hardware" if so. -->
 
 ## Checklist
-- [ ] `esphome config devices/ufh-s3-eth.yaml` and `devices/ufh-s3-eth.factory.yaml` pass
+- [ ] `esphome config devices/ufh-p4-poe.yaml` and `devices/ufh-p4-poe.factory.yaml` pass
 - [ ] Docs updated in EN and PT (README stays short; details go in `docs/`)
 - [ ] `CHANGELOG.md` updated under **Unreleased**

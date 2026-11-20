@@ -13,7 +13,7 @@ concurrency:
 jobs:
   meta:
     # Decides whether this run is a RELEASE. Automatic: a push to main whose project_version
-    # (devices/ufh-s3-eth.yaml) has no v<version> tag yet is released by this same run (tag,
+    # (devices/ufh-p4-poe.yaml) has no v<version> tag yet is released by this same run (tag,
     # GitHub Release, Pages, stable). Pushing a v* tag by hand still works too.
     runs-on: ubuntu-24.04
     outputs:
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - id: v
         run: |
-          ver=$(grep -oP '^\s*project_version: "\K[^"]+' devices/ufh-s3-eth.yaml)
+          ver=$(grep -oP '^\s*project_version: "\K[^"]+' devices/ufh-p4-poe.yaml)
           rel=false
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             rel=true
@@ -41,21 +41,21 @@ jobs:
   build:
     needs: meta
     # One installer build per board; each board has its own folder (and manifest.json) on
-    # GitHub Pages (firmware/s3-eth/). The installer firmware is built from the
+    # GitHub Pages (firmware/p4-poe/). The installer firmware is built from the
     # *.factory.yaml (base config + "Firmware Update" entity).
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         include:
-          - key: s3-eth
-            base: devices/ufh-s3-eth.yaml
-            factory: devices/ufh-s3-eth.factory.yaml
-            site_dir: firmware/s3-eth
-          - key: s3-eth-direct
-            base: devices/ufh-s3-eth-direct.yaml
-            factory: devices/ufh-s3-eth-direct.factory.yaml
-            site_dir: firmware/s3-eth-direct
+          - key: p4-poe
+            base: devices/ufh-p4-poe.yaml
+            factory: devices/ufh-p4-poe.factory.yaml
+            site_dir: firmware/p4-poe
+          - key: p4-poe-direct
+            base: devices/ufh-p4-poe-direct.yaml
+            factory: devices/ufh-p4-poe-direct.factory.yaml
+            site_dir: firmware/p4-poe-direct
     env:
       BASE_YAML: ${{ matrix.base }}
       DEVICE_YAML: ${{ matrix.factory }}
@@ -105,8 +105,8 @@ jobs:
         run: |
           cp -r static/. site/
           ls -R site
-          test -f site/firmware/s3-eth/manifest.json
-          test -f site/firmware/s3-eth-direct/manifest.json
+          test -f site/firmware/p4-poe/manifest.json
+          test -f site/firmware/p4-poe-direct/manifest.json
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.13"
@@ -171,7 +171,7 @@ jobs:
       - name: Prepare assets
         run: |
           mkdir assets
-          for d in s3-eth s3-eth-direct; do
+          for d in p4-poe p4-poe-direct; do
             for f in $(find "fw/firmware/$d" -name '*.factory.bin' -o -name '*.ota.bin' | sort); do
               b=$(basename "$f"); cp "$f" "assets/esphome-ufh-$d-${TAG}.${b#*.}"
             done
@@ -190,7 +190,7 @@ jobs:
           fi
   stable:
     # Move the "stable" branch to this release tag. Adopted Device Builder configs import
-    # devices/ufh-s3-eth.yaml@stable, so "Install" builds the latest release.
+    # devices/ufh-p4-poe.yaml@stable, so "Install" builds the latest release.
     if: needs.meta.outputs.release == 'true'
     needs: [meta, release]
     runs-on: ubuntu-24.04

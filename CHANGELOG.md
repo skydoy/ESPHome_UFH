@@ -4,6 +4,15 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- **New board: M5Stack Unit PoE-P4** (ESP32-P4, IP101 Ethernet, PoE, in its own case) replaces
+  the Waveshare ESP32-S3-ETH. Installer firmwares are now `p4-poe-direct` (13 relays on the
+  Hat2-Bus / SDIO headers) and `p4-poe` (MCP23017 on the Grove port, 16 relays).
+- Relay pins: Hat2-Bus G44 G43 G21 G42 G20 G41 G19 G40 G39 G23 G22, SDIO G13 G12;
+  1-Wire on G11; MCP23017 on G53 (SDA) / G54 (SCL).
+### Removed
+- Bluetooth BTHome sensors (the ESP32-P4 has no radio). The source is hidden in the wizard on
+  boards without Bluetooth; the code stays for future boards.
 ### Added
 - Wiring diagrams (images) in the docs: relays on the ESP pins, MCP23017, mains side.
 ### Fixed
