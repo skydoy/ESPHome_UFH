@@ -4,7 +4,7 @@
 
 **Wi-Fi?** No, Ethernet (Wi-Fi is not enabled).
 
-**My sensors?** Shelly H&T (Wi-Fi actions), Bluetooth BTHome, MQTT, Home Assistant or DS18B20 — chosen per zone.
+**My sensors?** Shelly H&T (Wi-Fi actions), MQTT, Home Assistant or DS18B20 — chosen per zone.
 
 **How many zones?** Up to 13 on the ESP pins, 16 with an MCP23017 (minus the relays used for pump / heat demand).
 

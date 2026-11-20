@@ -4,9 +4,9 @@
 
 | Peça | Notas |
 |---|---|
-| **Waveshare ESP32-S3-ETH** | ESP32-S3, Ethernet W5500, USB-C. Com o **PoE Module (B)** se o teu switch tiver PoE. |
+| **M5Stack Unit PoE-P4** | ESP32-P4, Ethernet com PoE (802.3at), USB-C, já vem em caixa (64 × 24 × 20 mm). Sem PoE, alimenta-se com 5 V no USB-C. |
 | **Relés** | Ou a tua **placa de relés com entradas de 3,3 V** (por exemplo a da Denkovi do DAEnetIP4) ligada diretamente ao ESP — até 13 relés — ou um **MCP23017** + qualquer placa de 16 relés — até 16 relés. |
-| **Sensores de temperatura** (opcional) | Shelly H&T (Wi-Fi), Shelly BLU H&T / BTHome (Bluetooth), qualquer sensor MQTT ou do Home Assistant, ou sondas DS18B20. Sem sensor, a zona segue só o horário. |
+| **Sensores de temperatura** (opcional) | Shelly H&T (Wi-Fi), qualquer sensor MQTT ou do Home Assistant, ou sondas DS18B20. Sem sensor, a zona segue só o horário. |
 | Home Assistant (opcional) | Não é preciso para aquecer: termóstatos, horários e bomba correm na placa. |
 
 ## Como funciona

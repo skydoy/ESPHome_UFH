@@ -6,7 +6,7 @@
 [⚡ Abrir o instalador web](https://skydoy.github.io/ESPHome_UFH/){ .md-button .md-button--primary }
 </div>
 
-Corre numa **Waveshare ESP32-S3-ETH** (Ethernet + PoE): termóstatos, horários, bomba e pedido de calor na própria placa, com ou sem Home Assistant. Comanda até 13 relés diretamente pelo ESP (por exemplo a placa de relés Denkovi de um DAEnetIP4) ou 16 com um MCP23017. Configura-se num assistente na página web da placa.
+Corre numa **M5Stack Unit PoE-P4** (Ethernet + PoE): termóstatos, horários, bomba e pedido de calor na própria placa, com ou sem Home Assistant. Comanda até 13 relés diretamente pelo ESP (por exemplo a placa de relés Denkovi de um DAEnetIP4) ou 16 com um MCP23017. Configura-se num assistente na página web da placa.
 
 ## Começa aqui
 

@@ -20,5 +20,5 @@ but not for commercial purposes. This note is informational, not legal advice.
 - **ESP Web Tools** (Open Home Foundation), Apache-2.0: the web installer's Install button, loaded from a CDN.
 - **ESPHome web_server v3 front end** (ESPHome), loaded from the ESPHome CDN by the board's web page.
 
-Waveshare, Denkovi and Daikin Altherma are trademarks of their owners. This is an independent
+M5Stack, Denkovi and Daikin Altherma are trademarks of their owners. This is an independent
 community project, not affiliated with or endorsed by any of them.

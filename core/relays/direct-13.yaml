@@ -1,25 +1,27 @@
-# Relays driven DIRECTLY by the ESP32-S3 (no expander): up to 13 relays.
+# Relays driven DIRECTLY by the ESP32-P4 GPIOs (no expander): up to 13 relays.
 # Made for relay boards with 3.3 V logic inputs, e.g. the Denkovi boards that came with the
-# DAEnetIP4 (its outputs were 0 / 3.3 V). Relay N = relayN_pin. Free GPIOs of the
-# Waveshare ESP32-S3-ETH (no camera fitted): 1, 2, 15-18, 38-42, 47, 48. Connect GND too.
+# DAEnetIP4 (its outputs were 0 / 3.3 V). Relay N = relayN_pin. Connect GND too.
+# M5Stack Unit PoE-P4: relays 1-11 on the Hat2-Bus header, 12-13 on the SDIO header.
+#   Hat2-Bus pin:  2=G44 R1 · 4=G43 R2 · 5=G21 R3 · 6=G42 R4 · 7=G20 R5 · 8=G41 R6 ·
+#                  9=G19 R7 · 10=G40 R8 · 12=G39 R9 · 14=G23 R10 · 16=G22 R11 · 1=GND
+#   SDIO pin:      1=G13 R12 · 2=G12 R13 · 3=G11 1-Wire (DS18B20)
 # Whether a relay switches on with HIGH or LOW is chosen in the setup wizard (Denkovi: HIGH).
-# 1-Wire probes (DS18B20): GPIO44 (UART0 RX, free because the logs use USB).
 substitutions:
-  board_label: "Waveshare ESP32-S3-ETH · direct GPIO (13 relays)"
-  relay1_pin: GPIO1
-  relay2_pin: GPIO2
-  relay3_pin: GPIO15
-  relay4_pin: GPIO16
-  relay5_pin: GPIO17
-  relay6_pin: GPIO18
-  relay7_pin: GPIO38
-  relay8_pin: GPIO39
-  relay9_pin: GPIO40
-  relay10_pin: GPIO41
-  relay11_pin: GPIO42
-  relay12_pin: GPIO47
-  relay13_pin: GPIO48
-  onewire_pin: GPIO44
+  board_label: "M5Stack Unit PoE-P4 · direct GPIO (13 relays)"
+  relay1_pin: GPIO44
+  relay2_pin: GPIO43
+  relay3_pin: GPIO21
+  relay4_pin: GPIO42
+  relay5_pin: GPIO20
+  relay6_pin: GPIO41
+  relay7_pin: GPIO19
+  relay8_pin: GPIO40
+  relay9_pin: GPIO39
+  relay10_pin: GPIO23
+  relay11_pin: GPIO22
+  relay12_pin: GPIO13
+  relay13_pin: GPIO12
+  onewire_pin: GPIO11
   relays_active_low: "false"
 
 output:
@@ -48,7 +50,6 @@ ufh:
   time_id: sntp_time
   relays_active_low: ${relays_active_low}
   one_wire_id: ow_bus
-  esp32_ble_id: ble_tracker
   relays: [relay_1, relay_2, relay_3, relay_4, relay_5, relay_6, relay_7, relay_8, relay_9,
            relay_10, relay_11, relay_12, relay_13]
 

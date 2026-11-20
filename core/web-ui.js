@@ -253,7 +253,9 @@
     [2, T('Sensor do Home Assistant', 'Home Assistant sensor')],
     [3, 'MQTT'],
     [4, T('Bluetooth BTHome (Shelly BLU, Xiaomi…)', 'Bluetooth BTHome (Shelly BLU, Xiaomi…)')],
-    [5, T('Sonda DS18B20 com fio', 'Wired DS18B20 probe')]]; };
+    [5, T('Sonda DS18B20 com fio', 'Wired DS18B20 probe')]].filter(function (s) {
+      // BTHome needs Bluetooth: hidden on boards without a radio (ESP32-P4)
+      return s[0] !== 4 || !cfg || !cfg.features || cfg.features.ble !== false; }); };
   var ROLES = function () { return [[0, T('Livre', 'Unused')], [1, T('Bomba circuladora', 'Circulation pump')],
     [2, T('Pedido de calor (bomba de calor / caldeira)', 'Heat demand (heat pump / boiler)')], [3, T('Bomba + pedido de calor', 'Pump + heat demand')]]; };
   var DAYS = function () { return L() === 'pt' ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; };

@@ -47,7 +47,7 @@ W, H = 1280, 640; s = 0.55; ix = 70; iy = (H - 600 * s) / 2; tx = ix + 600 * s +
 t, _ = tp(FB, NAME, 86, tx, 280)
 l1, _ = tp(FR, 'Underfloor heating in Home Assistant', 36, tx, 350)
 l2, _ = tp(FR, 'Zones, pump and heat demand. Ethernet + PoE.', 36, tx, 398)
-l3, _ = tp(FR, 'Waveshare ESP32-S3-ETH  ·  ESPHome  ·  Local', 26, tx, 470)
+l3, _ = tp(FR, 'M5Stack Unit PoE-P4  ·  ESPHome  ·  Local', 26, tx, 470)
 soc = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">
 <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06203A"/><stop offset="1" stop-color="#06304D"/></linearGradient></defs>
 <rect width="{W}" height="{H}" fill="url(#bg)"/><g transform="translate({ix} {iy}) scale({s})">{body}</g>

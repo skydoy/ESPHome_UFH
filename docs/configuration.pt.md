@@ -15,8 +15,7 @@ Abre `http://<ip-da-placa>/`. O painel **Piso radiante** mostra o diagrama em te
 | **Shelly H&T (Wi-Fi)** | App Shelly → sensor → *Ações* → nova ação, evento **Temperatura mudou**, URL `http://<ip-da-placa>/ufh/temp?zone=N&t=${ev.tC}` (o assistente mostra-o pronto a copiar). |
 | **Sensor do Home Assistant** | Importa o blueprint `blueprints/automation/esphome_ufh_temperature_from_ha.yaml`, uma automação por zona. |
 | **MQTT** | Tópico + campo JSON (Shelly: `tC`, Zigbee2MQTT: `temperature`; vazio para um número simples). O broker configura-se em *Opções*. |
-| **Bluetooth BTHome** | Shelly BLU H&T, Xiaomi com firmware pvvx/ATC (BTHome v2, sem encriptação). O assistente lista os que ouve. |
-| **DS18B20** | Sondas no pino 1-Wire (GPIO44 direto / GPIO15 MCP23017). O assistente lista as encontradas. |
+| **DS18B20** | Sondas no pino 1-Wire (GPIO11, ficha SDIO pino 3). O assistente lista as encontradas. |
 
 Os Shelly H&T a pilhas só enviam quando a temperatura muda: se uma divisão fica estável muitas horas, aumenta o *Sensor sem dados após* (6 h por omissão) ou liga o sensor por USB (passa a enviar a cada 5 min). Quando um sensor fica sem dados, a zona fecha e aparece um aviso.
 
@@ -42,7 +41,7 @@ Os Shelly H&T a pilhas só enviam quando a temperatura muda: se uma divisão fic
 ```yaml
 substitutions:
   timezone: Europe/Lisbon          # os horários usam SNTP; o Home Assistant também o acerta
-  relay1_pin: GPIO1                # placa direta: mudar um relé de GPIO
+  relay1_pin: GPIO44               # placa direta: mudar um relé de GPIO
 ethernet:
   manual_ip: { static_ip: 192.168.1.50, gateway: 192.168.1.1, subnet: 255.255.255.0 }
 web_server:

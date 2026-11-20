@@ -19,7 +19,7 @@ with credit to the reporter unless you prefer otherwise.
 
 ## Scope
 In scope: the firmware in this repository, the release workflow and the web installer.
-Out of scope: ESPHome itself, Home Assistant, and third-party hardware (Waveshare board, relay
+Out of scope: ESPHome itself, Home Assistant, and third-party hardware (M5Stack board, relay
 boards, actuators, heat pumps). Remember that the relay side switches mains voltage; that is a
 safety matter, not a software vulnerability.
 

@@ -27,7 +27,7 @@
 
 ## Compatibilidade
 
-**Waveshare ESP32-S3-ETH** (Ethernet W5500, PoE opcional) com:
+**M5Stack Unit PoE-P4** (Ethernet + PoE, já vem em caixa) com:
 - **relés diretamente nos pinos do ESP** — até 13 (placas com entradas de 3,3 V, por exemplo a placa de relés Denkovi de um DAEnetIP4), ou
 - **MCP23017** + qualquer placa de 16 relés — até 16.
 
@@ -42,7 +42,7 @@ Detalhes: [o que precisas](docs/getting-started.pt.md) · [ligações](docs/wiri
 ## O que tens
 
 - **Termóstatos na própria placa**: Conforto / Eco por horário, funciona sem Home Assistant
-- Sensores à escolha por zona: **Shelly H&T** (Wi-Fi), **Bluetooth BTHome**, **MQTT**, **Home Assistant** ou **DS18B20**
+- Sensores à escolha por zona: **Shelly H&T** (Wi-Fi), **MQTT**, **Home Assistant** ou **DS18B20**
 - **Bomba** com atrasos e **pedido de calor** à bomba de calor / caldeira
 - **Diagrama em tempo real** na página web, assistente, editor de horários, equilíbrio das zonas
 - Opcionais: janela aberta, arranque antecipado, excedente solar, tarifa bi-horária, anti-bloqueio, limite do pavimento, ligação ao ESPHome_Altherma

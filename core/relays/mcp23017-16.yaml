@@ -1,13 +1,16 @@
 # Relays through an MCP23017 I/O expander (I2C): up to 16 relays, any 16-channel relay board.
 # MCP23017 channel N-1 drives relay N (GPA0 = relay 1 ... GPB7 = relay 16).
 # Opto-isolated boards that switch on with a LOW input: choose LOW in the setup wizard
-# (default here). Wiring: docs/wiring.md. 1-Wire probes (DS18B20): GPIO15.
+# (default here). Wiring: docs/wiring.md.
+# M5Stack Unit PoE-P4: MCP23017 on the Grove port (yellow G53 = SDA, white G54 = SCL;
+# red = 5 V, so power the MCP23017 from 3.3 V on the Hat2-Bus pin 13, not from the Grove).
+# 1-Wire probes (DS18B20): SDIO header pin 3 (G11).
 substitutions:
-  board_label: "Waveshare ESP32-S3-ETH · MCP23017 (16 relays)"
-  i2c_sda: GPIO16
-  i2c_scl: GPIO17
+  board_label: "M5Stack Unit PoE-P4 · MCP23017 (16 relays)"
+  i2c_sda: GPIO53
+  i2c_scl: GPIO54
   mcp23017_address: "0x20"
-  onewire_pin: GPIO15
+  onewire_pin: GPIO11
   relays_active_low: "true"
 
 i2c:
@@ -50,7 +53,6 @@ ufh:
   time_id: sntp_time
   relays_active_low: ${relays_active_low}
   one_wire_id: ow_bus
-  esp32_ble_id: ble_tracker
   relays: [relay_1, relay_2, relay_3, relay_4, relay_5, relay_6, relay_7, relay_8, relay_9,
            relay_10, relay_11, relay_12, relay_13, relay_14, relay_15, relay_16]
 

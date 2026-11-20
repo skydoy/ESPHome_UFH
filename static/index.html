@@ -99,7 +99,7 @@
       <img src="icon-512.png" alt="ESPHome UFH logo">
       <div>
         <h1>ESPHome UFH</h1>
-        <small><span class="pt">Instalador web</span><span class="en">Web installer</span> · Waveshare ESP32-S3-ETH</small>
+        <small><span class="pt">Instalador web</span><span class="en">Web installer</span> · M5Stack Unit PoE-P4</small>
       </div>
       <div class="lang" role="group" aria-label="Language">
         <button type="button" data-set="pt">PT</button>
@@ -129,16 +129,16 @@
   <section class="card">
     <h2><span class="num">1</span><span class="pt">A placa</span><span class="en">The board</span></h2>
     <form id="board-form" class="boards">
-      <label><input type="radio" name="board" value="firmware/s3-eth-direct/manifest.json" data-board="s3-eth-direct" checked>
+      <label><input type="radio" name="board" value="firmware/p4-poe-direct/manifest.json" data-board="p4-poe-direct" checked>
         <span class="t"><span class="pt">Relés nos pinos do ESP</span><span class="en">Relays on the ESP pins</span></span>
         <div class="d"><span class="pt">Até 13 relés ligados diretamente (placas com entradas de 3,3 V, ex.: Denkovi do DAEnetIP4).</span><span class="en">Up to 13 relays wired directly (3.3 V input boards, e.g. the Denkovi board of a DAEnetIP4).</span></div></label>
-      <label><input type="radio" name="board" value="firmware/s3-eth/manifest.json" data-board="s3-eth">
+      <label><input type="radio" name="board" value="firmware/p4-poe/manifest.json" data-board="p4-poe">
         <span class="t">MCP23017</span>
-        <div class="d"><span class="pt">Até 16 relés através de um MCP23017 (qualquer placa de 16 relés).</span><span class="en">Up to 16 relays through an MCP23017 (any 16-channel relay board).</span></div></label>
+        <div class="d"><span class="pt">Até 16 relés através de um MCP23017 na porta Grove (qualquer placa de 16 relés).</span><span class="en">Up to 16 relays through an MCP23017 on the Grove port (any 16-channel relay board).</span></div></label>
     </form>
     <p class="brandline">
-      <span class="pt">Waveshare ESP32-S3-ETH (Ethernet, PoE opcional). Substitui controladores como o Denkovi DAEnetIP4.</span>
-      <span class="en">Waveshare ESP32-S3-ETH (Ethernet, optional PoE). Replaces controllers such as the Denkovi DAEnetIP4.</span>
+      <span class="pt">M5Stack Unit PoE-P4 (Ethernet com PoE, já vem em caixa). Substitui controladores como o Denkovi DAEnetIP4.</span>
+      <span class="en">M5Stack Unit PoE-P4 (Ethernet with PoE, comes in its own case). Replaces controllers such as the Denkovi DAEnetIP4.</span>
       <a href="https://skydoy.github.io/ESPHome_UFH/docs/getting-started/"><span class="pt">O que precisas</span><span class="en">What you need</span></a>
       ·
       <a href="https://skydoy.github.io/ESPHome_UFH/docs/wiring/"><span class="pt">Ligações</span><span class="en">Wiring</span></a>
@@ -147,11 +147,11 @@
 
   <section class="card">
     <h2><span class="num">2</span><span class="pt">Liga por USB</span><span class="en">Connect by USB</span></h2>
-    <p class="pt">Liga a placa ao computador por <b>USB-C</b> com um cabo <b>de dados</b> (muitos só carregam).</p>
-    <p class="en">Connect the board to the computer by <b>USB-C</b> with a <b>data</b> cable (many only charge).</p>
+    <p class="pt">Liga a placa ao computador pela porta <b>USB-C de programação</b> (a que <b>não</b> diz “Host”) com um cabo <b>de dados</b> (muitos só carregam).</p>
+    <p class="en">Connect the board to the computer through the <b>USB-C download port</b> (the one <b>not</b> marked “Host”) with a <b>data</b> cable (many only charge).</p>
     <details><summary><span class="pt">A placa não aparece?</span><span class="en">Board not showing up?</span></summary>
       <ul>
-        <li><span class="pt">Porta “USB JTAG/serial”. Se não aparecer, mantém o botão <b>BOOT</b> carregado ao ligar o cabo.</span><span class="en">Port “USB JTAG/serial”. If it is missing, hold <b>BOOT</b> while plugging in the cable.</span></li>
+        <li><span class="pt">Porta “USB JTAG/serial”. Se não aparecer, com o cabo ligado mantém carregado o botão <b>da lateral</b> até o LED verde interior acender e solta-o: a placa fica em modo de programação.</span><span class="en">Port “USB JTAG/serial”. If it is missing, with the cable plugged in hold the <b>side</b> button until the green LED inside lights up, then release it: the board is now in download mode.</span></li>
       </ul>
       <p class="pt">Experimenta outro cabo: muitos só carregam.</p>
       <p class="en">Try another cable: some only charge.</p>
@@ -163,7 +163,7 @@
     <p class="pt">Carrega em <b>Instalar</b>, escolhe a porta série e confirma.</p>
     <p class="en">Press <b>Install</b>, pick the serial port, then confirm.</p>
     <div class="install">
-      <esp-web-install-button id="install" manifest="firmware/s3-eth-direct/manifest.json">
+      <esp-web-install-button id="install" manifest="firmware/p4-poe-direct/manifest.json">
         <button slot="activate" class="btn"><span class="pt">⚡ Instalar</span><span class="en">⚡ Install</span></button>
         <span slot="unsupported"><span class="pt">Usa o Chrome ou o Edge num computador.</span><span class="en">Use Chrome or Edge on a computer.</span></span>
         <span slot="not-allowed"><span class="pt">A página tem de abrir em https.</span><span class="en">The page must be opened over https.</span></span>
@@ -176,14 +176,14 @@
   <section class="card next">
     <h2><span class="pt">A seguir</span><span class="en">Next</span></h2>
     <ol class="pt">
-      <li><b>Ligar</b> — cabo de rede (PoE, ou 5 V no USB-C) e os relés. <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/wiring/">Ligações</a></li>
+      <li><b>Ligar</b> — cabo de rede (PoE, ou 5 V no USB-C) e os relés (fichas Hat2-Bus e SDIO). <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/wiring/">Ligações</a></li>
       <li><b>Assistente</b> — abre <code>http://&lt;ip-da-placa&gt;/</code> e configura zonas, sensores e horários.</li>
       <li><b>Home Assistant</b> (opcional) — Definições → Dispositivos e serviços → <b>Configurar</b>.</li>
       <li><b>Problemas?</b> <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/troubleshooting/">Problemas</a> · <a href="https://github.com/skydoy/ESPHome_UFH/issues">pedir ajuda</a></li>
       <li><b>Documentação</b> — <a href="https://skydoy.github.io/ESPHome_UFH/docs/pt/">skydoy.github.io/…/docs</a></li>
     </ol>
     <ol class="en">
-      <li><b>Connect</b> — network cable (PoE, or 5 V on USB-C) and the relays. <a href="https://skydoy.github.io/ESPHome_UFH/docs/wiring/">Wiring</a></li>
+      <li><b>Connect</b> — network cable (PoE, or 5 V on USB-C) and the relays (Hat2-Bus and SDIO headers). <a href="https://skydoy.github.io/ESPHome_UFH/docs/wiring/">Wiring</a></li>
       <li><b>Wizard</b> — open <code>http://&lt;device-ip&gt;/</code> and set up zones, sensors and schedules.</li>
       <li><b>Home Assistant</b> (optional) — Settings → Devices &amp; services → <b>Configure</b>.</li>
       <li><b>Stuck?</b> <a href="https://skydoy.github.io/ESPHome_UFH/docs/troubleshooting/">Troubleshooting</a> · <a href="https://github.com/skydoy/ESPHome_UFH/issues">ask for help</a></li>
@@ -206,8 +206,8 @@
       <a href="https://github.com/skydoy/ESPHome_UFH/blob/main/LICENSE">PolyForm Noncommercial 1.0.0</a>
       (<span class="pt">uso pessoal e não comercial</span><span class="en">personal and non-commercial use</span>) ·
       <a href="https://espmaniacs.github.io/">ESPManiacs</a></p>
-    <p><span class="pt">Waveshare e Denkovi são marcas dos respetivos donos. Projeto comunitário independente. Usa por tua conta e risco: a parte de 230 V é para um eletricista.</span>
-      <span class="en">Waveshare and Denkovi are trademarks of their owners. Independent community project. Use at your own risk: leave the 230 V side to an electrician.</span></p>
+    <p><span class="pt">M5Stack e Denkovi são marcas dos respetivos donos. Projeto comunitário independente. Usa por tua conta e risco: a parte de 230 V é para um eletricista.</span>
+      <span class="en">M5Stack and Denkovi are trademarks of their owners. Independent community project. Use at your own risk: leave the 230 V side to an electrician.</span></p>
   </footer>
 </main>
 

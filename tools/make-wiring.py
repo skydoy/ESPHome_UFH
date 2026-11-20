@@ -1,5 +1,8 @@
 # Generates the wiring diagrams in docs/img/ (wiring-*-pt.svg / -en.svg). Run from the repo root.
-PINS = [1, 2, 15, 16, 17, 18, 38, 39, 40, 41, 42, 47, 48]
+# (GPIO, header pin) on the M5Stack Unit PoE-P4: relays 1-11 Hat2-Bus, 12-13 SDIO header
+PINS = [(44, 'Hat2 2'), (43, 'Hat2 4'), (21, 'Hat2 5'), (42, 'Hat2 6'), (20, 'Hat2 7'), (41, 'Hat2 8'),
+        (19, 'Hat2 9'), (40, 'Hat2 10'), (39, 'Hat2 12'), (23, 'Hat2 14'), (22, 'Hat2 16'),
+        (13, 'SDIO 1'), (12, 'SDIO 2')]
 COLORS = ['#e6194b', '#3cb44b', '#f58231', '#4363d8', '#911eb4', '#46a0a0', '#f032e6', '#9a6324',
           '#800000', '#008080', '#000075', '#808000', '#e6a100', '#1784F7', '#ff7a1a', '#555']
 FONT = 'font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif"'
@@ -34,17 +37,17 @@ def direct(lang):
     o = [head(W, H, T(lang, 'Relés diretamente nos pinos do ESP (até 13)', 'Relays straight on the ESP pins (up to 13)'))]
     o.append(f'<text x="20" y="58" font-size="13" fill="#555">{T(lang, "Fio a fio, do ESP às entradas da placa de relés (onde antes ligava o DAEnetIP4). Liga também o GND.", "Wire by wire, from the ESP to the relay board inputs (where the DAEnetIP4 used to plug in). Connect GND too.")}</text>')
     bx, bw = 40, 300
-    o.append(board(bx, 80, bw, H - 190, 'Waveshare ESP32-S3-ETH', T(lang, 'com PoE Module (B) por cima', 'with PoE Module (B) on top')))
+    o.append(board(bx, 80, bw, H - 190, 'M5Stack Unit PoE-P4', T(lang, 'fichas Hat2-Bus e SDIO (2,54 mm)', 'Hat2-Bus and SDIO headers (2.54 mm)')))
     rx, rw = 640, 300
     o.append(board(rx, 80, rw, H - 190, T(lang, 'Placa de relés', 'Relay board'), T(lang, 'ex.: Denkovi (entradas 3,3 V)', 'e.g. Denkovi (3.3 V inputs)')))
-    for i, g in enumerate(rows):
+    for i, (g, hp) in enumerate(rows):
         y = top + i * step
         c = COLORS[i]
-        o.append(pin(bx + bw, y, f'GPIO{g}', 'r', c))
+        o.append(pin(bx + bw, y, f'{hp}  ·  G{g}', 'r', c))
         o.append(pin(rx, y, f'IN{i + 1}  →  {T(lang, "relé", "relay")} {i + 1}', 'l', c))
         o.append(wire(bx + bw + 5, y, rx - 5, y, c))
     y = top + len(rows) * step
-    o.append(pin(bx + bw, y, 'GND', 'r', '#000'))
+    o.append(pin(bx + bw, y, 'Hat2 1  ·  GND', 'r', '#000'))
     o.append(pin(rx, y, 'GND', 'l', '#000'))
     o.append(wire(bx + bw + 5, y, rx - 5, y, '#000', 4))
     # ethernet / power
@@ -63,12 +66,14 @@ def mcp(lang):
     W, H = 1100, 760
     o = [head(W, H, T(lang, 'MCP23017 + placa de 16 relés', 'MCP23017 + 16-channel relay board'))]
     bx, bw = 30, 260
-    o.append(board(bx, 80, bw, 220, 'Waveshare ESP32-S3-ETH', 'I²C'))
+    o.append(board(bx, 80, bw, 220, 'M5Stack Unit PoE-P4', T(lang, 'I²C na porta Grove', 'I²C on the Grove port')))
     mx, mw = 400, 260
     o.append(board(mx, 80, mw, 600, 'MCP23017', T(lang, 'endereço 0x20 (A0-A2 a GND)', 'address 0x20 (A0-A2 to GND)')))
     rx, rw = 790, 280
     o.append(board(rx, 80, rw, 600, T(lang, 'Placa de 16 relés', '16-channel relay board'), T(lang, 'com optoacopladores', 'opto-isolated')))
-    pairs = [('3V3', 'VCC', '#e6194b'), ('GND', 'GND', '#000'), ('GPIO16', 'SDA', '#4363d8'), ('GPIO17', 'SCL', '#3cb44b')]
+    pairs = [('Hat2 13  ·  3V3', 'VCC', '#e6194b'), ('Grove  ·  GND', 'GND', '#000'),
+             (T(lang, 'Grove amarelo  ·  G53', 'Grove yellow  ·  G53'), 'SDA', '#4363d8'),
+             (T(lang, 'Grove branco  ·  G54', 'Grove white  ·  G54'), 'SCL', '#3cb44b')]
     for i, (a, b, c) in enumerate(pairs):
         y = 140 + i * 36
         o.append(pin(bx + bw, y, a, 'r', c)); o.append(pin(mx, y, b, 'l', c)); o.append(wire(bx + bw + 5, y, mx - 5, y, c))
@@ -83,6 +88,7 @@ def mcp(lang):
     o.append(pin(rx, 214, 'JD-VCC  ←  ' + T(lang, 'fonte dos relés', 'relay supply'), 'l', '#ff7a1a'))
     o.append(pin(rx, 248, 'GND', 'l', '#000'))
     o.append(f'<text x="{rx + 14}" y="{276}" font-size="12" fill="#b55a00">{T(lang, "tira o jumper JD-VCC", "remove the JD-VCC jumper")}</text>')
+    o.append(f'<text x="{bx + 14}" y="{300 + 26}" font-size="12" fill="#b00">{T(lang, "Grove vermelho = 5 V: não ligar", "Grove red = 5 V: do not connect")}</text>')
     o.append(f'<text x="{W / 2}" y="{H - 30}" font-size="12" text-anchor="middle" fill="#888">{T(lang, "Assistente → Relés → ligam com sinal BAIXO", "Wizard → Relays → switch on with LOW")}</text>')
     o.append('</svg>')
     return ''.join(o)
