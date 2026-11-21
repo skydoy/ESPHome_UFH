@@ -39,7 +39,7 @@
 })();
 
 (function () {
-  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16", "Main Thermostat": "Termóstato geral", "Pump Start Delay": "Atraso a ligar", "Pump Stop Delay": "Atraso a desligar", "Heat Pump Min On Time": "Bomba de calor: mínimo ligada", "Heat Pump Min Off Time": "Bomba de calor: mínimo desligada"};
+  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16", "Main Thermostat": "Termóstato geral", "Pump Start Delay": "Atraso a ligar", "Pump Stop Delay": "Atraso a desligar", "Heat Pump Min On Time": "Bomba de calor: mínimo ligada", "Heat Pump Min Off Time": "Bomba de calor: mínimo desligada", "Boost Temperature": "Boost: graus a mais", "Boost Duration": "Boost: duração", "Outdoor Compensation": "Compensação exterior", "Flow Temperature": "Água de ida", "Return Temperature": "Água de retorno", "Flow Return Difference": "Diferença ida/retorno", "Outdoor Temperature": "Temperatura exterior"};
   var GROUP_PT = {"Pump": "Bomba", "Main": "Geral", "Zones": "Zonas", "House": "Casa", "Statistics": "Estatísticas", "Maintenance": "Manutenção", "Configuration": "Configuração", "Diagnostic": "Diagnóstico", "Undefined": "Outros"};
   var KEY = 'esphome_ufh_lang', lang;
   try { lang = localStorage.getItem(KEY); } catch (e) {}
@@ -139,7 +139,7 @@
     if (on) o.push(n);
     try { localStorage.setItem(OPEN_KEY, JSON.stringify(o)); } catch (e) {}
   }
-  var ROW_LBL = {'': ['Termóstato', 'Thermostat'], 'Follows Main': ['Segue a geral', 'Follows main'], 'Last Reading': ['Última leitura', 'Last reading'], 'Heating': ['A aquecer', 'Heating'], 'Temperature': ['Temperatura', 'Temperature'],
+  var ROW_LBL = {'': ['Termóstato', 'Thermostat'], 'Follows Main': ['Segue a geral', 'Follows main'], 'Last Reading': ['Última leitura', 'Last reading'], 'Boost': ['Boost', 'Boost'], 'Heating': ['A aquecer', 'Heating'], 'Temperature': ['Temperatura', 'Temperature'],
                  'Runtime Today': ['Horas hoje', 'Runtime today'], 'Runtime Total': ['Horas total', 'Runtime total'],
                  'Duty 24h': ['Ocupação 24 h', 'Duty 24 h']};
   function TT(pt, en) { return lang === 'pt' ? pt : en; }
@@ -164,6 +164,7 @@
         sum = st ? ((st.pump ? '🟢 ' + TT('ligada', 'on') : TT('desligada', 'off')) +
           (st.pump_in > 0 ? ' · ' + TT('liga em ', 'starts in ') + st.pump_in + ' s' : '') +
           ' · ' + [TT('automático', 'auto'), TT('sempre ligada', 'always on'), TT('desligada', 'off')][st.pump_mode || 0] +
+          (st.altherma && st.altherma.flow != null ? ' · 🌡 ' + st.altherma.flow.toFixed(1) + ' / ' + (st.altherma.ret != null ? st.altherma.ret.toFixed(1) : '—') + ' °C' : '') +
           (st.ps != null ? ' · ⏱ ' + st.ps + ' s / ' + st.pe + ' s' : '')) : '';
       } else if (n === 101) {
         // main thermostat group
@@ -182,6 +183,7 @@
       } else if (z.n !== undefined) {
         sum = (z.fm ? TT('geral · ', 'main · ') : '') + (z.age >= 0 ? TT('há ', '') + ago(z.age) + TT('', ' ago') + ' · ' : '') + fmt(z.t) + ' → ' + (z.m === 0 || z.tg === null || isNaN(z.tg) ? TT('desligada', 'off') : fmt(z.tg));
       } else sum = '';
+      if (z.bst > 0) sum += (sum ? ' · ' : '') + '🚀 ' + z.bst + ' min';
       if (z.r) sum += (sum ? ' · ' : '') + '🔥 ' + TT('a aquecer', 'heating');
       if (z.w) sum += ' ⚠️';
       var key = (isOpen ? 1 : 0) + '|' + name + '|' + sum;
@@ -426,7 +428,7 @@
   function warnPT(w) {
     if (L() !== 'pt') return w;
     return w.replace(/^setup(; )?/, 'por configurar$1').replace(/: sensor/g, ': sensor sem dados').replace(/: battery/g, ': pilha fraca')
-      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace('pump on, no zone open', 'bomba ligada sem zonas abertas');
+      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace('pump on, no zone open', 'bomba ligada sem zonas abertas').replace(/flow\/return dT ([\d.-]+) C/, 'diferença ida/retorno $1 °C (caudal?)');
   }
 
   // ---------- live diagram ----------
@@ -579,6 +581,7 @@
       W.tariff.s2 = timeToSlot(val(m, '#ts2')); W.tariff.e2 = endSlot(val(m, '#ts2'), val(m, '#te2'));
       W.tariff.boost = +val(m, '#tb'); W.tariff.cut = +val(m, '#tc');
       W.altherma.host = val(m, '#ah').trim(); W.altherma.flow = val(m, '#af').trim(); W.altherma.ret = val(m, '#ar').trim();
+      W.extra = W.extra || {}; var ao = m.querySelector('#ao'); if (ao) W.extra.alt_outdoor = ao.value.trim();
       W.mqtt.host = val(m, '#mh').trim(); W.mqtt.port = +val(m, '#mp') || 1883; W.mqtt.user = val(m, '#mu').trim(); W.mqtt.pass = val(m, '#mw');
     }
   }
@@ -697,7 +700,8 @@
         '<div><label>+°C</label><input type="number" step="0.5" id="tb" value="' + W.tariff.boost + '"></div><div><label>−°C</label><input type="number" step="0.5" id="tc" value="' + W.tariff.cut + '"></div></div>');
       h += box('altherma', T('Ligação ao ESPHome_Altherma', 'ESPHome_Altherma link'), T('Mostra a ida e o retorno da bomba de calor no diagrama (lido diretamente da outra placa).', 'Shows the heat pump flow and return in the diagram (read straight from the other board).'),
         '<div class="row"><div style="flex:1"><label>' + T('Endereço (IP ou nome)', 'Address (IP or name)') + '</label><input type="text" id="ah" value="' + esc(W.altherma.host) + '" placeholder="192.168.1.60"></div></div>' +
-        '<div class="row"><div style="flex:1"><label>' + T('Ida', 'Flow') + '</label><input type="text" id="af" value="' + esc(W.altherma.flow) + '"></div><div style="flex:1"><label>' + T('Retorno', 'Return') + '</label><input type="text" id="ar" value="' + esc(W.altherma.ret) + '"></div></div>');
+        '<div class="row"><div style="flex:1"><label>' + T('Ida', 'Flow') + '</label><input type="text" id="af" value="' + esc(W.altherma.flow) + '"></div><div style="flex:1"><label>' + T('Retorno', 'Return') + '</label><input type="text" id="ar" value="' + esc(W.altherma.ret) + '"></div></div>' +
+        '<div class="row"><div style="flex:1"><label>' + T('Exterior (para a compensação exterior)', 'Outdoor (for outdoor compensation)') + '</label><input type="text" id="ao" value="' + esc((W.extra || {}).alt_outdoor || '') + '"></div></div>');
       h += '<div class="opt"><b>' + T('Broker MQTT (só se usares MQTT)', 'MQTT broker (only if you use MQTT)') + '</b><div class="row">' +
         '<div style="flex:2"><label>' + T('Endereço', 'Host') + '</label><input type="text" id="mh" value="' + esc(W.mqtt.host) + '" placeholder="192.168.1.10"></div>' +
         '<div><label>' + T('Porta', 'Port') + '</label><input type="number" id="mp" value="' + (W.mqtt.port || 1883) + '"></div>' +
@@ -816,8 +820,27 @@
       T('Percentagem do tempo a aquecer nas últimas 24 h e velocidade de aquecimento aprendida. Zonas com muito mais tempo que as outras para a mesma temperatura costumam precisar de mais caudal no coletor.',
         'Share of time heating over the last 24 h and learned heating rate. Zones needing much more time than the others for the same temperature usually need more flow at the manifold.') +
       '</p><table><tr><td>#</td><td>' + T('Zona', 'Zone') + '</td><td>24 h</td><td>' + T('Hoje', 'Today') + '</td><td>' + T('Aquece', 'Heats') + '</td></tr>' + rows + '</table>' +
+      weekChart() +
       '<div class="nav"><span></span><button type="button" class="pri" data-n="close">OK</button></div>');
     m.addEventListener('click', function (e) { if (e.target.getAttribute && e.target.getAttribute('data-n')) closeModal(); });
+  }
+
+  // weekly chart: minutes heating per day, last 7 days (today on the right)
+  function weekChart() {
+    var zs = (state && state.zones) || [], max = 1, d = DAYS(), dow = state && state.dow != null ? state.dow : 6;
+    zs.forEach(function (z) { (z.wk || []).forEach(function (v) { if (v > max) max = v; }); });
+    var lbl = [];
+    for (var k = 6; k >= 0; k--) lbl.push(d[(dow - k + 7) % 7]);
+    var h = '<h3 style="margin:16px 0 4px">' + T('Últimos 7 dias (horas a aquecer)', 'Last 7 days (hours heating)') + '</h3><table class="wk"><tr><td></td>' +
+      lbl.map(function (x, k) { return '<td style="text-align:center;font-size:11px;opacity:.7">' + (k === 6 ? T('hoje', 'today') : x) + '</td>'; }).join('') + '</tr>';
+    zs.forEach(function (z) {
+      if (z.lead || !z.wk) return;
+      h += '<tr><td style="white-space:nowrap;padding-right:8px">' + esc(z.n) + '</td>' + z.wk.map(function (v) {
+        var px = Math.round(v / max * 34);
+        return '<td style="vertical-align:bottom;text-align:center;height:40px" title="' + (v / 60).toFixed(1) + ' h"><div style="margin:0 auto;width:14px;height:' + Math.max(px, v ? 2 : 0) + 'px;background:#ff7a1a;border-radius:3px 3px 0 0"></div><div style="font-size:10px;opacity:.7">' + (v ? (v / 60).toFixed(1) : '') + '</div></td>';
+      }).join('') + '</tr>';
+    });
+    return h + '</table>';
   }
 
   // ---------- zone quick view (click on a zone) ----------
@@ -836,11 +859,18 @@
         '<div><label>' + T('Modo', 'Mode') + '</label><select id="qm">' + opts([[1, T('Automático', 'Auto')], [2, T('Fixo', 'Fixed')], [0, T('Desligado', 'Off')]], z.m) + '</select></div></div>' +
         '<div class="hint">' + T('Em Automático, o alvo novo vale até à próxima mudança do horário.', 'In Auto the new target holds until the next schedule change.') + '</div>';
     }
+    if (!z.lead) h += '<div class="bar"><button type="button" data-n="boost">🚀 ' + (z.bst > 0 ? T('Parar boost (', 'Stop boost (') + z.bst + ' min)' : T('Boost', 'Boost')) + '</button></div>';
     h += '<div class="nav"><button type="button" data-n="close">' + T('Fechar', 'Close') + '</button>' + (z.lead ? '' : '<button type="button" class="pri" data-n="apply">' + T('Aplicar', 'Apply') + '</button>') + '</div>';
     var m = modal(h);
     m.addEventListener('click', function (e) {
       var n = e.target.getAttribute && e.target.getAttribute('data-n');
       if (n === 'close') closeModal();
+      if (n === 'boost') {
+        var zb = [];
+        for (var kb = 0; kb <= i; kb++) zb.push({});
+        zb[i] = {boost: !(z.bst > 0)};
+        postJSON('/ufh/config', {zones: zb}).then(function () { closeModal(); setTimeout(poll, 800); }).catch(function (er) { alert(er.message); });
+      }
       if (n === 'apply') {
         var zones = [];
         for (var k = 0; k <= i; k++) zones.push({});

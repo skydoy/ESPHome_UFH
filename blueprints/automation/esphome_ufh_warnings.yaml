@@ -1,0 +1,77 @@
+blueprint:
+  name: ESPHome UFH – notify me about warnings
+  description: >-
+    Sends a notification to your phone when an ESPHome UFH device reports a new warning:
+    a temperature sensor stopped sending, low battery, a zone that does not heat, the floor
+    limit, or an odd flow / return difference of the heat pump. Waits a few minutes so short
+    hiccups do not notify, and tells you again when everything is back to normal.
+  domain: automation
+  author: skydoy
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    warnings:
+      name: Warnings sensor
+      description: The device's "Warnings" entity (text, "-" when everything is fine).
+      selector:
+        entity:
+          filter:
+            - integration: esphome
+              domain: sensor
+    notify_device:
+      name: Phone
+      description: The phone to notify (needs the Home Assistant Companion app).
+      selector:
+        device:
+          filter:
+            - integration: mobile_app
+    delay:
+      name: Wait before notifying
+      description: The warning must last this long before you are notified.
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 60
+          unit_of_measurement: min
+    notify_clear:
+      name: Notify when it is fixed
+      default: true
+      selector:
+        boolean:
+
+mode: queued
+max: 5
+
+triggers:
+  - trigger: state
+    entity_id: !input warnings
+    for:
+      minutes: !input delay
+
+conditions:
+  - condition: template
+    value_template: >-
+      {{ trigger.from_state is not none and trigger.to_state is not none
+         and trigger.from_state.state != trigger.to_state.state
+         and trigger.to_state.state not in ['unknown', 'unavailable'] }}
+
+actions:
+  - variables:
+      clear_ok: !input notify_clear
+      now_txt: "{{ trigger.to_state.state }}"
+  - choose:
+      - conditions: "{{ now_txt not in ['-', '', 'setup'] }}"
+        sequence:
+          - domain: mobile_app
+            type: notify
+            device_id: !input notify_device
+            title: "Underfloor heating: warning"
+            message: "{{ now_txt }}"
+      - conditions: "{{ now_txt == '-' and clear_ok }}"
+        sequence:
+          - domain: mobile_app
+            type: notify
+            device_id: !input notify_device
+            title: "Underfloor heating"
+            message: "All warnings cleared."

@@ -206,6 +206,11 @@ std::string UFHComponent::web_state_json() {
       sum += h;
     o["duty"] = (int) (sum / 864);
     o["rate"] = roundf(p_.rate_c_per_h[i] * 100) / 100;
+    o["bst"] = r.boost_until_ms ? (int) ((r.boost_until_ms - now_ms) / 60000 + 1) : 0;
+    JsonArray wk = o["wk"].to<JsonArray>();  // minutes heating, 6 days ago ... yesterday, today
+    for (uint8_t k = 1; k <= 6; k++)
+      wk.add(wk_.min[i][(wk_.idx + k) % 7]);
+    wk.add(r.today_s / 60);
   }
   {
     ESPTime tnow = time_ != nullptr ? time_->now() : ESPTime{};
@@ -218,6 +223,8 @@ std::string UFHComponent::web_state_json() {
     mo["comfort"] = x10(m_.comfort_x10);
     mo["eco"] = x10(m_.eco_x10);
   }
+  put_num(root, "out", this->outdoor_temp());
+  put_num(root, "dt", this->flow_delta());
   JsonObject pmp = root["pump_h"].to<JsonObject>();
   pmp["today"] = pump_today_s_ / 60;
   pmp["total"] = p_.pump_total_s / 3600;
@@ -325,6 +332,11 @@ std::string UFHComponent::web_config_json() {
   al["host"] = s_.altherma_host;
   al["flow"] = s_.altherma_flow;
   al["ret"] = s_.altherma_return;
+  JsonObject xo = root["extra"].to<JsonObject>();
+  xo["boost"] = x10(x_.boost_x10);
+  xo["boost_min"] = x_.boost_min;
+  xo["outdoor"] = (bool) x_.opt_outdoor;
+  xo["alt_outdoor"] = x_.alt_outdoor;
   JsonObject mo = root["main"].to<JsonObject>();
   mo["mode"] = m_.mode;
   mo["fixed_eco"] = (bool) m_.fixed_eco;
@@ -515,6 +527,8 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
       }
       if (zv["mode"].is<int>())
         z.mode = (uint8_t) std::max(0, std::min((int) ZONE_HEAT, zv["mode"].as<int>()));
+      if (zv["boost"].is<bool>())
+        this->boost_zone(i + 1, zv["boost"].as<bool>() ? 1 : 0);
       if (zv["follow"].is<bool>()) {
         z.follow_main = zv["follow"].as<bool>() && z.leader == 0;
         force_publish_ = true;
@@ -551,6 +565,22 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
         this->ha_set_zone_target(i + 1, zv["target"].as<float>());
       i++;
     }
+  }
+  JsonVariantConst xv = root["extra"];
+  if (xv.is<JsonObjectConst>()) {
+    t10(xv["boost"], x_.boost_x10, 0.5f, 5.0f);
+    if (xv["boost_min"].is<int>())
+      x_.boost_min = (uint16_t) std::max(10, std::min(480, xv["boost_min"].as<int>()));
+    if (xv["outdoor"].is<bool>())
+      x_.opt_outdoor = xv["outdoor"].as<bool>();
+    if (xv["alt_outdoor"].is<const char *>()) {
+      char before[sizeof(x_.alt_outdoor)];
+      memcpy(before, x_.alt_outdoor, sizeof(before));
+      copy_str(x_.alt_outdoor, sizeof(x_.alt_outdoor), xv["alt_outdoor"]);
+      if (memcmp(before, x_.alt_outdoor, sizeof(before)) != 0 && s_.opt_altherma)
+        restart = true;
+    }
+    this->save_extra_();
   }
   JsonVariantConst mv = root["main"];
   if (mv.is<JsonObjectConst>()) {
@@ -624,9 +654,11 @@ void UFHComponent::altherma_task_(void *arg) {
   for (;;) {
     float f = http_get_value(self->alt_url_flow_);
     float r = http_get_value(self->alt_url_return_);
+    float o = self->alt_url_outdoor_[0] ? http_get_value(self->alt_url_outdoor_) : NAN;
     if (!std::isnan(f) || !std::isnan(r)) {
       self->alt_flow_ = f;
       self->alt_return_ = r;
+      self->alt_outdoor_ = o;
       self->alt_ms_ = millis();
     }
     vTaskDelay(pdMS_TO_TICKS(30000));

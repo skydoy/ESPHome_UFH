@@ -135,6 +135,55 @@ number:
     web_server:
       sorting_group_id: group_pump
       sorting_weight: 7
+  # boost (zone buttons): how much and for how long
+  - platform: template
+    name: "Boost Temperature"
+    icon: mdi:rocket-launch-outline
+    unit_of_measurement: "°C"
+    mode: box
+    min_value: 0.5
+    max_value: 5
+    step: 0.5
+    entity_category: config
+    update_interval: 5s
+    lambda: return id(ufh_ctl).boost_delta();
+    set_action:
+      - lambda: id(ufh_ctl).set_boost_delta(x);
+    web_server:
+      sorting_group_id: group_main
+      sorting_weight: 2
+  - platform: template
+    name: "Boost Duration"
+    icon: mdi:timer-outline
+    unit_of_measurement: min
+    mode: box
+    min_value: 10
+    max_value: 480
+    step: 5
+    entity_category: config
+    update_interval: 5s
+    lambda: return id(ufh_ctl).boost_min();
+    set_action:
+      - lambda: id(ufh_ctl).set_boost_min((uint16_t) x);
+    web_server:
+      sorting_group_id: group_main
+      sorting_weight: 3
+
+switch:
+  # optimum start begins earlier when it is cold outside (outdoor temperature from
+  # ESPHome_Altherma or the Home Assistant action set_outdoor_temperature)
+  - platform: template
+    name: "Outdoor Compensation"
+    icon: mdi:snowflake-thermometer
+    entity_category: config
+    lambda: return id(ufh_ctl).outdoor_comp();
+    turn_on_action:
+      - lambda: id(ufh_ctl).set_outdoor_comp(true);
+    turn_off_action:
+      - lambda: id(ufh_ctl).set_outdoor_comp(false);
+    web_server:
+      sorting_group_id: group_main
+      sorting_weight: 4
 
 binary_sensor:
   - platform: template
@@ -179,6 +228,54 @@ text_sensor:
       sorting_group_id: group_house
 
 sensor:
+  # heat pump water (ESPHome_Altherma link) and outdoor temperature
+  - platform: template
+    name: "Flow Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    icon: mdi:thermometer-chevron-up
+    update_interval: 30s
+    lambda: return id(ufh_ctl).flow_temp();
+    web_server:
+      sorting_group_id: group_pump
+      sorting_weight: 10
+  - platform: template
+    name: "Return Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    icon: mdi:thermometer-chevron-down
+    update_interval: 30s
+    lambda: return id(ufh_ctl).return_temp();
+    web_server:
+      sorting_group_id: group_pump
+      sorting_weight: 11
+  - platform: template
+    name: "Flow Return Difference"
+    unit_of_measurement: "°C"
+    state_class: measurement
+    accuracy_decimals: 1
+    icon: mdi:delta
+    update_interval: 30s
+    lambda: return id(ufh_ctl).flow_delta();
+    web_server:
+      sorting_group_id: group_pump
+      sorting_weight: 12
+  - platform: template
+    name: "Outdoor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    icon: mdi:thermometer
+    update_interval: 60s
+    lambda: return id(ufh_ctl).outdoor_temp();
+    web_server:
+      sorting_group_id: group_pump
+      sorting_weight: 13
   - platform: template
     name: "Pump Runtime Today"
     unit_of_measurement: h
@@ -236,6 +333,14 @@ api:
       variables: { zone: int, mode: int }
       then:
         - lambda: id(ufh_ctl).ha_set_zone_mode(zone, mode);
+    - action: set_outdoor_temperature
+      variables: { temperature: float }
+      then:
+        - lambda: id(ufh_ctl).ha_set_outdoor_temperature(temperature);
+    - action: boost_zone
+      variables: { zone: int, on: bool }
+      then:
+        - lambda: "id(ufh_ctl).boost_zone(zone, on ? 1 : 0);"
     - action: set_zone_target
       variables: { zone: int, temperature: float }
       then:

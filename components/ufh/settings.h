@@ -139,8 +139,30 @@ struct MainCfg {
   uint8_t reserved[8];
 };
 
+// Newer options (boost, outdoor compensation). Own NVS entry, with room to grow.
+static constexpr uint32_t EXTRA_MAGIC = 0x55465831;  // "UFX1"
+struct ExtraCfg {
+  uint32_t magic;
+  int16_t boost_x10;   // added to the target while a zone boost runs
+  uint16_t boost_min;  // boost duration
+  uint8_t opt_outdoor;  // optimum start starts earlier when it is cold outside
+  uint8_t reserved0[3];
+  char alt_outdoor[80];  // ESPHome_Altherma path of the outdoor temperature
+  uint8_t reserved[64];
+};
+
+// Minutes of heating per zone for the last days (weekly chart). Own NVS entry, saved once a day.
+static constexpr uint32_t WEEK_MAGIC = 0x55465731;  // "UFW1"
+struct WeekLog {
+  uint32_t magic;
+  uint16_t min[MAX_ZONES][7];  // ring, idx = slot of "yesterday"
+  uint8_t idx;
+  uint8_t reserved[3];
+};
+
 void default_settings(Settings &s, uint8_t relay_count, bool active_low);
 void default_main(MainCfg &m);
+void default_extra(ExtraCfg &x);
 
 }  // namespace ufh
 }  // namespace esphome

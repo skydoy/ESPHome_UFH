@@ -12,7 +12,7 @@ from esphome.const import CONF_ID, CONF_TIME_ID
 
 CODEOWNERS = ["@skydoy"]
 DEPENDENCIES = ["network", "web_server_base"]
-AUTO_LOAD = ["json", "climate", "sensor", "binary_sensor", "switch"]
+AUTO_LOAD = ["json", "climate", "sensor", "binary_sensor", "switch", "button"]
 
 CONF_UFH_ID = "ufh_id"
 CONF_RELAYS = "relays"

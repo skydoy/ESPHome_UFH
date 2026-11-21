@@ -81,6 +81,15 @@ void default_settings(Settings &s, uint8_t relay_count, bool active_low) {
   }
 }
 
+void default_extra(ExtraCfg &x) {
+  memset(&x, 0, sizeof(x));
+  x.magic = EXTRA_MAGIC;
+  x.boost_x10 = 10;
+  x.boost_min = 60;
+  x.opt_outdoor = 0;
+  strncpy(x.alt_outdoor, "/sensor/outdoor_air_temp__r1t_", sizeof(x.alt_outdoor) - 1);
+}
+
 void default_main(MainCfg &m) {
   memset(&m, 0, sizeof(m));
   m.magic = MAIN_MAGIC;
@@ -170,6 +179,15 @@ void UFHComponent::setup() {
     default_main(this->m_);
   if (this->m_.mode > ZONE_HEAT)
     this->m_.mode = ZONE_AUTO;
+  this->pref_extra_ = global_preferences->make_preference<ExtraCfg>(fnv1_hash("ufh_extra_v1"));
+  if (!this->pref_extra_.load(&this->x_) || this->x_.magic != EXTRA_MAGIC)
+    default_extra(this->x_);
+  this->x_.alt_outdoor[sizeof(this->x_.alt_outdoor) - 1] = 0;
+  this->pref_week_ = global_preferences->make_preference<WeekLog>(fnv1_hash("ufh_week_v1"));
+  if (!this->pref_week_.load(&this->wk_) || this->wk_.magic != WEEK_MAGIC || this->wk_.idx > 6) {
+    memset(&this->wk_, 0, sizeof(this->wk_));
+    this->wk_.magic = WEEK_MAGIC;
+  }
   for (uint8_t i = 0; i < relays_.size(); i++)
     this->write_relay_(i, false);
 
@@ -237,6 +255,11 @@ void UFHComponent::save_settings_() {
 
 void UFHComponent::save_persist_() { this->pref_persist_.save(&this->p_); }
 
+void UFHComponent::save_extra_() {
+  this->pref_extra_.save(&this->x_);
+  global_preferences->sync();
+}
+
 void UFHComponent::save_main_() {
   this->pref_main_.save(&this->m_);
   global_preferences->sync();
@@ -262,6 +285,7 @@ void UFHComponent::apply_entities_() {
     r.name_temp = std::string(n) + " Temperature";
     r.name_follow = std::string(n) + " Follows Main";
     r.name_last = std::string(n) + " Last Reading";
+    r.name_boost = std::string(n) + " Boost";
   }
   for (auto *sw : zone_switches_) {
     uint8_t i = sw->zone() - 1;
@@ -271,6 +295,15 @@ void UFHComponent::apply_entities_() {
     if (!hide)
       sw->rename(zr_[i].name_follow.c_str());
     sw->set_internal(hide);
+  }
+  for (auto *b : zone_buttons_) {
+    uint8_t i = b->zone() - 1;
+    if (i >= MAX_ZONES)
+      continue;
+    bool hide = (i >= zc) || (s_.zones[i].leader != 0);
+    if (!hide)
+      b->rename(zr_[i].name_boost.c_str());
+    b->set_internal(hide);
   }
   for (auto *c : climates_) {
     if (c->zone() == 0)
@@ -595,6 +628,9 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
         if (mins > 0 && need_c > 0) {
           float rate = std::clamp(p_.rate_c_per_h[i], 0.1f, 5.0f);
           float need_min = need_c / rate * 60.0f;
+          // colder outside: the floor heats up slower, start earlier (up to x2 at -10 °C)
+          if (x_.opt_outdoor && !std::isnan(outdoor_) && millis() - outdoor_ms_ < 7200000UL)
+            need_min *= std::clamp(1.0f + 0.05f * (10.0f - outdoor_), 1.0f, 2.0f);
           if (need_min > 240)
             need_min = 240;
           if (mins <= need_min) {
@@ -611,6 +647,14 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
   }
   if (s_.house_mode == HOUSE_AWAY)
     t = std::min(t, x10(follow ? m_.eco_x10 : z.eco_x10));
+  if (r.boost_until_ms != 0) {
+    if ((int32_t) (millis() - r.boost_until_ms) >= 0) {
+      r.boost_until_ms = 0;
+      ESP_LOGI(TAG, "Zone %u: boost ended", i + 1);
+    } else {
+      t += x10(x_.boost_x10);
+    }
+  }
   if (s_.house_mode == HOUSE_HOME) {
     t += this->tariff_offset_(now);
     if (s_.opt_pv && z.pv_boost && pv_surplus_)
@@ -730,6 +774,60 @@ void UFHComponent::publish_main_(UFHZoneClimate *c, bool force) {
     c->current_temperature = cur;
     c->publish_state();
   }
+}
+
+void UFHComponent::boost_zone(int zone, int on) {
+  if (zone < 1 || zone > MAX_ZONES)
+    return;
+  ZoneRt &r = zr_[zone - 1];
+  bool start = on < 0 ? r.boost_until_ms == 0 : on > 0;
+  if (start) {
+    uint32_t until = millis() + (uint32_t) x_.boost_min * 60000UL;
+    r.boost_until_ms = until ? until : 1;
+    ESP_LOGI(TAG, "Zone %d: boost +%.1f °C for %u min", zone, x10(x_.boost_x10), x_.boost_min);
+  } else {
+    r.boost_until_ms = 0;
+    ESP_LOGI(TAG, "Zone %d: boost stopped", zone);
+  }
+  force_publish_ = true;
+}
+
+void UFHComponent::set_boost_delta(float v) {
+  x_.boost_x10 = to_x10(std::clamp(v, 0.5f, 5.0f));
+  this->save_extra_();
+}
+
+void UFHComponent::set_boost_min(uint16_t v) {
+  x_.boost_min = std::clamp<uint16_t>(v, 10, 480);
+  this->save_extra_();
+}
+
+void UFHComponent::set_outdoor_comp(bool on) {
+  x_.opt_outdoor = on;
+  this->save_extra_();
+}
+
+void UFHComponent::ha_set_outdoor_temperature(float t) {
+  if (std::isnan(t) || t < -50 || t > 60)
+    return;
+  outdoor_ = t;
+  outdoor_ms_ = millis();
+}
+
+static bool alt_fresh(uint32_t ms) { return ms != 0 && millis() - ms < 120000UL; }
+float UFHComponent::flow_temp() const { return s_.opt_altherma && alt_fresh(alt_ms_) ? (float) alt_flow_ : NAN; }
+float UFHComponent::return_temp() const { return s_.opt_altherma && alt_fresh(alt_ms_) ? (float) alt_return_ : NAN; }
+float UFHComponent::flow_delta() const {
+  float f = this->flow_temp(), r = this->return_temp();
+  return (std::isnan(f) || std::isnan(r)) ? NAN : roundf((f - r) * 10) / 10;
+}
+float UFHComponent::outdoor_temp() const {
+  return outdoor_ms_ != 0 && millis() - outdoor_ms_ < 7200000UL ? outdoor_ : NAN;
+}
+
+void UFHZoneButton::press_action() {
+  if (parent_ != nullptr)
+    parent_->boost_zone(zone_, -1);
 }
 
 void UFHComponent::set_follow_main(int zone, bool on) {
@@ -1097,11 +1195,31 @@ void UFHComponent::per_second_(uint32_t now_ms, const ESPTime &now) {
   }
   if (day != last_day_) {
     if (last_day_ != -1) {
+      // weekly chart: keep yesterday, then start a new day
+      wk_.idx = (wk_.idx + 1) % 7;
+      for (uint8_t i = 0; i < MAX_ZONES; i++)
+        wk_.min[i][wk_.idx] = (uint16_t) std::min<uint32_t>(zr_[i].today_s / 60, 1440);
+      this->pref_week_.save(&wk_);
       for (auto &z : zr_)
         z.today_s = 0;
       pump_today_s_ = 0;
     }
     last_day_ = day;
+  }
+  // outdoor temperature from ESPHome_Altherma
+  if (!std::isnan(alt_outdoor_) && alt_ms_ != 0 && alt_ms_ != outdoor_ms_ && now_ms - alt_ms_ < 120000UL) {
+    outdoor_ = alt_outdoor_;
+    outdoor_ms_ = alt_ms_;
+  }
+  // flow / return difference while the pump runs: odd values point at a flow problem
+  {
+    float dt = this->flow_delta();
+    bool bad = pump_out_ && !std::isnan(dt) && (dt < 1.0f || dt > 10.0f);
+    if (!bad)
+      dt_bad_since_ms_ = 0;
+    else if (dt_bad_since_ms_ == 0)
+      dt_bad_since_ms_ = now_ms;
+    dt_warn_ = bad && now_ms - dt_bad_since_ms_ > 20 * 60000UL;
   }
   uint8_t zc = this->effective_zone_count_();
   for (uint8_t i = 0; i < zc; i++) {
@@ -1131,6 +1249,11 @@ void UFHComponent::per_second_(uint32_t now_ms, const ESPTime &now) {
         w += (w.empty() ? "" : "; ") + std::string(s_.zones[i].name) + ": not heating";
       if (bits & WARN_FLOOR)
         w += (w.empty() ? "" : "; ") + std::string(s_.zones[i].name) + ": floor limit";
+    }
+    if (dt_warn_) {
+      char b[48];
+      snprintf(b, sizeof(b), "flow/return dT %.1f C", this->flow_delta());
+      w += (w.empty() ? "" : "; ") + std::string(b);
     }
     if (pump_out_ && !any_relay_ && ex_state_ == 0 && s_.pump_mode == PUMP_ON)
       w += (w.empty() ? "" : "; ") + std::string("pump on, no zone open");
@@ -1233,6 +1356,8 @@ void UFHComponent::start_sources_() {
   if (s_.opt_altherma && s_.altherma_host[0]) {
     snprintf(alt_url_flow_, sizeof(alt_url_flow_), "http://%s%s", s_.altherma_host, s_.altherma_flow);
     snprintf(alt_url_return_, sizeof(alt_url_return_), "http://%s%s", s_.altherma_host, s_.altherma_return);
+    if (x_.alt_outdoor[0])
+      snprintf(alt_url_outdoor_, sizeof(alt_url_outdoor_), "http://%s%s", s_.altherma_host, x_.alt_outdoor);
     this->altherma_task_start_();
   }
 }

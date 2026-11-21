@@ -19,6 +19,15 @@ All notable changes to the firmware and installer. Format:
   (timestamp, about 2 min resolution).
 - Main thermostat group opens / closes like the zones, with a summary (Comfort/Eco, target,
   zones following). Zones that follow the main thermostat show "follows main" instead of a slider.
+- **Boost** per zone: button (web page, Home Assistant, action `boost_zone`) adds Boost Temperature
+  (default +1 °C) for Boost Duration (default 60 min), then goes back by itself.
+- **Heat pump water** in the pump group: flow, return and their difference (ESPHome_Altherma link);
+  warning when the difference stays below 1 °C or above 10 °C for 20 min with the pump running.
+- **Outdoor compensation** (optional): optimum start begins earlier when it is cold outside (up to
+  twice as early at -10 °C). Outdoor temperature from ESPHome_Altherma or the action
+  `set_outdoor_temperature`.
+- **Weekly chart** in the Balance window: hours heating per zone for the last 7 days.
+- Blueprint `esphome_ufh_warnings.yaml`: phone notification for warnings (and when they clear).
 
 ## [0.3.2] - 2026-11-21
 ### Changed

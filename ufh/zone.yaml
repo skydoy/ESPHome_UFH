@@ -10,6 +10,14 @@ climate:
       sorting_group_id: group_zone${zone}
       sorting_weight: 1
 
+button:
+  - platform: ufh
+    zone: ${zone}
+    name: "Zone ${zone} Boost"
+    web_server:
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 2
+
 switch:
   - platform: ufh
     zone: ${zone}
@@ -17,7 +25,7 @@ switch:
     entity_category: config
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 2
+      sorting_weight: 3
 
 binary_sensor:
   - platform: ufh
@@ -25,7 +33,7 @@ binary_sensor:
     name: "Zone ${zone} Heating"
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 3
+      sorting_weight: 4
 
 sensor:
   - platform: ufh
@@ -34,7 +42,7 @@ sensor:
     name: "Zone ${zone} Temperature"
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 4
+      sorting_weight: 5
   - platform: ufh
     type: last_reading
     zone: ${zone}
@@ -42,14 +50,14 @@ sensor:
     entity_category: diagnostic
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 5
+      sorting_weight: 6
   - platform: ufh
     type: runtime_today
     zone: ${zone}
     name: "Zone ${zone} Runtime Today"
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 6
+      sorting_weight: 7
   - platform: ufh
     type: runtime_total
     zone: ${zone}
@@ -57,7 +65,7 @@ sensor:
     entity_category: diagnostic
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 7
+      sorting_weight: 8
   - platform: ufh
     type: duty_24h
     zone: ${zone}
@@ -65,4 +73,4 @@ sensor:
     entity_category: diagnostic
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 8
+      sorting_weight: 9

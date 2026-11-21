@@ -22,6 +22,7 @@
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/switch/switch.h"
+#include "esphome/components/button/button.h"
 #include "esphome/components/web_server_base/web_server_base.h"
 
 #ifdef USE_UFH_BLE
@@ -103,6 +104,20 @@ class UFHZoneSwitch : public switch_::Switch {
   uint8_t zone_{0};
 };
 
+// "Boost" button of a zone: +X °C for Y minutes (press again to stop).
+class UFHZoneButton : public button::Button {
+ public:
+  void set_parent(UFHComponent *p) { parent_ = p; }
+  void set_zone(uint8_t z) { zone_ = z; }
+  uint8_t zone() const { return zone_; }
+  void rename(const char *name) { this->name_ = decltype(this->name_)(StringRef(name)); }
+
+ protected:
+  void press_action() override;
+  UFHComponent *parent_{nullptr};
+  uint8_t zone_{0};
+};
+
 // Live state of one zone (not persisted).
 struct ZoneRt {
   float temp{NAN};
@@ -125,6 +140,7 @@ struct ZoneRt {
   float target{NAN};
   bool comfort_now{false};
   bool early_start{false};
+  uint32_t boost_until_ms{0};  // 0 = no boost
   // learning (optimum start)
   uint32_t heat_start_ms{0};
   float heat_start_temp{NAN};
@@ -133,7 +149,7 @@ struct ZoneRt {
   uint16_t hour_s[24]{};     // seconds on, per hour of the last 24 h (ring indexed by hour)
   uint32_t warn{0};          // WARN_* bits
   // name storage for renamed entities
-  std::string name_climate, name_heating, name_today, name_total, name_duty, name_temp, name_follow, name_last;
+  std::string name_climate, name_heating, name_today, name_total, name_duty, name_temp, name_follow, name_last, name_boost;
 };
 
 enum WarnBits : uint32_t {
@@ -179,6 +195,7 @@ class UFHComponent : public Component
   void add_zone_sensor(UFHZoneSensor *s) { zone_sensors_.push_back(s); }
   void add_zone_binary_sensor(UFHZoneBinarySensor *b) { zone_bins_.push_back(b); }
   void add_zone_switch(UFHZoneSwitch *s) { zone_switches_.push_back(s); }
+  void add_zone_button(UFHZoneButton *b) { zone_buttons_.push_back(b); }
 #ifdef USE_UFH_ONE_WIRE
   void set_one_wire_bus(one_wire::OneWireBus *b) { ow_bus_ = b; }
 #endif
@@ -209,6 +226,20 @@ class UFHComponent : public Component
   uint16_t hp_min_off_s() const { return s_.hp_min_off_s; }
   void set_hp_min_on_s(uint16_t v);
   void set_hp_min_off_s(uint16_t v);
+  // boost
+  void boost_zone(int zone, int on);  // on: 1 start, 0 stop, -1 toggle
+  float boost_delta() const { return x_.boost_x10 / 10.0f; }
+  uint16_t boost_min() const { return x_.boost_min; }
+  void set_boost_delta(float v);
+  void set_boost_min(uint16_t v);
+  // heat pump water / outdoor
+  float flow_temp() const;
+  float return_temp() const;
+  float flow_delta() const;
+  float outdoor_temp() const;
+  bool outdoor_comp() const { return x_.opt_outdoor; }
+  void set_outdoor_comp(bool on);
+  void ha_set_outdoor_temperature(float t);
   void set_house_mode(uint8_t m);
   void set_pump_mode(uint8_t m);
   bool problem() const { return !warnings_text_.empty(); }
@@ -279,6 +310,7 @@ class UFHComponent : public Component
   std::vector<UFHZoneSensor *> zone_sensors_;
   std::vector<UFHZoneBinarySensor *> zone_bins_;
   std::vector<UFHZoneSwitch *> zone_switches_;
+  std::vector<UFHZoneButton *> zone_buttons_;
   time::RealTimeClock *time_{nullptr};
   web_server_base::WebServerBase *web_base_{nullptr};
   bool default_active_low_{false};
@@ -298,6 +330,16 @@ class UFHComponent : public Component
   bool force_publish_{false};
   bool sw_published_[MAX_ZONES]{};
   uint32_t role_since_ms_[MAX_RELAYS]{};  // last change of each pump / demand relay (anti short-cycle)
+  // newer options + weekly log
+  ExtraCfg x_{};
+  ESPPreferenceObject pref_extra_;
+  WeekLog wk_{};
+  ESPPreferenceObject pref_week_;
+  void save_extra_();
+  float outdoor_{NAN};
+  uint32_t outdoor_ms_{0};
+  uint32_t dt_bad_since_ms_{0};
+  bool dt_warn_{false};
   ZoneRt zr_[MAX_ZONES];
   bool relay_state_[MAX_RELAYS]{};
 
@@ -360,6 +402,8 @@ class UFHComponent : public Component
   bool alt_task_started_{false};
   char alt_url_flow_[160]{};
   char alt_url_return_[160]{};
+  char alt_url_outdoor_[160]{};
+  volatile float alt_outdoor_{NAN};
 };
 
 extern UFHComponent *global_ufh;
