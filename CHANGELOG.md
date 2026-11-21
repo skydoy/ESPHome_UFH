@@ -4,6 +4,9 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Build error with ESPHome 2026.11 (`no match for operator=` on `ProgmemStringRef` in `ufh.h`):
+  renaming the zone entities now works on ESPHome 2026.10 and 2026.11. Firmware built with 2026.11.0.
 
 ## [0.3.0] - 2026-11-20
 ### Changed

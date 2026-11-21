@@ -78,7 +78,7 @@ jobs:
         uses: esphome/build-action@ae5408cdbc4f70692bf8e345c4982bca05a93667 # v8.1.0
         with:
           yaml-file: ${{ env.DEVICE_YAML }}
-          version: "2026.10.1"
+          version: "2026.11.0"
           complete-manifest: true
           release-url: ${{ github.server_url }}/${{ github.repository }}/releases
       - name: Stage the firmware in its Pages folder

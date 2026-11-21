@@ -18,7 +18,7 @@ jobs:
         uses: esphome/build-action@ae5408cdbc4f70692bf8e345c4982bca05a93667 # v8.1.0
         with:
           yaml-file: devices/ufh-diag.yaml
-          version: "2026.10.1"
+          version: "2026.11.0"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: ufh-diag

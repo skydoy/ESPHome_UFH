@@ -47,7 +47,7 @@ class UFHZoneClimate : public climate::Climate, public Component {
   void set_parent(UFHComponent *p) { parent_ = p; }
   void set_zone(uint8_t z) { zone_ = z; }
   uint8_t zone() const { return zone_; }
-  void rename(const char *name) { this->name_ = StringRef(name); }
+  void rename(const char *name) { this->name_ = decltype(this->name_)(StringRef(name)); }
   climate::ClimateTraits traits() override;
   void control(const climate::ClimateCall &call) override;
   float get_setup_priority() const override { return setup_priority::DATA; }
@@ -65,7 +65,7 @@ class UFHZoneSensor : public sensor::Sensor {
   void set_kind(uint8_t k) { kind_ = k; }
   uint8_t zone() const { return zone_; }
   uint8_t kind() const { return kind_; }
-  void rename(const char *name) { this->name_ = StringRef(name); }
+  void rename(const char *name) { this->name_ = decltype(this->name_)(StringRef(name)); }
 
  protected:
   uint8_t zone_{0};
@@ -76,7 +76,7 @@ class UFHZoneBinarySensor : public binary_sensor::BinarySensor {
  public:
   void set_zone(uint8_t z) { zone_ = z; }
   uint8_t zone() const { return zone_; }
-  void rename(const char *name) { this->name_ = StringRef(name); }
+  void rename(const char *name) { this->name_ = decltype(this->name_)(StringRef(name)); }
 
  protected:
   uint8_t zone_{0};
