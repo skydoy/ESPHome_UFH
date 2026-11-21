@@ -4,6 +4,8 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.4.0] - 2026-11-21
 ### Added
 - **Main thermostat ("Geral")**: Comfort / Eco temperatures and its own weekly schedule. Each zone
   has a **Follows Main** switch (in its group on the web page and in Home Assistant); zones that
@@ -95,7 +97,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.4.0
 [0.3.2]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.2
 [0.3.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.1
 [0.3.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.0
