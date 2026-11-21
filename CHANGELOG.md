@@ -4,6 +4,8 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.3.2] - 2026-11-21
 ### Changed
 - Web page: each zone has its own group, in number order (Z1, Z2 … Z11), closed by default.
   The header shows the zone name, temperature → target, heating and warnings; click to open.
@@ -64,7 +66,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.2
 [0.3.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.1
 [0.3.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.0
 [0.2.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.2.0
