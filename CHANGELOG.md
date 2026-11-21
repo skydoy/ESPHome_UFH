@@ -5,6 +5,11 @@ All notable changes to the firmware and installer. Format:
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-21
+### Fixed
+- The controller rebooted every 15 minutes when no Home Assistant was connected (ESPHome API
+  `reboot_timeout`). It now runs on its own without rebooting.
+
 ## [0.4.0] - 2026-11-21
 ### Added
 - **Main thermostat ("Geral")**: Comfort / Eco temperatures and its own weekly schedule. Each zone
@@ -97,7 +102,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.4.1
 [0.4.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.4.0
 [0.3.2]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.2
 [0.3.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.1

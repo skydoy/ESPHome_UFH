@@ -325,6 +325,9 @@ button:
 
 # Actions for Home Assistant (Developer tools -> Actions), e.g. esphome.<device>_set_zone_temperature
 api:
+  # The controller works on its own: never reboot because Home Assistant is not connected
+  # (ESPHome's default reboots after 15 min without an API client).
+  reboot_timeout: 0s
   actions:
     # Temperature from any Home Assistant sensor (source "Home Assistant" in the wizard;
     # blueprint: blueprints/automation/esphome_ufh_temperature_from_ha.yaml)

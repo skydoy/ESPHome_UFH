@@ -32,6 +32,7 @@ ethernet:
   power_pin: GPIO51
 
 api:
+  reboot_timeout: 0s
 ota:
   - platform: esphome
 web_server:
