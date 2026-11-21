@@ -224,7 +224,7 @@
                 r.style.display = z.fm ? 'none' : '';
                 var note = r.parentNode && r.parentNode.querySelector('.ufh-fm');
                 if (z.fm && !note) {
-                  note = document.createElement('span'); note.className = 'ufh-fm'; note.style.cssText = 'opacity:.8';
+                  note = document.createElement('span'); note.className = 'ufh-fm'; note.style.cssText = 'opacity:.8;margin-right:8px';
                   r.parentNode.insertBefore(note, r);
                 }
                 if (note) { note.textContent = z.fm ? '🏠 ' + TT('segue a geral', 'follows main') : ''; }
