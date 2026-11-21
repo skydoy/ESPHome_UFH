@@ -4,6 +4,8 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.3.1] - 2026-11-21
 ### Fixed
 - Build error with ESPHome 2026.11 (`no match for operator=` on `ProgmemStringRef` in `ufh.h`):
   renaming the zone entities now works on ESPHome 2026.10 and 2026.11. Firmware built with 2026.11.0.
@@ -58,7 +60,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.1
 [0.3.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.0
 [0.2.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.2.0
 [0.1.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.1.0
