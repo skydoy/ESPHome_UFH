@@ -34,7 +34,7 @@ Opcional: a placa aquece sozinha. O Home Assistant junta controlo remoto, histó
 | `esphome.<device>_set_zone_mode` | `zone`, `mode` (0 desligado, 1 automático, 2 aquecer) |
 | `esphome.<device>_set_zone_target` | `zone`, `temperature` |
 | `esphome.<device>_all_zones_off` | — |
-| `esphome.<device>_boost_zone` | `zone`, `on: true/false` |
+| `esphome.<device>_boost_zone` | `zone`, `start: true/false` |
 | `esphome.<device>_set_outdoor_temperature` | `temperature` (se não usares o ESPHome_Altherma) |
 
 ## Blueprints

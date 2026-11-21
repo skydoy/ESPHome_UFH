@@ -338,9 +338,9 @@ api:
       then:
         - lambda: id(ufh_ctl).ha_set_outdoor_temperature(temperature);
     - action: boost_zone
-      variables: { zone: int, on: bool }
+      variables: { zone: int, start: bool }
       then:
-        - lambda: "id(ufh_ctl).boost_zone(zone, on ? 1 : 0);"
+        - lambda: "id(ufh_ctl).boost_zone(zone, start ? 1 : 0);"
     - action: set_zone_target
       variables: { zone: int, temperature: float }
       then:

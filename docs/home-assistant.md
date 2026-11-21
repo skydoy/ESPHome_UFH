@@ -34,7 +34,7 @@ Optional: the device heats on its own. Home Assistant adds remote control, histo
 | `esphome.<device>_set_zone_mode` | `zone`, `mode` (0 off, 1 auto, 2 heat) |
 | `esphome.<device>_set_zone_target` | `zone`, `temperature` |
 | `esphome.<device>_all_zones_off` | — |
-| `esphome.<device>_boost_zone` | `zone`, `on: true/false` |
+| `esphome.<device>_boost_zone` | `zone`, `start: true/false` |
 | `esphome.<device>_set_outdoor_temperature` | `temperature` (if you do not use ESPHome_Altherma) |
 
 ## Blueprints
