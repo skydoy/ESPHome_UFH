@@ -10,9 +10,54 @@ web_server:
   log: true
   js_include: web-ui.js
   sorting_groups:
-    - id: group_zones
-      name: "Zones"
-      sorting_weight: 10
+    - id: group_zone1
+      name: "Zone 1"
+      sorting_weight: 11
+    - id: group_zone2
+      name: "Zone 2"
+      sorting_weight: 12
+    - id: group_zone3
+      name: "Zone 3"
+      sorting_weight: 13
+    - id: group_zone4
+      name: "Zone 4"
+      sorting_weight: 14
+    - id: group_zone5
+      name: "Zone 5"
+      sorting_weight: 15
+    - id: group_zone6
+      name: "Zone 6"
+      sorting_weight: 16
+    - id: group_zone7
+      name: "Zone 7"
+      sorting_weight: 17
+    - id: group_zone8
+      name: "Zone 8"
+      sorting_weight: 18
+    - id: group_zone9
+      name: "Zone 9"
+      sorting_weight: 19
+    - id: group_zone10
+      name: "Zone 10"
+      sorting_weight: 20
+    - id: group_zone11
+      name: "Zone 11"
+      sorting_weight: 21
+    - id: group_zone12
+      name: "Zone 12"
+      sorting_weight: 22
+    - id: group_zone13
+      name: "Zone 13"
+      sorting_weight: 23
+    - id: group_zone14
+      name: "Zone 14"
+      sorting_weight: 24
+    - id: group_zone15
+      name: "Zone 15"
+      sorting_weight: 25
+    - id: group_zone16
+      name: "Zone 16"
+      sorting_weight: 26
     - id: group_house
       name: "House"
       sorting_weight: 5

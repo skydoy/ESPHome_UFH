@@ -128,6 +128,78 @@
     }
     return null;
   }
+
+  // ---- one collapsible group per zone ("Zone N" sorting groups) ----
+  // Header: "▸ <zone name>" + live summary (temperature → target · heating), click opens/closes.
+  // Inside a group the rows lose the repeated zone name ("Thermostat", "Heating", ...).
+  var OPEN_KEY = 'esphome_ufh_open_zones';
+  function openZones() { try { return JSON.parse(localStorage.getItem(OPEN_KEY) || '[]'); } catch (e) { return []; } }
+  function setOpen(n, on) {
+    var o = openZones().filter(function (x) { return x !== n; });
+    if (on) o.push(n);
+    try { localStorage.setItem(OPEN_KEY, JSON.stringify(o)); } catch (e) {}
+  }
+  var ROW_LBL = {'': ['Termóstato', 'Thermostat'], 'Heating': ['A aquecer', 'Heating'], 'Temperature': ['Temperatura', 'Temperature'],
+                 'Runtime Today': ['Horas hoje', 'Runtime today'], 'Runtime Total': ['Horas total', 'Runtime total'],
+                 'Duty 24h': ['Ocupação 24 h', 'Duty 24 h']};
+  function TT(pt, en) { return lang === 'pt' ? pt : en; }
+  function fmt(v) { return (v === null || v === undefined || isNaN(v)) ? '—' : (+v).toFixed(1) + ' °C'; }
+  function zoneGroups(sr) {
+    var st = window.__ufhState, zs = (st && st.zones) || [], open = openZones();
+    sr.querySelectorAll('.tab-header').forEach(function (h) {
+      if (h.__zone === undefined) {
+        var m = /^Zon[ea] (\d+)$/.exec(h.textContent.trim());
+        h.__zone = m ? +m[1] : 0;
+      }
+      var n = h.__zone;
+      if (!n) return;
+      var box = h.nextElementSibling, z = zs[n - 1] || {}, name = z.n || ((lang === 'pt' ? 'Zona ' : 'Zone ') + n);
+      var isOpen = open.indexOf(n) >= 0;
+      var sum;
+      if (z.lead) {
+        var L = zs[z.lead - 1];
+        sum = TT('segue ', 'follows ') + (L && L.n ? L.n : 'Z' + z.lead);
+      } else if (z.n !== undefined) {
+        sum = fmt(z.t) + ' → ' + (z.m === 0 || z.tg === null || isNaN(z.tg) ? TT('desligada', 'off') : fmt(z.tg));
+      } else sum = '';
+      if (z.r) sum += (sum ? ' · ' : '') + '🔥 ' + TT('a aquecer', 'heating');
+      if (z.w) sum += ' ⚠️';
+      var key = (isOpen ? 1 : 0) + '|' + name + '|' + sum;
+      if (h.__key !== key) {
+        h.__key = key;
+        h.textContent = '';
+        h.style.cssText = 'cursor:pointer;display:flex;gap:8px;align-items:baseline;user-select:none;max-width:none;width:100%;box-sizing:border-box;border-radius:' + (isOpen ? '12px 12px 0 0' : '12px');
+        var c = document.createElement('span'); c.textContent = isOpen ? '▾' : '▸'; c.style.cssText = 'width:1em;display:inline-block';
+        var t = document.createElement('span'); t.textContent = name;
+        var r = document.createElement('span'); r.textContent = sum; r.style.cssText = 'margin-left:auto;font-weight:400;opacity:.8;font-size:.9em';
+        h.appendChild(c); h.appendChild(t); h.appendChild(r);
+      }
+      if (box && box.classList.contains('tab-container')) {
+        box.style.display = isOpen ? '' : 'none';
+        // shorter row names inside the group
+        if (isOpen && z.n) box.querySelectorAll('.entity-row').forEach(function (row) {
+          var nb = row.children && row.children[1];
+          if (!nb) return;
+          for (var c2 = 0; c2 < nb.childNodes.length; c2++) {
+            var tn = nb.childNodes[c2];
+            if (tn.nodeType !== 3 || !tn.nodeValue.trim()) continue;
+            if (tn.__en === undefined) tn.__en = tn.nodeValue.trim();
+            var en = tn.__en, rest = en === z.n ? '' : (en.indexOf(z.n + ' ') === 0 ? en.slice(z.n.length + 1) : null);
+            if (rest !== null && ROW_LBL[rest]) tn.nodeValue = ROW_LBL[rest][lang === 'pt' ? 0 : 1];
+          }
+        });
+      }
+      if (!h.__ufhClick) {
+        h.__ufhClick = true;
+        h.addEventListener('click', function () {
+          setOpen(h.__zone, openZones().indexOf(h.__zone) < 0);
+          h.__key = '';
+          zoneGroups(sr);
+        });
+      }
+    });
+  }
+  window.__ufhGroups = function () { var tb = tableEl(); if (tb) zoneGroups(tb.shadowRoot); };
   function translateTable() {
     var tb = tableEl();
     if (!tb) return false;
@@ -190,6 +262,7 @@
       el.textContent = (lang === 'pt' && pt) ? pt : en;
       if (ov != null) el.setAttribute('value', ov);
     });
+    zoneGroups(sr);
     if (!tb.__langObs) {
       tb.__langObs = new MutationObserver(function () { translateTableSoon(); });
       tb.__langObs.observe(sr, { childList: true, subtree: true });
@@ -394,7 +467,7 @@
   }
 
   function poll() {
-    getJSON('/ufh/state').then(function (s) { state = s; renderPanel(); }).catch(function () {});
+    getJSON('/ufh/state').then(function (s) { state = s; window.__ufhState = s; renderPanel(); if (window.__ufhGroups) window.__ufhGroups(); }).catch(function () {});
   }
 
   // ---------- modal helpers ----------

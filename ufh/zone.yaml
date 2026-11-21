@@ -1,19 +1,22 @@
 # Entities of one zone (var: zone). Created for every relay of the board; zones that do not
 # exist (zone count set in the setup wizard) are hidden at boot. Names come from the wizard.
+# Each zone has its own group on the web page ("Zone N", opened / closed by web-ui.js).
 climate:
   - platform: ufh
     zone: ${zone}
     name: "Zone ${zone}"
     icon: mdi:home-thermometer-outline
     web_server:
-      sorting_group_id: group_zones
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 1
 
 binary_sensor:
   - platform: ufh
     zone: ${zone}
     name: "Zone ${zone} Heating"
     web_server:
-      sorting_group_id: group_zones
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 2
 
 sensor:
   - platform: ufh
@@ -21,24 +24,28 @@ sensor:
     zone: ${zone}
     name: "Zone ${zone} Temperature"
     web_server:
-      sorting_group_id: group_zones
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 3
   - platform: ufh
     type: runtime_today
     zone: ${zone}
     name: "Zone ${zone} Runtime Today"
     web_server:
-      sorting_group_id: group_stats
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 4
   - platform: ufh
     type: runtime_total
     zone: ${zone}
     name: "Zone ${zone} Runtime Total"
     entity_category: diagnostic
     web_server:
-      sorting_group_id: group_stats
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 5
   - platform: ufh
     type: duty_24h
     zone: ${zone}
     name: "Zone ${zone} Duty 24h"
     entity_category: diagnostic
     web_server:
-      sorting_group_id: group_stats
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 6

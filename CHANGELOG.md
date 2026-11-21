@@ -4,6 +4,10 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Web page: each zone has its own group, in number order (Z1, Z2 … Z11), closed by default.
+  The header shows the zone name, temperature → target, heating and warnings; click to open.
+  Inside, rows are short (Thermostat, Heating, Temperature, Runtime). Open zones are remembered.
 
 ## [0.3.1] - 2026-11-21
 ### Fixed
