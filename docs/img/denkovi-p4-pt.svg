@@ -77,39 +77,39 @@
 <text x="180" y="1020" font-size="12" fill="#333" text-anchor="start" font-weight="normal">← 1 e 2 em baixo (há um “2”</text>
 <text x="180" y="1036" font-size="12" fill="#333" text-anchor="start" font-weight="normal">   impresso junto à ficha)</text>
 <text x="350" y="818" font-size="13" fill="#333" text-anchor="start" font-weight="normal">JP2 (comprida, 1 fila)</text>
-<rect x="360" y="830" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
-<text x="377" y="846" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">1</text>
-<text x="404" y="846" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R9</text>
-<rect x="360" y="855" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
-<text x="377" y="871" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">2</text>
-<text x="404" y="871" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R10</text>
-<rect x="360" y="880" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
-<text x="377" y="896" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">3</text>
-<text x="404" y="896" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R11</text>
-<rect x="360" y="905" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
-<text x="377" y="921" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">4</text>
-<text x="404" y="921" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R12</text>
-<rect x="360" y="930" width="34" height="22" rx="4" fill="#eee" stroke="#333" stroke-width="2"/>
-<text x="377" y="946" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">5</text>
-<text x="404" y="946" font-size="12" fill="#333" text-anchor="start" font-weight="normal">—</text>
-<rect x="360" y="955" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
-<text x="377" y="971" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">6</text>
-<text x="404" y="971" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
-<rect x="360" y="980" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
-<text x="377" y="996" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">7</text>
-<text x="404" y="996" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
-<rect x="360" y="1005" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
-<text x="377" y="1021" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">8</text>
-<text x="404" y="1021" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
-<rect x="360" y="1030" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
-<text x="377" y="1046" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">9</text>
-<text x="404" y="1046" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
-<rect x="360" y="1055" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
-<text x="377" y="1071" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">10</text>
-<text x="404" y="1071" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
-<text x="460" y="890" font-size="12" fill="#333" text-anchor="start" font-weight="normal">o lado do pino 1</text>
-<text x="460" y="906" font-size="12" fill="#333" text-anchor="start" font-weight="normal">confirma-se com o</text>
-<text x="460" y="922" font-size="12" fill="#333" text-anchor="start" font-weight="normal">multímetro →</text>
+<rect x="360" y="1055" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="1071" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">1</text>
+<text x="404" y="1071" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R9</text>
+<rect x="360" y="1030" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="1046" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">2</text>
+<text x="404" y="1046" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R10</text>
+<rect x="360" y="1005" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="1021" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">3</text>
+<text x="404" y="1021" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R11</text>
+<rect x="360" y="980" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="996" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">4</text>
+<text x="404" y="996" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R12</text>
+<rect x="360" y="955" width="34" height="22" rx="4" fill="#eee" stroke="#333" stroke-width="2"/>
+<text x="377" y="971" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">5</text>
+<text x="404" y="971" font-size="12" fill="#333" text-anchor="start" font-weight="normal">—</text>
+<rect x="360" y="930" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="377" y="946" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">6</text>
+<text x="404" y="946" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
+<rect x="360" y="905" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="377" y="921" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">7</text>
+<text x="404" y="921" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
+<rect x="360" y="880" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="896" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">8</text>
+<text x="404" y="896" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<rect x="360" y="855" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="871" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">9</text>
+<text x="404" y="871" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<rect x="360" y="830" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="846" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">10</text>
+<text x="404" y="846" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<text x="460" y="890" font-size="12" fill="#333" text-anchor="start" font-weight="normal">pino 1 em baixo,</text>
+<text x="460" y="906" font-size="12" fill="#333" text-anchor="start" font-weight="normal">do lado do furo</text>
+<text x="460" y="922" font-size="12" fill="#333" text-anchor="start" font-weight="normal">grande (medido)</text>
 <rect x="610" y="770" width="540" height="330" rx="12" fill="#fff6e8" stroke="#f0a020" stroke-width="2"/>
-<text x="626" y="798" font-size="15" fill="#5a3b00" text-anchor="start" font-weight="bold">Passo a passo (com multímetro)</text><text x="626" y="828" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">1. Tudo desligado. Multímetro em continuidade (bip), ponta preta</text><text x="626" y="852" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   no GND da placa de relés (pino “GND” da ficha AIN, à esquerda).</text><text x="626" y="876" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">2. JP2 (comprida): 3 pinos seguidos que apitam = 8, 9, 10.</text><text x="626" y="900" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   Os 2 a seguir = 7 e 6 (+12 V). O da outra ponta = pino 1.</text><text x="626" y="924" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">3. JP1 (2×5): o pino que apita = 9; o 10 está ao lado;</text><text x="626" y="948" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   o 1 está na outra ponta, na mesma coluna do 9.</text><text x="626" y="972" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">4. Fonte 12 V da antiga DAEnetIP4: + → JP2 pino 6, − → JP2 pino 8.</text><text x="626" y="996" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   Liga a fonte: nenhum relé deve ligar.</text><text x="626" y="1020" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">5. Mede JP1 pino 1 contra GND: tem de dar 0 V.</text><text x="626" y="1044" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">6. Só então liga os fios dos relés e o GND à Unit PoE-P4</text><text x="626" y="1068" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   (alimentada pelo PoE, separada dos 12 V).</text>
+<text x="626" y="798" font-size="15" fill="#5a3b00" text-anchor="start" font-weight="bold">Passo a passo (com multímetro)</text><text x="626" y="828" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">1. Tudo desligado. Multímetro em continuidade (bip), ponta preta</text><text x="626" y="852" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   no GND da placa de relés (pino “GND” da ficha AIN, à esquerda).</text><text x="626" y="876" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">2. JP2 (comprida): os 3 de cima apitam = 10, 9, 8 (GND).</text><text x="626" y="900" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   A seguir 7 e 6 (+12 V). O pino 1 é o de baixo.</text><text x="626" y="924" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">3. JP1 (2×5): o pino que apita = 9; o 10 está ao lado;</text><text x="626" y="948" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   o 1 está na outra ponta, na mesma coluna do 9.</text><text x="626" y="972" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">4. Fonte 12 V da antiga DAEnetIP4: + → JP2 pino 6, − → JP2 pino 8.</text><text x="626" y="996" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   Liga a fonte: nenhum relé deve ligar.</text><text x="626" y="1020" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">5. Mede JP1 pino 1 contra GND: tem de dar 0 V.</text><text x="626" y="1044" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">6. Só então liga os fios dos relés e o GND à Unit PoE-P4</text><text x="626" y="1068" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   (alimentada pelo PoE, separada dos 12 V).</text>
 </svg>

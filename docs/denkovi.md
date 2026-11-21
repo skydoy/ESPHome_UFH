@@ -16,7 +16,7 @@ Step-by-step guide for a **Denkovi 12-relay board** (DAE-PB/Ro12/Di8/Ai8) driven
 
 ![DAEnetIP4](img/denkovi-1-daenetip4-en.jpg){ width="420" }
 
-Unscrew and remove the small board (DAEnetIP4). It is no longer used.
+Unscrew and remove the small board (DAEnetIP4). It is no longer used. The **12 V** supply was plugged into its jack (yellow in the photo): it now goes straight to the relay board (step 3).
 
 ## 2. Find the relay board sockets
 
@@ -29,23 +29,41 @@ Unscrew and remove the small board (DAEnetIP4). It is no longer used.
 | **JP2** (long, single row) | JP3 | relays 9–12 (pins 1–4) and **12 V supply** (pins 6–7 = +, 8–10 = −) |
 | The other two 2×5 | JP4 / JP2 | not used (analog and digital inputs) |
 
-## 3. Wiring diagram
+## 3. 12 V supply and relays 9–12 (JP2)
+
+Without the DAEnetIP4 the relay board no longer gets 12 V: connect the same supply to **JP2**. Pin 1 is **at the bottom** (next to the big hole) and the 3 GND pins **at the top**.
+
+![JP2 pin by pin](img/denkovi-3-jp2-en.jpg){ width="640" }
+
+| JP2 | Connect to |
+|---|---|
+| 10, 9, 8 (top) | GND — the supply **−** goes to **8** |
+| 7, 6 | **+12 V** — the supply **+** goes to **6** |
+| 5 | nothing |
+| 4 | Relay 12 (pump) → Unit PoE-P4 SDIO pin 1 |
+| 3 | Relay 11 → Hat2 pin 16 |
+| 2 | Relay 10 → Hat2 pin 14 |
+| 1 (bottom) | Relay 9 → Hat2 pin 12 |
+
+To connect the supply without cutting its cable use a **female DC jack to screw terminal adapter** (the jack centre pin is +) and two Dupont wires.
+
+## 4. Wiring diagram
 
 ![Denkovi → Unit PoE-P4 wiring](img/denkovi-p4-en.svg)
 
 !!! warning "JP2 pins 6 and 7 carry +12 V"
     Never connect them to the Unit PoE-P4. Connect **only pins 1–4** of JP2 to the ESP. The 12 V go from the supply to pins 6 (+) and 8 (−).
 
-## 4. Step by step with a multimeter
+## 5. Step by step with a multimeter
 
 1. Everything off. Multimeter on continuity (beep), black probe on the relay board **GND** ("GND" pin of the AIN header, on the left).
-2. **JP2**: the 3 pins in a row that beep are **8, 9 and 10**. The next 2 are **7 and 6** (+12 V). The one at the other end is **pin 1**.
+2. **JP2**: the **top** 3 pins beep (10, 9, 8 = GND). The next 2 are **7 and 6** (+12 V). The bottom one is **pin 1**. If your board is the other way round, reverse the numbering.
 3. **JP1**: the pin that beeps is **9**; **10** is next to it; **1** is at the other end, in the same column as 9 (by the printed "2", 1 and 2 are at the bottom).
 4. Connect the 12 V supply: **+ → JP2 pin 6**, **− → JP2 pin 8**. No relay should switch on.
 5. Measure **JP1 pin 1** to GND: it must read **0 V**.
 6. Only then connect the relay wires and GND to the Unit PoE-P4, as in the diagram. The Unit PoE-P4 is powered by PoE, separate from the 12 V; the only shared wire is GND.
 
-## 5. Setup wizard
+## 6. Setup wizard
 
 On the device page (http://device-ip/) → **Settings**:
 

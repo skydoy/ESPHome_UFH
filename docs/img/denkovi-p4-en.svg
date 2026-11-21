@@ -77,39 +77,39 @@
 <text x="180" y="1020" font-size="12" fill="#333" text-anchor="start" font-weight="normal">← 1 and 2 at the bottom (a “2”</text>
 <text x="180" y="1036" font-size="12" fill="#333" text-anchor="start" font-weight="normal">   is printed next to the socket)</text>
 <text x="350" y="818" font-size="13" fill="#333" text-anchor="start" font-weight="normal">JP2 (long, single row)</text>
-<rect x="360" y="830" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
-<text x="377" y="846" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">1</text>
-<text x="404" y="846" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R9</text>
-<rect x="360" y="855" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
-<text x="377" y="871" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">2</text>
-<text x="404" y="871" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R10</text>
-<rect x="360" y="880" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
-<text x="377" y="896" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">3</text>
-<text x="404" y="896" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R11</text>
-<rect x="360" y="905" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
-<text x="377" y="921" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">4</text>
-<text x="404" y="921" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R12</text>
-<rect x="360" y="930" width="34" height="22" rx="4" fill="#eee" stroke="#333" stroke-width="2"/>
-<text x="377" y="946" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">5</text>
-<text x="404" y="946" font-size="12" fill="#333" text-anchor="start" font-weight="normal">—</text>
-<rect x="360" y="955" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
-<text x="377" y="971" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">6</text>
-<text x="404" y="971" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
-<rect x="360" y="980" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
-<text x="377" y="996" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">7</text>
-<text x="404" y="996" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
-<rect x="360" y="1005" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
-<text x="377" y="1021" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">8</text>
-<text x="404" y="1021" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
-<rect x="360" y="1030" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
-<text x="377" y="1046" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">9</text>
-<text x="404" y="1046" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
-<rect x="360" y="1055" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
-<text x="377" y="1071" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">10</text>
-<text x="404" y="1071" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
-<text x="460" y="890" font-size="12" fill="#333" text-anchor="start" font-weight="normal">the pin 1 end</text>
-<text x="460" y="906" font-size="12" fill="#333" text-anchor="start" font-weight="normal">is confirmed with the</text>
-<text x="460" y="922" font-size="12" fill="#333" text-anchor="start" font-weight="normal">multimeter →</text>
+<rect x="360" y="1055" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="1071" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">1</text>
+<text x="404" y="1071" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R9</text>
+<rect x="360" y="1030" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="1046" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">2</text>
+<text x="404" y="1046" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R10</text>
+<rect x="360" y="1005" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="1021" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">3</text>
+<text x="404" y="1021" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R11</text>
+<rect x="360" y="980" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="996" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">4</text>
+<text x="404" y="996" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R12</text>
+<rect x="360" y="955" width="34" height="22" rx="4" fill="#eee" stroke="#333" stroke-width="2"/>
+<text x="377" y="971" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">5</text>
+<text x="404" y="971" font-size="12" fill="#333" text-anchor="start" font-weight="normal">—</text>
+<rect x="360" y="930" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="377" y="946" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">6</text>
+<text x="404" y="946" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
+<rect x="360" y="905" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="377" y="921" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">7</text>
+<text x="404" y="921" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
+<rect x="360" y="880" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="896" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">8</text>
+<text x="404" y="896" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<rect x="360" y="855" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="871" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">9</text>
+<text x="404" y="871" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<rect x="360" y="830" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="846" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">10</text>
+<text x="404" y="846" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<text x="460" y="890" font-size="12" fill="#333" text-anchor="start" font-weight="normal">pin 1 at the bottom,</text>
+<text x="460" y="906" font-size="12" fill="#333" text-anchor="start" font-weight="normal">next to the big</text>
+<text x="460" y="922" font-size="12" fill="#333" text-anchor="start" font-weight="normal">hole (measured)</text>
 <rect x="610" y="770" width="540" height="330" rx="12" fill="#fff6e8" stroke="#f0a020" stroke-width="2"/>
-<text x="626" y="798" font-size="15" fill="#5a3b00" text-anchor="start" font-weight="bold">Step by step (with a multimeter)</text><text x="626" y="828" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">1. Everything off. Multimeter on continuity (beep), black probe</text><text x="626" y="852" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   on the relay board GND (“GND” pin of the AIN header, on the left).</text><text x="626" y="876" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">2. JP2 (long): 3 pins in a row that beep = 8, 9, 10.</text><text x="626" y="900" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   The next 2 = 7 and 6 (+12 V). The one at the other end = pin 1.</text><text x="626" y="924" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">3. JP1 (2×5): the pin that beeps = 9; 10 is next to it;</text><text x="626" y="948" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   1 is at the other end, in the same column as 9.</text><text x="626" y="972" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">4. 12 V supply of the old DAEnetIP4: + → JP2 pin 6, − → JP2 pin 8.</text><text x="626" y="996" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   Power it: no relay should switch on.</text><text x="626" y="1020" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">5. Measure JP1 pin 1 to GND: it must read 0 V.</text><text x="626" y="1044" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">6. Only then connect the relay wires and GND to the Unit PoE-P4</text><text x="626" y="1068" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   (powered by PoE, separate from the 12 V).</text>
+<text x="626" y="798" font-size="15" fill="#5a3b00" text-anchor="start" font-weight="bold">Step by step (with a multimeter)</text><text x="626" y="828" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">1. Everything off. Multimeter on continuity (beep), black probe</text><text x="626" y="852" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   on the relay board GND (“GND” pin of the AIN header, on the left).</text><text x="626" y="876" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">2. JP2 (long): the top 3 beep = 10, 9, 8 (GND).</text><text x="626" y="900" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   Then 7 and 6 (+12 V). Pin 1 is the bottom one.</text><text x="626" y="924" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">3. JP1 (2×5): the pin that beeps = 9; 10 is next to it;</text><text x="626" y="948" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   1 is at the other end, in the same column as 9.</text><text x="626" y="972" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">4. 12 V supply of the old DAEnetIP4: + → JP2 pin 6, − → JP2 pin 8.</text><text x="626" y="996" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   Power it: no relay should switch on.</text><text x="626" y="1020" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">5. Measure JP1 pin 1 to GND: it must read 0 V.</text><text x="626" y="1044" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">6. Only then connect the relay wires and GND to the Unit PoE-P4</text><text x="626" y="1068" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   (powered by PoE, separate from the 12 V).</text>
 </svg>

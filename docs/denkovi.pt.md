@@ -16,7 +16,7 @@ Guia passo a passo para quem tem uma **placa de relés Denkovi de 12 relés** (D
 
 ![DAEnetIP4](img/denkovi-1-daenetip4-pt.jpg){ width="420" }
 
-Desaperta e retira a placa pequena (DAEnetIP4). Deixa de ser usada.
+Desaperta e retira a placa pequena (DAEnetIP4). Deixa de ser usada. A fonte de **12 V** estava ligada ao jack dela (amarelo na foto): passa a ligar diretamente à placa de relés (passo 3).
 
 ## 2. Identifica as fichas da placa de relés
 
@@ -29,23 +29,41 @@ Desaperta e retira a placa pequena (DAEnetIP4). Deixa de ser usada.
 | **JP2** (comprida, 1 fila) | JP3 | relés 9–12 (pinos 1–4) e **alimentação 12 V** (pinos 6–7 = +, 8–10 = −) |
 | As outras duas 2×5 | JP4 / JP2 | não se usam (entradas analógicas e digitais) |
 
-## 3. Esquema de ligações
+## 3. Alimentação 12 V e relés 9–12 (JP2)
+
+Sem a DAEnetIP4, a placa de relés deixa de receber os 12 V: liga a mesma fonte à **JP2**. O pino 1 fica **em baixo** (do lado do furo grande) e os 3 GND **em cima**.
+
+![JP2 pino a pino](img/denkovi-3-jp2-pt.jpg){ width="640" }
+
+| JP2 | Liga a |
+|---|---|
+| 10, 9, 8 (em cima) | GND — o **−** da fonte vai ao **8** |
+| 7, 6 | **+12 V** — o **+** da fonte vai ao **6** |
+| 5 | nada |
+| 4 | Relé 12 (bomba) → Unit PoE-P4 SDIO pino 1 |
+| 3 | Relé 11 → Hat2 pino 16 |
+| 2 | Relé 10 → Hat2 pino 14 |
+| 1 (em baixo) | Relé 9 → Hat2 pino 12 |
+
+Para ligar a fonte sem cortar o cabo usa um **adaptador de jack fêmea para bornes** (o pino interior do jack é o +) e dois fios Dupont.
+
+## 4. Esquema de ligações
 
 ![Esquema Denkovi → Unit PoE-P4](img/denkovi-p4-pt.svg)
 
 !!! warning "Os pinos 6 e 7 da JP2 têm +12 V"
     Nunca os ligues à Unit PoE-P4. Liga **só os pinos 1–4** da JP2 ao ESP. Os 12 V vão da fonte para os pinos 6 (+) e 8 (−).
 
-## 4. Passo a passo com o multímetro
+## 5. Passo a passo com o multímetro
 
 1. Tudo desligado. Multímetro em continuidade (bip), ponta preta no **GND** da placa de relés (pino "GND" da ficha AIN, à esquerda).
-2. **JP2**: os 3 pinos seguidos que apitam são o **8, 9 e 10**. Os 2 a seguir são o **7 e 6** (+12 V). O da outra ponta é o **pino 1**.
+2. **JP2**: os 3 pinos **de cima** apitam (10, 9, 8 = GND). Os 2 a seguir são o **7 e 6** (+12 V). O de baixo é o **pino 1**. Se na tua placa for ao contrário, inverte a numeração.
 3. **JP1**: o pino que apita é o **9**; o **10** está ao lado; o **1** está na outra ponta, na mesma coluna do 9 (pela marca "2" impressa, 1 e 2 ficam em baixo).
 4. Liga a fonte de 12 V: **+ → JP2 pino 6**, **− → JP2 pino 8**. Nenhum relé deve ligar.
 5. Mede **JP1 pino 1** contra o GND: tem de dar **0 V**.
 6. Só então liga os fios dos relés e o GND à Unit PoE-P4, como no esquema. A Unit PoE-P4 é alimentada pelo PoE, separada dos 12 V; o único fio em comum é o GND.
 
-## 5. Assistente da placa
+## 6. Assistente da placa
 
 Na página da placa (http://IP-da-placa/) → **Definições**:
 
