@@ -211,6 +211,7 @@ void UFHComponent::setup() {
 
   this->apply_entities_();
   this->start_sources_();
+  this->log_event_(EV_BOOT);
   this->last_persist_ms_ = millis();
 }
 
@@ -371,9 +372,36 @@ void UFHComponent::on_shutdown() {
   this->save_persist_();
 }
 
+void UFHComponent::log_event_(uint8_t kind, uint8_t zone, float a, float b, const char *txt) {
+  EventEntry e{};
+  ESPTime now = time_ != nullptr ? time_->now() : ESPTime{};
+  e.t = now.is_valid() ? (uint32_t) now.timestamp : (0x80000000UL | (millis() / 1000));
+  e.kind = kind;
+  e.zone = zone;
+  e.a_x10 = std::isnan(a) ? INT16_MIN : (int16_t) lroundf(a * 10);
+  e.b_x10 = std::isnan(b) ? INT16_MIN : (int16_t) lroundf(b * 10);
+  if (txt != nullptr)
+    strncpy(e.txt, txt, sizeof(e.txt) - 1);
+  std::lock_guard<std::mutex> lock(log_mtx_);
+  log_[log_head_] = e;
+  log_head_ = (log_head_ + 1) % 30;
+  if (log_count_ < 30)
+    log_count_++;
+}
+
 void UFHComponent::write_relay_(uint8_t idx, bool on) {
   if (idx >= relays_.size())
     return;
+  if (relay_state_[idx] != on && relays_rewritten_) {
+    uint8_t zc = this->effective_zone_count_();
+    if (idx < zc) {
+      if (s_.zones[idx].leader == 0)
+        this->log_event_(on ? EV_ZONE_OPEN : EV_ZONE_CLOSE, idx + 1, zr_[idx].has_temp ? zr_[idx].temp : NAN,
+                         zr_[idx].target);
+    } else if (s_.relay_role[idx] != ROLE_NONE) {
+      this->log_event_(on ? EV_RELAY_ON : EV_RELAY_OFF, idx + 1);
+    }
+  }
   relay_state_[idx] = on;
   relays_[idx]->set_state(s_.relay_active_low ? !on : on);
 }
@@ -445,9 +473,26 @@ void UFHComponent::ha_set_pv_surplus(bool on) {
 void UFHComponent::set_house_mode(uint8_t m) {
   if (m > HOUSE_SUMMER)
     return;
+  if (m != s_.house_mode)
+    this->log_event_(EV_HOUSE_MODE, 0, m);
   s_.house_mode = m;
   this->pref_settings_.save(&s_);
   ESP_LOGI(TAG, "House mode: %u", m);
+}
+
+void UFHComponent::set_heating(bool on) {
+  if (!on) {
+    if (s_.house_mode == HOUSE_SUMMER)
+      return;
+    x_.prev_house = s_.house_mode;
+    this->save_extra_();
+    this->set_house_mode(HOUSE_SUMMER);
+  } else {
+    if (s_.house_mode != HOUSE_SUMMER)
+      return;
+    uint8_t p = x_.prev_house;
+    this->set_house_mode(p < HOUSE_SUMMER ? p : HOUSE_HOME);
+  }
 }
 
 void UFHComponent::set_pump_mode(uint8_t m) {
@@ -650,6 +695,7 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
   if (r.boost_until_ms != 0) {
     if ((int32_t) (millis() - r.boost_until_ms) >= 0) {
       r.boost_until_ms = 0;
+      this->log_event_(EV_BOOST_OFF, i + 1);
       ESP_LOGI(TAG, "Zone %u: boost ended", i + 1);
     } else {
       t += x10(x_.boost_x10);
@@ -727,8 +773,13 @@ void UFHComponent::main_control_(const climate::ClimateCall &call) {
     ESP_LOGI(TAG, "Main thermostat: %s = %.1f °C", main_comfort_now_ ? "Comfort" : "Eco", t);
     save = true;
   }
-  if (save)
+  if (save) {
     this->save_main_();
+  }
+  {
+    float mt = this->main_target_(now);
+    this->log_event_(EV_MAIN, 0, mt, m_.mode == ZONE_OFF ? -1 : (main_comfort_now_ ? 1 : 0));
+  }
   force_publish_ = true;
 }
 
@@ -784,8 +835,11 @@ void UFHComponent::boost_zone(int zone, int on) {
   if (start) {
     uint32_t until = millis() + (uint32_t) x_.boost_min * 60000UL;
     r.boost_until_ms = until ? until : 1;
+    this->log_event_(EV_BOOST_ON, zone, x_.boost_min);
     ESP_LOGI(TAG, "Zone %d: boost +%.1f °C for %u min", zone, x10(x_.boost_x10), x_.boost_min);
   } else {
+    if (r.boost_until_ms != 0)
+      this->log_event_(EV_BOOST_OFF, zone);
     r.boost_until_ms = 0;
     ESP_LOGI(TAG, "Zone %d: boost stopped", zone);
   }
@@ -839,6 +893,7 @@ void UFHComponent::set_follow_main(int zone, bool on) {
   if ((bool) z.follow_main != on) {
     z.follow_main = on;
     zr_[zone - 1].override_active = false;
+    this->log_event_(EV_FOLLOW, zone, on ? 1 : 0);
     this->save_settings_();
     ESP_LOGI(TAG, "Zone %d %s the main thermostat", zone, on ? "follows" : "no longer follows");
   }
@@ -1257,6 +1312,13 @@ void UFHComponent::per_second_(uint32_t now_ms, const ESPTime &now) {
     }
     if (pump_out_ && !any_relay_ && ex_state_ == 0 && s_.pump_mode == PUMP_ON)
       w += (w.empty() ? "" : "; ") + std::string("pump on, no zone open");
+    if (w != last_warn_logged_) {
+      if (w.empty())
+        this->log_event_(EV_WARNING_CLEAR);
+      else if (w != "setup")
+        this->log_event_(EV_WARNING, 0, NAN, NAN, w.c_str());
+      last_warn_logged_ = w;
+    }
     warnings_text_ = w;
   }
 }

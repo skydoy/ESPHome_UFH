@@ -4,6 +4,7 @@
 //   GET  /ufh/config                                       settings (wizard)
 //   POST /ufh/config   (application/json)                  save settings
 //   POST /ufh/restart                                      restart the device
+//   GET  /ufh/log                                           event log (last 30, newest first)
 //   GET  /ufh/scan                                          search the 1-Wire bus again
 // Runs in the HTTP server task: everything shared with loop() is guarded by mtx_.
 #include "ufh.h"
@@ -91,6 +92,11 @@ class UFHWebHandler : public AsyncWebHandler {
     }
     if (u == "/ufh/state") {
       std::string out = p_->web_state_json();
+      request->send(200, "application/json", out.c_str());
+      return;
+    }
+    if (u == "/ufh/log") {
+      std::string out = p_->web_log_json();
       request->send(200, "application/json", out.c_str());
       return;
     }
@@ -264,6 +270,34 @@ static void src_to_json(JsonObject o, const SourceCfg &s) {
   o["key"] = s.key;
 }
 
+std::string UFHComponent::web_log_json() {
+  JsonDocument doc;
+  JsonArray arr = doc.to<JsonArray>();
+  {
+    std::lock_guard<std::mutex> lock(log_mtx_);
+    for (uint8_t n = 0; n < log_count_; n++) {
+      const EventEntry &e = log_[(log_head_ + 30 - 1 - n) % 30];
+      JsonObject o = arr.add<JsonObject>();
+      bool up = e.t & 0x80000000UL;
+      o["t"] = up ? (e.t & 0x7FFFFFFFUL) : e.t;
+      if (up)
+        o["up"] = true;
+      o["k"] = e.kind;
+      if (e.zone)
+        o["z"] = e.zone;
+      if (e.a_x10 != INT16_MIN)
+        o["a"] = e.a_x10 / 10.0f;
+      if (e.b_x10 != INT16_MIN)
+        o["b"] = e.b_x10 / 10.0f;
+      if (e.txt[0])
+        o["x"] = e.txt;
+    }
+  }
+  std::string out;
+  serializeJson(doc, out);
+  return out;
+}
+
 std::string UFHComponent::web_config_json() {
   std::lock_guard<std::mutex> lock(mtx_);
   JsonDocument doc;
@@ -420,6 +454,8 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
   u8("zone_count", s_.zone_count, 1, (int) relays_.size(), true);
   u8("active_low", s_.relay_active_low, 0, 1, false);
   u8("house", s_.house_mode, 0, HOUSE_SUMMER, false);
+  if (root["heating"].is<bool>())
+    this->set_heating(root["heating"].as<bool>());
   u8("pump_mode", s_.pump_mode, 0, PUMP_OFF, false);
   if (root["roles"].is<JsonArrayConst>()) {
     uint8_t k = 0;
@@ -617,6 +653,7 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
   for (uint8_t k = 0; k < relays_.size(); k++)
     this->write_relay_(k, relay_state_[k]);
   this->save_settings_();
+  this->log_event_(EV_SETTINGS);
   ESP_LOGI(TAG, "Settings saved%s", restart ? " (restart needed)" : "");
   if (restart || (root["restart"].is<bool>() && root["restart"].as<bool>()))
     restart_requested_ = true;

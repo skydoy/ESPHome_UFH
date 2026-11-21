@@ -39,7 +39,7 @@
 })();
 
 (function () {
-  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16", "Main Thermostat": "Termóstato geral", "Pump Start Delay": "Atraso a ligar", "Pump Stop Delay": "Atraso a desligar", "Heat Pump Min On Time": "Bomba de calor: mínimo ligada", "Heat Pump Min Off Time": "Bomba de calor: mínimo desligada", "Boost Temperature": "Boost: graus a mais", "Boost Duration": "Boost: duração", "Outdoor Compensation": "Compensação exterior", "Flow Temperature": "Água de ida", "Return Temperature": "Água de retorno", "Flow Return Difference": "Diferença ida/retorno", "Outdoor Temperature": "Temperatura exterior"};
+  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16", "Main Thermostat": "Termóstato geral", "Pump Start Delay": "Atraso a ligar", "Pump Stop Delay": "Atraso a desligar", "Heat Pump Min On Time": "Bomba de calor: mínimo ligada", "Heat Pump Min Off Time": "Bomba de calor: mínimo desligada", "Boost Temperature": "Boost: graus a mais", "Boost Duration": "Boost: duração", "Outdoor Compensation": "Compensação exterior", "Flow Temperature": "Água de ida", "Return Temperature": "Água de retorno", "Flow Return Difference": "Diferença ida/retorno", "Outdoor Temperature": "Temperatura exterior", "Heating": "Aquecimento"};
   var GROUP_PT = {"Pump": "Bomba", "Main": "Geral", "Zones": "Zonas", "House": "Casa", "Statistics": "Estatísticas", "Maintenance": "Manutenção", "Configuration": "Configuração", "Diagnostic": "Diagnóstico", "Undefined": "Outros"};
   var KEY = 'esphome_ufh_lang', lang;
   try { lang = localStorage.getItem(KEY); } catch (e) {}
@@ -509,7 +509,9 @@
     panel.innerHTML = head + setup + diagram(st) +
       '<div class="bar"><button class="pri" data-a="wizard">' + (st.configured ? T('⚙️ Definições', '⚙️ Settings') : T('▶ Começar a configuração', '▶ Start setup')) + '</button>' +
       (st.configured ? '<button data-a="sched">🗓️ ' + T('Horários e temperaturas', 'Schedules & temperatures') + '</button>' : '') +
-      '<button data-a="balance">📊 ' + T('Equilíbrio', 'Balance') + '</button></div>';
+      '<button data-a="balance">📊 ' + T('Equilíbrio', 'Balance') + '</button>' +
+      '<button data-a="log">📜 ' + T('Registo', 'Log') + '</button>' +
+      (st.configured ? '<button data-a="heat" style="margin-left:auto">' + (st.house === 3 ? '▶ ' + T('Ligar aquecimento', 'Turn heating on') : '⏻ ' + T('Desligar tudo (verão)', 'Turn all off (summer)')) + '</button>' : '') + '</div>';
   }
 
   function poll() {
@@ -825,6 +827,46 @@
     m.addEventListener('click', function (e) { if (e.target.getAttribute && e.target.getAttribute('data-n')) closeModal(); });
   }
 
+  // ---------- event log ----------
+  function openLog() {
+    getJSON('/ufh/log').then(function (list) {
+      var zs = (state && state.zones) || [];
+      var zn = function (n) { var z = zs[n - 1]; return z && z.n ? z.n : T('Zona ', 'Zone ') + n; };
+      var HM = [T('Casa', 'Home'), T('Ausente', 'Away'), T('Férias', 'Holiday'), T('Verão', 'Summer')];
+      var f1 = function (v) { return v == null ? '—' : (+v).toFixed(1) + ' °C'; };
+      var rows = list.map(function (e) {
+        var when = e.up ? T('arranque +', 'boot +') + Math.round(e.t / 60) + ' min'
+          : new Date(e.t * 1000).toLocaleString(L() === 'pt' ? 'pt-PT' : 'en-GB', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'});
+        var txt;
+        switch (e.k) {
+          case 1: txt = '🔌 ' + T('Placa arrancou', 'Board started'); break;
+          case 2: txt = '🔥 ' + zn(e.z) + ' ' + T('abriu', 'opened') + ' (' + f1(e.a) + ' → ' + f1(e.b) + ')'; break;
+          case 3: txt = '⏹ ' + zn(e.z) + ' ' + T('fechou', 'closed') + ' (' + f1(e.a) + ' → ' + f1(e.b) + ')'; break;
+          case 4: txt = '🟢 ' + T('Relé ', 'Relay ') + e.z + ' (' + T('bomba / bomba de calor', 'pump / heat pump') + ') ' + T('ligou', 'on'); break;
+          case 5: txt = '⚪ ' + T('Relé ', 'Relay ') + e.z + ' (' + T('bomba / bomba de calor', 'pump / heat pump') + ') ' + T('desligou', 'off'); break;
+          case 6: txt = '🚀 ' + zn(e.z) + ': boost ' + e.a + ' min'; break;
+          case 7: txt = '🚀 ' + zn(e.z) + ': ' + T('boost terminou', 'boost ended'); break;
+          case 8: txt = '⚠️ ' + warnPT(e.x || ''); break;
+          case 9: txt = '✅ ' + T('Avisos resolvidos', 'Warnings cleared'); break;
+          case 10: txt = '💾 ' + T('Definições gravadas', 'Settings saved'); break;
+          case 11: txt = '🏠 ' + T('Modo da casa: ', 'House mode: ') + (HM[e.a] || e.a); break;
+          case 12: txt = '🏠 ' + T('Geral: ', 'Main: ') + (e.b === -1 ? T('desligada', 'off') : (e.b ? T('Conforto ', 'Comfort ') : 'Eco ') + f1(e.a)); break;
+          case 13: txt = '🔗 ' + zn(e.z) + ': ' + (e.a ? T('segue a geral', 'follows main') : T('deixou de seguir a geral', 'no longer follows main')); break;
+          default: txt = '#' + e.k;
+        }
+        return '<tr><td style="white-space:nowrap;opacity:.7;padding-right:10px">' + esc(when) + '</td><td>' + esc(txt) + '</td></tr>';
+      }).join('');
+      var m = modal('<h2>📜 ' + T('Registo', 'Log') + '</h2><p class="sub">' + T('Últimos 30 acontecimentos, o mais recente primeiro. Apaga-se quando a placa reinicia.', 'Last 30 events, newest first. Cleared when the board restarts.') + '</p>' +
+        '<table>' + (rows || '<tr><td>' + T('Ainda sem eventos.', 'No events yet.') + '</td></tr>') + '</table>' +
+        '<div class="nav"><button type="button" data-n="refresh">↻ ' + T('Atualizar', 'Refresh') + '</button><button type="button" class="pri" data-n="close">OK</button></div>');
+      m.addEventListener('click', function (e) {
+        var n = e.target.getAttribute && e.target.getAttribute('data-n');
+        if (n === 'close') closeModal();
+        if (n === 'refresh') { closeModal(); openLog(); }
+      });
+    }).catch(function (er) { alert(er.message); });
+  }
+
   // weekly chart: minutes heating per day, last 7 days (today on the right)
   function weekChart() {
     var zs = (state && state.zones) || [], max = 1, d = DAYS(), dow = state && state.dow != null ? state.dow : 6;
@@ -908,6 +950,13 @@
           if (w === 'wizard') openWizard();
           if (w === 'sched') openSched();
           if (w === 'balance') openBalance();
+          if (w === 'log') openLog();
+          if (w === 'heat' && state) {
+            var off = state.house !== 3;
+            if (off && !confirm(T('Desligar o aquecimento? Zonas e bomba param (modo Verão). O anti-bloqueio semanal da bomba continua.',
+                                  'Turn heating off? Zones and pump stop (Summer mode). The weekly pump anti-seize keeps running.'))) return;
+            postJSON('/ufh/config', {heating: !off}).then(function () { setTimeout(poll, 800); }).catch(function (er) { alert(er.message); });
+          }
           return;
         }
         var zg = e.target.closest ? e.target.closest('.z') : null;

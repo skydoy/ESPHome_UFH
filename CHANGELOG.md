@@ -28,6 +28,11 @@ All notable changes to the firmware and installer. Format:
   `set_outdoor_temperature`.
 - **Weekly chart** in the Balance window: hours heating per zone for the last 7 days.
 - Blueprint `esphome_ufh_warnings.yaml`: phone notification for warnings (and when they clear).
+- **Heating** switch (and a button on the panel): off = everything stopped for the summer (house
+  mode Summer, the weekly pump anti-seize keeps running); on = back to the previous house mode.
+- **Event log** on the panel: last 30 events (zone opened / closed with temperature → target,
+  pump / heat pump relay, boost, warnings, house mode, main thermostat, settings). RAM only.
+- Blueprint `esphome_ufh_presence.yaml`: Away when everyone leaves, Home when someone arrives.
 
 ## [0.3.2] - 2026-11-21
 ### Changed

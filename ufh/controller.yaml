@@ -170,6 +170,19 @@ number:
       sorting_weight: 3
 
 switch:
+  # everything on / off (summer): off = house mode Summer (zones and pump stopped, the weekly pump
+  # anti-seize still runs); on = back to the house mode from before
+  - platform: template
+    name: "Heating"
+    icon: mdi:radiator
+    lambda: return id(ufh_ctl).heating_on();
+    turn_on_action:
+      - lambda: id(ufh_ctl).set_heating(true);
+    turn_off_action:
+      - lambda: id(ufh_ctl).set_heating(false);
+    web_server:
+      sorting_group_id: group_house
+      sorting_weight: 1
   # optimum start begins earlier when it is cold outside (outdoor temperature from
   # ESPHome_Altherma or the Home Assistant action set_outdoor_temperature)
   - platform: template

@@ -1,0 +1,84 @@
+blueprint:
+  name: ESPHome UFH – Away when everyone leaves, Home when someone arrives
+  description: >-
+    Sets the ESPHome UFH "House Mode" to Away (Eco in every zone) when all the chosen people have
+    been away for a while, and back to Home as soon as one of them arrives. It never changes the
+    house mode while it is on Holiday or Summer.
+  domain: automation
+  author: skydoy
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    people:
+      name: People
+      description: The people (or phones) that count. Home = at least one of them is home.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: person
+            - domain: device_tracker
+    house_mode:
+      name: House Mode
+      description: The device's "House Mode" entity.
+      selector:
+        entity:
+          filter:
+            - integration: esphome
+              domain: select
+    away_after:
+      name: Away after
+      description: Everyone must be away this long before the house goes to Away.
+      default: 30
+      selector:
+        number:
+          min: 5
+          max: 240
+          unit_of_measurement: min
+
+mode: restart
+
+variables:
+  people: !input people
+  house_mode: !input house_mode
+
+triggers:
+  - trigger: state
+    entity_id: !input people
+    to: "home"
+    id: arrive
+  - trigger: state
+    entity_id: !input people
+    from: "home"
+    id: leave
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: arrive
+          - condition: template
+            value_template: "{{ states(house_mode) == 'Away' }}"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: !input house_mode
+            data:
+              option: Home
+      - conditions:
+          - condition: trigger
+            id: leave
+          - condition: template
+            value_template: "{{ people | select('is_state', 'home') | list | count == 0 }}"
+        sequence:
+          - delay:
+              minutes: !input away_after
+          - condition: template
+            value_template: >-
+              {{ people | select('is_state', 'home') | list | count == 0
+                 and states(house_mode) == 'Home' }}
+          - action: select.select_option
+            target:
+              entity_id: !input house_mode
+            data:
+              option: Away

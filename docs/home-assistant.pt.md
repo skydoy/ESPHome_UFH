@@ -16,6 +16,7 @@ Opcional: a placa aquece sozinha. O Home Assistant junta controlo remoto, histó
 | **Main Thermostat** (clima) | Termóstato geral: Conforto / Eco (predefinições), horário próprio; Conforto/Eco à mão vale até à próxima mudança |
 | Boost Temperature / Duration | Quanto e quanto tempo dura o boost |
 | Outdoor Compensation, Outdoor Temperature | Arranque antecipado mais cedo com frio lá fora |
+| Heating | Aquecimento: desligado = tudo parado (modo Verão); ligado = volta ao modo anterior |
 | House Mode | Casa / Ausente / Férias / Verão |
 | Pump Mode | Automático / Ligada / Desligada |
 | Pump, Heat Demand, Problem, Warnings, Active Zones | Estado |
@@ -41,4 +42,5 @@ Opcional: a placa aquece sozinha. O Home Assistant junta controlo remoto, histó
 
 - `esphome_ufh_temperature_from_ha.yaml` — envia um sensor de temperatura do Home Assistant para uma zona.
 - `esphome_ufh_update_available.yaml` — aviso quando sai firmware novo.
+- `esphome_ufh_presence.yaml` — põe a casa em Ausente quando todos saem e em Casa quando alguém chega (não mexe em Férias nem Verão).
 - `esphome_ufh_warnings.yaml` — aviso no telemóvel quando aparece um problema (sensor sem dados, pilha, zona que não aquece, chão, ida/retorno) e quando fica resolvido.

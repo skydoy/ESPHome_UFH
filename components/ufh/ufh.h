@@ -118,6 +118,32 @@ class UFHZoneButton : public button::Button {
   uint8_t zone_{0};
 };
 
+// One line of the event log (RAM only, last 30). Texts are made on the web page (PT/EN).
+enum EventKind : uint8_t {
+  EV_BOOT = 1,
+  EV_ZONE_OPEN = 2,    // a = temperature, b = target
+  EV_ZONE_CLOSE = 3,   // a = temperature, b = target
+  EV_RELAY_ON = 4,     // zone = relay number (pump / heat demand)
+  EV_RELAY_OFF = 5,
+  EV_BOOST_ON = 6,     // a = minutes
+  EV_BOOST_OFF = 7,
+  EV_WARNING = 8,      // txt
+  EV_WARNING_CLEAR = 9,
+  EV_SETTINGS = 10,
+  EV_HOUSE_MODE = 11,  // a = mode
+  EV_MAIN = 12,        // a = target, b = 1 comfort / 0 eco / -1 off
+  EV_FOLLOW = 13,      // a = 1 on / 0 off
+  EV_READING = 14,     // first reading of a zone after a start (a = temperature)
+};
+struct EventEntry {
+  uint32_t t;   // epoch (or uptime seconds when bit 31 is set: no clock yet)
+  uint8_t kind;
+  uint8_t zone;
+  int16_t a_x10;
+  int16_t b_x10;
+  char txt[42];
+};
+
 // Live state of one zone (not persisted).
 struct ZoneRt {
   float temp{NAN};
@@ -241,6 +267,8 @@ class UFHComponent : public Component
   void set_outdoor_comp(bool on);
   void ha_set_outdoor_temperature(float t);
   void set_house_mode(uint8_t m);
+  bool heating_on() const { return s_.house_mode != HOUSE_SUMMER; }
+  void set_heating(bool on);
   void set_pump_mode(uint8_t m);
   bool problem() const { return !warnings_text_.empty(); }
   const std::string &warnings_text() const { return warnings_text_; }
@@ -266,6 +294,7 @@ class UFHComponent : public Component
   void web_reading(const PendingReading &r);
   std::string web_state_json();
   std::string web_config_json();
+  std::string web_log_json();
   bool web_apply_config(const std::string &body, std::string &error);
   void web_request_restart() { restart_requested_ = true; }
   void web_ds18b20_scan() { ow_scan_requested_ = true; }
@@ -340,6 +369,13 @@ class UFHComponent : public Component
   uint32_t outdoor_ms_{0};
   uint32_t dt_bad_since_ms_{0};
   bool dt_warn_{false};
+  // event log (RAM)
+  void log_event_(uint8_t kind, uint8_t zone = 0, float a = NAN, float b = NAN, const char *txt = nullptr);
+  std::mutex log_mtx_;
+  EventEntry log_[30]{};
+  uint8_t log_head_{0};
+  uint8_t log_count_{0};
+  std::string last_warn_logged_;
   ZoneRt zr_[MAX_ZONES];
   bool relay_state_[MAX_RELAYS]{};
 

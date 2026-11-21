@@ -146,7 +146,8 @@ struct ExtraCfg {
   int16_t boost_x10;   // added to the target while a zone boost runs
   uint16_t boost_min;  // boost duration
   uint8_t opt_outdoor;  // optimum start starts earlier when it is cold outside
-  uint8_t reserved0[3];
+  uint8_t prev_house;   // house mode to go back to when the "Heating" switch is turned on again
+  uint8_t reserved0[2];
   char alt_outdoor[80];  // ESPHome_Altherma path of the outdoor temperature
   uint8_t reserved[64];
 };

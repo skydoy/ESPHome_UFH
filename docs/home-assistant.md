@@ -16,6 +16,7 @@ Optional: the device heats on its own. Home Assistant adds remote control, histo
 | Boost Temperature / Duration | How much and how long the boost lasts |
 | Outdoor Compensation, Outdoor Temperature | Optimum start begins earlier when it is cold outside |
 | <zone> Runtime Today / Total, Duty 24h | Statistics (balance between zones) |
+| Heating | Off = everything stopped (Summer mode); on = back to the mode from before |
 | House Mode | Home / Away / Holiday / Summer |
 | Pump Mode | Auto / On / Off |
 | Pump, Heat Demand, Problem, Warnings, Active Zones | State |
@@ -41,4 +42,5 @@ Optional: the device heats on its own. Home Assistant adds remote control, histo
 
 - `esphome_ufh_temperature_from_ha.yaml` — sends a Home Assistant temperature sensor to a zone.
 - `esphome_ufh_update_available.yaml` — notification when a new firmware is out.
+- `esphome_ufh_presence.yaml` — sets the house to Away when everyone leaves and Home when someone arrives (leaves Holiday and Summer alone).
 - `esphome_ufh_warnings.yaml` — phone notification when a problem shows up (sensor silent, battery, zone not heating, floor, flow/return) and when it is fixed.
