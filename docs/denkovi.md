@@ -47,6 +47,20 @@ Without the DAEnetIP4 the relay board no longer gets 12 V: connect the same supp
 
 To connect the supply without cutting its cable use a **female DC jack to screw terminal adapter** (the jack centre pin is +) and two Dupont wires.
 
+### Relays 1–8 and GND (JP1)
+
+On JP1 (2×5, the middle one) pins **1 and 2 are at the bottom** and **9 (GND) at the top left**. Check with the multimeter: pin 9 beeps to GND.
+
+![JP1 pin by pin](img/denkovi-4-jp1-en.jpg){ width="640" }
+
+| JP1 | Connect to (Unit PoE-P4) | JP1 | Connect to (Unit PoE-P4) |
+|---|---|---|---|
+| 1 | Relay 1 → Hat2 pin 2 | 2 | Relay 2 → Hat2 pin 4 |
+| 3 | Relay 3 → Hat2 pin 5 | 4 | Relay 4 → Hat2 pin 6 |
+| 5 | Relay 5 → Hat2 pin 7 | 6 | Relay 6 → Hat2 pin 8 |
+| 7 | Relay 7 → Hat2 pin 9 | 8 | Relay 8 → Hat2 pin 10 |
+| 9 | **GND** → Hat2 pin 1 | 10 | 3V3 — **do not connect** |
+
 ## 4. Wiring diagram
 
 ![Denkovi → Unit PoE-P4 wiring](img/denkovi-p4-en.svg)

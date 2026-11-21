@@ -47,6 +47,20 @@ Sem a DAEnetIP4, a placa de relés deixa de receber os 12 V: liga a mesma fonte 
 
 Para ligar a fonte sem cortar o cabo usa um **adaptador de jack fêmea para bornes** (o pino interior do jack é o +) e dois fios Dupont.
 
+### Relés 1–8 e GND (JP1)
+
+Na JP1 (2×5, a do meio) os pinos **1 e 2 ficam em baixo** e o **9 (GND) em cima à esquerda**. Confirma com o multímetro: o 9 apita com o GND.
+
+![JP1 pino a pino](img/denkovi-4-jp1-pt.jpg){ width="640" }
+
+| JP1 | Liga a (Unit PoE-P4) | JP1 | Liga a (Unit PoE-P4) |
+|---|---|---|---|
+| 1 | Relé 1 → Hat2 pino 2 | 2 | Relé 2 → Hat2 pino 4 |
+| 3 | Relé 3 → Hat2 pino 5 | 4 | Relé 4 → Hat2 pino 6 |
+| 5 | Relé 5 → Hat2 pino 7 | 6 | Relé 6 → Hat2 pino 8 |
+| 7 | Relé 7 → Hat2 pino 9 | 8 | Relé 8 → Hat2 pino 10 |
+| 9 | **GND** → Hat2 pino 1 | 10 | 3V3 — **não ligar** |
+
 ## 4. Esquema de ligações
 
 ![Esquema Denkovi → Unit PoE-P4](img/denkovi-p4-pt.svg)
