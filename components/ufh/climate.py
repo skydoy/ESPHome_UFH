@@ -8,7 +8,7 @@ UFHZoneClimate = ufh_ns.class_("UFHZoneClimate", climate.Climate, cg.Component)
 
 CONFIG_SCHEMA = (
     climate.climate_schema(UFHZoneClimate)
-    .extend(zone_schema())
+    .extend(zone_schema(min_zone=0))  # zone 0 = main thermostat ("Geral")
     .extend(cv.COMPONENT_SCHEMA)
 )
 

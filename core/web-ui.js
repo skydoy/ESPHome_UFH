@@ -39,8 +39,8 @@
 })();
 
 (function () {
-  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16"};
-  var GROUP_PT = {"Zones": "Zonas", "House": "Casa", "Statistics": "Estatísticas", "Maintenance": "Manutenção", "Configuration": "Configuração", "Diagnostic": "Diagnóstico", "Undefined": "Outros"};
+  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16", "Main Thermostat": "Termóstato geral"};
+  var GROUP_PT = {"Main": "Geral", "Zones": "Zonas", "House": "Casa", "Statistics": "Estatísticas", "Maintenance": "Manutenção", "Configuration": "Configuração", "Diagnostic": "Diagnóstico", "Undefined": "Outros"};
   var KEY = 'esphome_ufh_lang', lang;
   try { lang = localStorage.getItem(KEY); } catch (e) {}
   if (lang !== 'pt' && lang !== 'en') lang = /^pt/i.test(navigator.language || '') ? 'pt' : 'en';
@@ -139,7 +139,7 @@
     if (on) o.push(n);
     try { localStorage.setItem(OPEN_KEY, JSON.stringify(o)); } catch (e) {}
   }
-  var ROW_LBL = {'': ['Termóstato', 'Thermostat'], 'Heating': ['A aquecer', 'Heating'], 'Temperature': ['Temperatura', 'Temperature'],
+  var ROW_LBL = {'': ['Termóstato', 'Thermostat'], 'Follows Main': ['Segue a geral', 'Follows main'], 'Heating': ['A aquecer', 'Heating'], 'Temperature': ['Temperatura', 'Temperature'],
                  'Runtime Today': ['Horas hoje', 'Runtime today'], 'Runtime Total': ['Horas total', 'Runtime total'],
                  'Duty 24h': ['Ocupação 24 h', 'Duty 24 h']};
   function TT(pt, en) { return lang === 'pt' ? pt : en; }
@@ -160,7 +160,7 @@
         var L = zs[z.lead - 1];
         sum = TT('segue ', 'follows ') + (L && L.n ? L.n : 'Z' + z.lead);
       } else if (z.n !== undefined) {
-        sum = fmt(z.t) + ' → ' + (z.m === 0 || z.tg === null || isNaN(z.tg) ? TT('desligada', 'off') : fmt(z.tg));
+        sum = (z.fm ? TT('geral · ', 'main · ') : '') + fmt(z.t) + ' → ' + (z.m === 0 || z.tg === null || isNaN(z.tg) ? TT('desligada', 'off') : fmt(z.tg));
       } else sum = '';
       if (z.r) sum += (sum ? ' · ' : '') + '🔥 ' + TT('a aquecer', 'heating');
       if (z.w) sum += ' ⚠️';
@@ -725,10 +725,19 @@
     getJSON('/ufh/config').then(function (c) {
       W = JSON.parse(JSON.stringify(c)); step = 2;
       var h = '<h2>' + T('Horários e temperaturas', 'Schedules & temperatures') + '</h2><p class="sub">' + T('Conforto nos períodos indicados, Eco no resto do tempo.', 'Comfort in the periods below, Eco the rest of the time.') + '</p>';
+      var M = W.main || {mode: 1, comfort: 21, eco: 18, sched: []};
+      h += '<div class="zone"><h4>🏠 ' + T('Geral', 'Main') + '</h4><div class="hint">' +
+        T('As zonas com “Segue a geral” ligado usam estas temperaturas e este horário. Se escolheres Conforto ou Eco à mão no termóstato geral, vale até à próxima mudança do horário.',
+          'Zones with “Follows main” on use these temperatures and this schedule. Choosing Comfort or Eco by hand on the main thermostat holds until the next schedule change.') + '</div><div class="row">' +
+        '<div><label>' + T('Modo', 'Mode') + '</label><select id="mm">' + opts([[1, T('Automático (horário)', 'Auto (schedule)')], [2, T('Fixo', 'Fixed')], [0, T('Desligado', 'Off')]], M.mode) + '</select></div>' +
+        '<div><label>' + T('Conforto °C', 'Comfort °C') + '</label><input type="number" step="0.5" id="mc" value="' + M.comfort + '"></div>' +
+        '<div><label>Eco °C</label><input type="number" step="0.5" id="me" value="' + M.eco + '"></div></div>' +
+        '<details><summary>' + T('Horário', 'Schedule') + '</summary>' + schedEditor('sm_', M.sched) + '</details></div>';
       for (var q = 0; q < W.zone_count; q++) {
         var zz = W.zones[q];
         if (zz.leader) continue;
-        h += '<div class="zone"><h4>' + esc(zz.name) + '</h4><div class="row">' +
+        h += '<div class="zone"><h4>' + esc(zz.name) + '</h4>' +
+          '<label class="lbl"><input type="checkbox" id="zfm' + q + '"' + (zz.follow ? ' checked' : '') + '> ' + T('Segue a geral (usa as temperaturas e o horário da geral)', 'Follows main (uses the main temperatures and schedule)') + '</label><div class="row">' +
           '<div><label>' + T('Modo', 'Mode') + '</label><select id="zm' + q + '">' + opts([[1, T('Automático (horário)', 'Auto (schedule)')], [2, T('Fixo', 'Fixed')], [0, T('Desligado', 'Off')]], zz.mode) + '</select></div>' +
           '<div><label>' + T('Conforto °C', 'Comfort °C') + '</label><input type="number" step="0.5" id="zc' + q + '" value="' + zz.comfort + '"></div>' +
           '<div><label>Eco °C</label><input type="number" step="0.5" id="ze' + q + '" value="' + zz.eco + '"></div></div>' +
@@ -743,7 +752,9 @@
         if (n === 'close') closeModal();
         if (n === 'save') {
           collect(m);
-          var body = {zones: W.zones.map(function (z) { return {mode: z.mode, comfort: z.comfort, eco: z.eco, sched: z.sched}; })};
+          W.zones.forEach(function (z, k) { var f = m.querySelector('#zfm' + k); if (f) z.follow = f.checked; });
+          var body = {zones: W.zones.map(function (z) { return {mode: z.mode, comfort: z.comfort, eco: z.eco, sched: z.sched, follow: !!z.follow}; }),
+            main: {mode: +m.querySelector('#mm').value, comfort: +m.querySelector('#mc').value, eco: +m.querySelector('#me').value, sched: readSched(m, 'sm_', M.sched)}};
           postJSON('/ufh/config', body).then(function () { closeModal(); poll(); }).catch(function (er) { alert(er.message); });
         }
       });
@@ -773,7 +784,10 @@
       '<p>' + T('Temperatura: ', 'Temperature: ') + '<b>' + fmt(z.t) + ' °C</b>' + (z.h != null ? ' · ' + fmt(z.h, 0) + '%' : '') + (z.age >= 0 ? ' · ' + T('há ', '') + z.age + ' min' + T('', ' ago') : '') +
       (z.f != null ? ' · ' + T('chão ', 'floor ') + fmt(z.f) + ' °C' : '') + (z.b >= 0 ? ' · 🔋' + z.b + '%' : '') + '</p>' +
       '<p>' + T('Alvo: ', 'Target: ') + '<b>' + fmt(z.tg) + ' °C</b>' + (z.ovr ? ' (' + T('ajuste manual até à próxima mudança do horário', 'manual change until the next schedule change') + ')' : '') + (z.early ? ' · ' + T('arranque antecipado', 'optimum start') : '') + '</p>';
-    if (!z.lead) {
+    if (!z.lead && z.fm) {
+      h += '<div class="hint">🏠 ' + T('Esta zona segue a geral: a temperatura muda-se no termóstato geral.', 'This zone follows the main thermostat: change the temperature there.') + '</div>' +
+        '<div class="row"><div><label>' + T('Modo', 'Mode') + '</label><select id="qm">' + opts([[1, T('Automático', 'Auto')], [2, T('Fixo', 'Fixed')], [0, T('Desligado', 'Off')]], z.m) + '</select></div></div>';
+    } else if (!z.lead) {
       h += '<div class="row"><div><label>' + T('Mudar alvo agora °C', 'Change target now °C') + '</label><input type="number" step="0.5" id="qt" value="' + (z.tg == null ? 21 : z.tg) + '"></div>' +
         '<div><label>' + T('Modo', 'Mode') + '</label><select id="qm">' + opts([[1, T('Automático', 'Auto')], [2, T('Fixo', 'Fixed')], [0, T('Desligado', 'Off')]], z.m) + '</select></div></div>' +
         '<div class="hint">' + T('Em Automático, o alvo novo vale até à próxima mudança do horário.', 'In Auto the new target holds until the next schedule change.') + '</div>';
@@ -787,7 +801,8 @@
         var zones = [];
         for (var k = 0; k <= i; k++) zones.push({});
         var mode = +m.querySelector('#qm').value, z2 = {};
-        if (mode !== 0) z2.target = +m.querySelector('#qt').value;
+        var qt = m.querySelector('#qt');
+        if (mode !== 0 && qt) z2.target = +qt.value;
         if (mode !== z.m) z2.mode = mode;
         zones[i] = z2;
         postJSON('/ufh/config', {zones: zones}).then(function () { closeModal(); setTimeout(poll, 1500); }).catch(function (er) { alert(er.message); });

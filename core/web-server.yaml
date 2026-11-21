@@ -10,6 +10,9 @@ web_server:
   log: true
   js_include: web-ui.js
   sorting_groups:
+    - id: group_main
+      name: "Main"
+      sorting_weight: 8
     - id: group_zone1
       name: "Zone 1"
       sorting_weight: 11

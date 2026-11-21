@@ -21,6 +21,7 @@
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
+#include "esphome/components/switch/switch.h"
 #include "esphome/components/web_server_base/web_server_base.h"
 
 #ifdef USE_UFH_BLE
@@ -82,6 +83,20 @@ class UFHZoneBinarySensor : public binary_sensor::BinarySensor {
   uint8_t zone_{0};
 };
 
+// "Follows Main" switch of a zone: its target then comes from the main thermostat ("Geral").
+class UFHZoneSwitch : public switch_::Switch {
+ public:
+  void set_parent(UFHComponent *p) { parent_ = p; }
+  void set_zone(uint8_t z) { zone_ = z; }
+  uint8_t zone() const { return zone_; }
+  void rename(const char *name) { this->name_ = decltype(this->name_)(StringRef(name)); }
+
+ protected:
+  void write_state(bool state) override;
+  UFHComponent *parent_{nullptr};
+  uint8_t zone_{0};
+};
+
 // Live state of one zone (not persisted).
 struct ZoneRt {
   float temp{NAN};
@@ -112,7 +127,7 @@ struct ZoneRt {
   uint16_t hour_s[24]{};     // seconds on, per hour of the last 24 h (ring indexed by hour)
   uint32_t warn{0};          // WARN_* bits
   // name storage for renamed entities
-  std::string name_climate, name_heating, name_today, name_total, name_duty, name_temp;
+  std::string name_climate, name_heating, name_today, name_total, name_duty, name_temp, name_follow;
 };
 
 enum WarnBits : uint32_t {
@@ -157,6 +172,7 @@ class UFHComponent : public Component
   void add_climate(UFHZoneClimate *c) { climates_.push_back(c); }
   void add_zone_sensor(UFHZoneSensor *s) { zone_sensors_.push_back(s); }
   void add_zone_binary_sensor(UFHZoneBinarySensor *b) { zone_bins_.push_back(b); }
+  void add_zone_switch(UFHZoneSwitch *s) { zone_switches_.push_back(s); }
 #ifdef USE_UFH_ONE_WIRE
   void set_one_wire_bus(one_wire::OneWireBus *b) { ow_bus_ = b; }
 #endif
@@ -197,7 +213,8 @@ class UFHComponent : public Component
   void ha_set_zone_target(int zone, float t);
 
   // --- used by the zone entities ---
-  void climate_control(uint8_t zone, const climate::ClimateCall &call);
+  void climate_control(uint8_t zone, const climate::ClimateCall &call);  // zone 0 = main thermostat
+  void set_follow_main(int zone, bool on);
   uint8_t relay_count() const { return relays_.size(); }
 
   // --- web (called from the HTTP server task; they lock mtx_) ---
@@ -213,14 +230,18 @@ class UFHComponent : public Component
   void load_settings_();
   void save_settings_();
   void save_persist_();
+  void save_main_();
+  float main_target_(const ESPTime &now);
+  void main_control_(const climate::ClimateCall &call);
+  void publish_main_(UFHZoneClimate *c, bool force);
   void apply_entities_();
   void start_sources_();
   void tick_();
   void update_zone_(uint8_t i, uint32_t now_ms, const ESPTime &now);
   float target_for_(uint8_t i, const ESPTime &now);
-  bool in_comfort_(const ZoneCfg &z, uint16_t slot_of_week) const;
-  int minutes_to_next_comfort_(const ZoneCfg &z, uint16_t slot_of_week) const;
-  uint16_t next_switch_slot_(const ZoneCfg &z, uint16_t slot_of_week) const;
+  bool in_comfort_(const DaySchedule *sched, uint16_t slot_of_week) const;
+  int minutes_to_next_comfort_(const DaySchedule *sched, uint16_t slot_of_week) const;
+  uint16_t next_switch_slot_(const DaySchedule *sched, uint16_t slot_of_week) const;
   void update_outputs_(uint32_t now_ms, const ESPTime &now);
   void write_relay_(uint8_t idx, bool on);
   void exercise_tick_(uint32_t now_ms, const ESPTime &now);
@@ -243,6 +264,7 @@ class UFHComponent : public Component
   std::vector<UFHZoneClimate *> climates_;
   std::vector<UFHZoneSensor *> zone_sensors_;
   std::vector<UFHZoneBinarySensor *> zone_bins_;
+  std::vector<UFHZoneSwitch *> zone_switches_;
   time::RealTimeClock *time_{nullptr};
   web_server_base::WebServerBase *web_base_{nullptr};
   bool default_active_low_{false};
@@ -252,6 +274,15 @@ class UFHComponent : public Component
   Persist p_{};
   ESPPreferenceObject pref_settings_;
   ESPPreferenceObject pref_persist_;
+  // main thermostat ("Geral")
+  MainCfg m_{};
+  ESPPreferenceObject pref_main_;
+  bool main_override_{false};      // Comfort / Eco chosen by hand, until the next schedule change
+  bool main_override_eco_{false};
+  uint16_t main_override_until_{0};
+  bool main_comfort_now_{true};
+  bool force_publish_{false};
+  bool sw_published_[MAX_ZONES]{};
   ZoneRt zr_[MAX_ZONES];
   bool relay_state_[MAX_RELAYS]{};
 

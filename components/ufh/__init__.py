@@ -12,7 +12,7 @@ from esphome.const import CONF_ID, CONF_TIME_ID
 
 CODEOWNERS = ["@skydoy"]
 DEPENDENCIES = ["network", "web_server_base"]
-AUTO_LOAD = ["json", "climate", "sensor", "binary_sensor"]
+AUTO_LOAD = ["json", "climate", "sensor", "binary_sensor", "switch"]
 
 CONF_UFH_ID = "ufh_id"
 CONF_RELAYS = "relays"
@@ -42,11 +42,11 @@ CONFIG_SCHEMA = cv.Schema(
 ).extend(cv.COMPONENT_SCHEMA)
 
 
-def zone_schema(max_zone=16):
+def zone_schema(max_zone=16, min_zone=1):
     return cv.Schema(
         {
             cv.GenerateID(CONF_UFH_ID): cv.use_id(UFHComponent),
-            cv.Required(CONF_ZONE): cv.int_range(min=1, max=max_zone),
+            cv.Required(CONF_ZONE): cv.int_range(min=min_zone, max=max_zone),
         }
     )
 

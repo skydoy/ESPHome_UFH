@@ -10,13 +10,22 @@ climate:
       sorting_group_id: group_zone${zone}
       sorting_weight: 1
 
+switch:
+  - platform: ufh
+    zone: ${zone}
+    name: "Zone ${zone} Follows Main"
+    entity_category: config
+    web_server:
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 2
+
 binary_sensor:
   - platform: ufh
     zone: ${zone}
     name: "Zone ${zone} Heating"
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 2
+      sorting_weight: 3
 
 sensor:
   - platform: ufh
@@ -25,14 +34,14 @@ sensor:
     name: "Zone ${zone} Temperature"
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 3
+      sorting_weight: 4
   - platform: ufh
     type: runtime_today
     zone: ${zone}
     name: "Zone ${zone} Runtime Today"
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 4
+      sorting_weight: 5
   - platform: ufh
     type: runtime_total
     zone: ${zone}
@@ -40,7 +49,7 @@ sensor:
     entity_category: diagnostic
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 5
+      sorting_weight: 6
   - platform: ufh
     type: duty_24h
     zone: ${zone}
@@ -48,4 +57,4 @@ sensor:
     entity_category: diagnostic
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 6
+      sorting_weight: 7

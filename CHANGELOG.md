@@ -4,6 +4,12 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- **Main thermostat ("Geral")**: Comfort / Eco temperatures and its own weekly schedule. Each zone
+  has a **Follows Main** switch (in its group on the web page and in Home Assistant); zones that
+  follow take their target from the main thermostat and cannot be changed one by one. Choosing
+  Comfort or Eco by hand (climate presets) holds until the next schedule change. House modes,
+  open window and floor limit still apply. Existing settings are kept (stored separately).
 
 ## [0.3.2] - 2026-11-21
 ### Changed

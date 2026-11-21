@@ -81,6 +81,17 @@ void default_settings(Settings &s, uint8_t relay_count, bool active_low) {
   }
 }
 
+void default_main(MainCfg &m) {
+  memset(&m, 0, sizeof(m));
+  m.magic = MAIN_MAGIC;
+  m.mode = ZONE_AUTO;
+  m.fixed_eco = 0;
+  m.comfort_x10 = 210;
+  m.eco_x10 = 180;
+  for (uint8_t d = 0; d < 7; d++)
+    m.sched[d] = d < 5 ? DaySchedule{39, 51, 102, 135} : DaySchedule{48, 138, 0, 0};
+}
+
 // ---------------------------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------------------------
@@ -154,6 +165,11 @@ void UFHComponent::setup() {
     r->set_state(al);
 
   this->load_settings_();
+  this->pref_main_ = global_preferences->make_preference<MainCfg>(fnv1_hash("ufh_main_v1"));
+  if (!this->pref_main_.load(&this->m_) || this->m_.magic != MAIN_MAGIC)
+    default_main(this->m_);
+  if (this->m_.mode > ZONE_HEAT)
+    this->m_.mode = ZONE_AUTO;
   for (uint8_t i = 0; i < relays_.size(); i++)
     this->write_relay_(i, false);
 
@@ -201,6 +217,8 @@ void UFHComponent::load_settings_() {
     z.floor.key[sizeof(z.floor.key) - 1] = 0;
     if (z.leader > MAX_ZONES)
       z.leader = 0;
+    if (z.follow_main > 1)
+      z.follow_main = 0;
   }
   s_.mqtt_host[sizeof(s_.mqtt_host) - 1] = 0;
   s_.mqtt_user[sizeof(s_.mqtt_user) - 1] = 0;
@@ -218,6 +236,11 @@ void UFHComponent::save_settings_() {
 }
 
 void UFHComponent::save_persist_() { this->pref_persist_.save(&this->p_); }
+
+void UFHComponent::save_main_() {
+  this->pref_main_.save(&this->m_);
+  global_preferences->sync();
+}
 
 uint8_t UFHComponent::effective_zone_count_() const {
   uint8_t n = s_.zone_count;
@@ -237,8 +260,20 @@ void UFHComponent::apply_entities_() {
     r.name_total = std::string(n) + " Runtime Total";
     r.name_duty = std::string(n) + " Duty 24h";
     r.name_temp = std::string(n) + " Temperature";
+    r.name_follow = std::string(n) + " Follows Main";
+  }
+  for (auto *sw : zone_switches_) {
+    uint8_t i = sw->zone() - 1;
+    if (i >= MAX_ZONES)
+      continue;
+    bool hide = (i >= zc) || (s_.zones[i].leader != 0);
+    if (!hide)
+      sw->rename(zr_[i].name_follow.c_str());
+    sw->set_internal(hide);
   }
   for (auto *c : climates_) {
+    if (c->zone() == 0)
+      continue;  // main thermostat: fixed name
     uint8_t i = c->zone() - 1;
     if (i >= MAX_ZONES)
       continue;
@@ -405,12 +440,17 @@ void UFHComponent::ha_set_zone_target(int zone, float t) {
     return;
   uint8_t i = zone - 1;
   ZoneCfg &z = s_.zones[i];
+  if (z.follow_main && z.leader == 0) {
+    ESP_LOGW(TAG, "Zone %d follows the main thermostat: change the main one", zone);
+    force_publish_ = true;
+    return;
+  }
   t = std::clamp(t, 5.0f, 30.0f);
   if (z.mode == ZONE_AUTO) {
     ESPTime now = time_ != nullptr ? time_->now() : ESPTime{};
     zr_[i].override_active = true;
     zr_[i].override_x10 = to_x10(t);
-    zr_[i].override_until_slot = now.is_valid() ? next_switch_slot_(z, slot_of_week(now)) : 0xFFFF;
+    zr_[i].override_until_slot = now.is_valid() ? next_switch_slot_(z.sched, slot_of_week(now)) : 0xFFFF;
     ESP_LOGI(TAG, "Zone %d: %.1f °C until the next schedule change", zone, t);
   } else {
     z.manual_x10 = to_x10(t);
@@ -421,6 +461,10 @@ void UFHComponent::ha_set_zone_target(int zone, float t) {
 }
 
 void UFHComponent::climate_control(uint8_t zone, const climate::ClimateCall &call) {
+  if (zone == 0) {
+    this->main_control_(call);
+    return;
+  }
   if (zone < 1 || zone > MAX_ZONES)
     return;
   if (call.get_mode().has_value()) {
@@ -438,6 +482,10 @@ climate::ClimateTraits UFHZoneClimate::traits() {
   t.add_supported_mode(climate::CLIMATE_MODE_OFF);
   t.add_supported_mode(climate::CLIMATE_MODE_HEAT);
   t.add_supported_mode(climate::CLIMATE_MODE_AUTO);
+  if (zone_ == 0) {
+    t.add_supported_preset(climate::CLIMATE_PRESET_COMFORT);
+    t.add_supported_preset(climate::CLIMATE_PRESET_ECO);
+  }
   t.set_visual_min_temperature(5);
   t.set_visual_max_temperature(30);
   t.set_visual_target_temperature_step(0.5f);
@@ -453,9 +501,9 @@ void UFHZoneClimate::control(const climate::ClimateCall &call) {
 // ---------------------------------------------------------------------------------------------
 // schedule
 // ---------------------------------------------------------------------------------------------
-bool UFHComponent::in_comfort_(const ZoneCfg &z, uint16_t sow) const {
+bool UFHComponent::in_comfort_(const DaySchedule *sch, uint16_t sow) const {
   uint8_t d = sow / 144, s = sow % 144;
-  const DaySchedule &ds = z.sched[d];
+  const DaySchedule &ds = sch[d];
   if (ds.s1 != ds.e1 && s >= ds.s1 && s < ds.e1)
     return true;
   if (ds.s2 != ds.e2 && s >= ds.s2 && s < ds.e2)
@@ -463,20 +511,20 @@ bool UFHComponent::in_comfort_(const ZoneCfg &z, uint16_t sow) const {
   return false;
 }
 
-int UFHComponent::minutes_to_next_comfort_(const ZoneCfg &z, uint16_t sow) const {
+int UFHComponent::minutes_to_next_comfort_(const DaySchedule *sch, uint16_t sow) const {
   for (int k = 1; k <= 48; k++) {  // look 8 h ahead
     uint16_t s = (sow + k) % (7 * 144);
-    if (in_comfort_(z, s))
+    if (in_comfort_(sch, s))
       return k * 10;
   }
   return -1;
 }
 
-uint16_t UFHComponent::next_switch_slot_(const ZoneCfg &z, uint16_t sow) const {
-  bool c = in_comfort_(z, sow);
+uint16_t UFHComponent::next_switch_slot_(const DaySchedule *sch, uint16_t sow) const {
+  bool c = in_comfort_(sch, sow);
   for (int k = 1; k <= 7 * 144; k++) {
     uint16_t s = (sow + k) % (7 * 144);
-    if (in_comfort_(z, s) != c)
+    if (in_comfort_(sch, s) != c)
       return s;
   }
   return 0xFFFF;
@@ -501,17 +549,24 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
   if (s_.house_mode == HOUSE_HOLIDAY)
     return x10(s_.holiday_x10);
   float t;
-  if (z.mode == ZONE_HEAT) {
+  bool follow = z.follow_main && z.leader == 0;
+  if (follow) {
+    // main thermostat ("Geral") decides Comfort / Eco and the temperature
+    t = this->main_target_(now);
+    if (std::isnan(t))
+      return NAN;
+    r.comfort_now = main_comfort_now_;
+  } else if (z.mode == ZONE_HEAT) {
     t = x10(z.manual_x10);
   } else {
     bool comfort = true;  // no clock yet: stay on the comfortable side
     if (now.is_valid()) {
       uint16_t sow = slot_of_week(now);
-      comfort = in_comfort_(z, sow);
+      comfort = in_comfort_(z.sched, sow);
       if (r.override_active && sow == r.override_until_slot)
         r.override_active = false;
       if (!comfort && s_.opt_optimum_start && r.has_temp) {
-        int mins = minutes_to_next_comfort_(z, sow);
+        int mins = minutes_to_next_comfort_(z.sched, sow);
         float need_c = x10(z.comfort_x10) - r.temp;
         if (mins > 0 && need_c > 0) {
           float rate = std::clamp(p_.rate_c_per_h[i], 0.1f, 5.0f);
@@ -531,13 +586,146 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
       t = x10(r.override_x10);
   }
   if (s_.house_mode == HOUSE_AWAY)
-    t = std::min(t, x10(z.eco_x10));
+    t = std::min(t, x10(follow ? m_.eco_x10 : z.eco_x10));
   if (s_.house_mode == HOUSE_HOME) {
     t += this->tariff_offset_(now);
     if (s_.opt_pv && z.pv_boost && pv_surplus_)
       t += x10(s_.pv_delta_x10);
   }
   return t;
+}
+
+// ---------------------------------------------------------------------------------------------
+// main thermostat ("Geral")
+// ---------------------------------------------------------------------------------------------
+// Target of the zones that follow the main thermostat. Auto: its own schedule; a Comfort / Eco
+// chosen by hand lasts until the next change of that schedule. Heat: always Comfort (or Eco).
+float UFHComponent::main_target_(const ESPTime &now) {
+  if (m_.mode == ZONE_OFF) {
+    main_comfort_now_ = false;
+    return NAN;
+  }
+  bool comfort;
+  if (m_.mode == ZONE_HEAT) {
+    comfort = !m_.fixed_eco;
+  } else {
+    comfort = true;  // no clock yet
+    if (now.is_valid()) {
+      uint16_t sow = slot_of_week(now);
+      comfort = in_comfort_(m_.sched, sow);
+      if (main_override_ && sow == main_override_until_)
+        main_override_ = false;
+    }
+    if (main_override_)
+      comfort = !main_override_eco_;
+  }
+  main_comfort_now_ = comfort;
+  return x10(comfort ? m_.comfort_x10 : m_.eco_x10);
+}
+
+void UFHComponent::main_control_(const climate::ClimateCall &call) {
+  ESPTime now = time_ != nullptr ? time_->now() : ESPTime{};
+  bool save = false;
+  if (call.get_mode().has_value()) {
+    climate::ClimateMode m = *call.get_mode();
+    m_.mode = m == climate::CLIMATE_MODE_OFF ? ZONE_OFF : (m == climate::CLIMATE_MODE_AUTO ? ZONE_AUTO : ZONE_HEAT);
+    main_override_ = false;
+    save = true;
+  }
+  if (call.get_preset().has_value()) {
+    bool eco = *call.get_preset() == climate::CLIMATE_PRESET_ECO;
+    if (m_.mode == ZONE_HEAT) {
+      m_.fixed_eco = eco;
+      save = true;
+    } else if (m_.mode == ZONE_AUTO) {
+      bool sched_comfort = now.is_valid() ? in_comfort_(m_.sched, slot_of_week(now)) : true;
+      if (sched_comfort == !eco) {
+        main_override_ = false;  // same as the schedule: back to the schedule
+      } else {
+        main_override_ = true;
+        main_override_eco_ = eco;
+        main_override_until_ = now.is_valid() ? next_switch_slot_(m_.sched, slot_of_week(now)) : 0xFFFF;
+        ESP_LOGI(TAG, "Main thermostat: %s until the next schedule change", eco ? "Eco" : "Comfort");
+      }
+    }
+  }
+  if (call.get_target_temperature().has_value()) {
+    float t = std::clamp(*call.get_target_temperature(), 5.0f, 30.0f);
+    this->main_target_(now);  // which one is active now
+    if (main_comfort_now_)
+      m_.comfort_x10 = to_x10(t);
+    else
+      m_.eco_x10 = to_x10(t);
+    ESP_LOGI(TAG, "Main thermostat: %s = %.1f °C", main_comfort_now_ ? "Comfort" : "Eco", t);
+    save = true;
+  }
+  if (save)
+    this->save_main_();
+  force_publish_ = true;
+}
+
+void UFHComponent::publish_main_(UFHZoneClimate *c, bool force) {
+  ESPTime now = time_ != nullptr ? time_->now() : ESPTime{};
+  float tgt = this->main_target_(now);
+  if (std::isnan(tgt))
+    tgt = x10(m_.comfort_x10);
+  climate::ClimateMode m = m_.mode == ZONE_OFF   ? climate::CLIMATE_MODE_OFF
+                           : m_.mode == ZONE_AUTO ? climate::CLIMATE_MODE_AUTO
+                                                  : climate::CLIMATE_MODE_HEAT;
+  climate::ClimatePreset p = main_comfort_now_ || m_.mode == ZONE_OFF ? climate::CLIMATE_PRESET_COMFORT
+                                                                      : climate::CLIMATE_PRESET_ECO;
+  // current temperature: average of the following zones that have a reading
+  uint8_t zc = this->effective_zone_count_();
+  float sum = 0;
+  int n = 0;
+  bool heating = false;
+  for (uint8_t i = 0; i < zc; i++) {
+    const ZoneCfg &z = s_.zones[i];
+    if (!z.follow_main || z.leader != 0)
+      continue;
+    if (zr_[i].has_temp) {
+      sum += zr_[i].temp;
+      n++;
+    }
+    if (relay_state_[i])
+      heating = true;
+  }
+  float cur = n ? roundf(sum / n * 10) / 10 : NAN;
+  climate::ClimateAction a = m_.mode == ZONE_OFF ? climate::CLIMATE_ACTION_OFF
+                             : heating          ? climate::CLIMATE_ACTION_HEATING
+                                                : climate::CLIMATE_ACTION_IDLE;
+  bool changed = force || c->mode != m || c->action != a || !c->preset.has_value() || *c->preset != p ||
+                 std::fabs(c->target_temperature - tgt) > 0.01f ||
+                 (std::isnan(c->current_temperature) != std::isnan(cur)) ||
+                 (!std::isnan(cur) && std::fabs(c->current_temperature - cur) > 0.01f);
+  if (changed) {
+    c->mode = m;
+    c->action = a;
+    c->preset = p;
+    c->target_temperature = tgt;
+    c->current_temperature = cur;
+    c->publish_state();
+  }
+}
+
+void UFHComponent::set_follow_main(int zone, bool on) {
+  if (zone < 1 || zone > MAX_ZONES)
+    return;
+  ZoneCfg &z = s_.zones[zone - 1];
+  if (z.leader != 0)
+    on = false;
+  if ((bool) z.follow_main != on) {
+    z.follow_main = on;
+    zr_[zone - 1].override_active = false;
+    this->save_settings_();
+    ESP_LOGI(TAG, "Zone %d %s the main thermostat", zone, on ? "follows" : "no longer follows");
+  }
+  force_publish_ = true;
+}
+
+void UFHZoneSwitch::write_state(bool state) {
+  if (parent_ != nullptr)
+    parent_->set_follow_main(zone_, state);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -920,8 +1108,24 @@ void UFHComponent::publish_entities_() {
   if (slow)
     last_slow = now_ms;
   uint8_t zc = this->effective_zone_count_();
+  bool force = force_publish_;
+  force_publish_ = false;
 
+  for (auto *sw : zone_switches_) {
+    uint8_t i = sw->zone() - 1;
+    if (i >= zc || sw->is_internal())
+      continue;
+    bool on = s_.zones[i].follow_main;
+    if (force || sw->state != on || !sw_published_[i]) {
+      sw_published_[i] = true;
+      sw->publish_state(on);
+    }
+  }
   for (auto *c : climates_) {
+    if (c->zone() == 0) {
+      this->publish_main_(c, force);
+      continue;
+    }
     uint8_t i = c->zone() - 1;
     if (i >= zc || c->is_internal())
       continue;
@@ -935,7 +1139,7 @@ void UFHComponent::publish_entities_() {
     climate::ClimateAction a = z.mode == ZONE_OFF ? climate::CLIMATE_ACTION_OFF
                                : r.relay          ? climate::CLIMATE_ACTION_HEATING
                                                   : climate::CLIMATE_ACTION_IDLE;
-    bool changed = c->mode != m || c->action != a || std::fabs(c->target_temperature - tgt) > 0.01f ||
+    bool changed = force || c->mode != m || c->action != a || std::fabs(c->target_temperature - tgt) > 0.01f ||
                    (std::isnan(c->current_temperature) != std::isnan(cur)) ||
                    (!std::isnan(cur) && std::fabs(c->current_temperature - cur) > 0.01f);
     if (changed) {

@@ -22,6 +22,17 @@ mqtt:
   log_topic: null
   reboot_timeout: 0s
 
+# Main thermostat ("Geral"): Comfort / Eco temperatures and its own schedule. Zones with
+# "Follows Main" on take their target from it (and cannot be changed one by one).
+climate:
+  - platform: ufh
+    zone: 0
+    name: "Main Thermostat"
+    icon: mdi:home-thermometer
+    web_server:
+      sorting_group_id: group_main
+      sorting_weight: 1
+
 select:
   - platform: template
     id: house_mode

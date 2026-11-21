@@ -50,7 +50,7 @@ struct ZoneCfg {
   uint8_t leader;  // 0 = own thermostat; k = this relay follows zone k (rooms with several loops)
   uint8_t mode;    // ZoneMode
   uint8_t pv_boost;
-  uint8_t reserved0;
+  uint8_t follow_main;  // 1 = target comes from the main thermostat ("Geral"); was reserved (0)
   int16_t comfort_x10;
   int16_t eco_x10;
   int16_t manual_x10;   // target in Heat mode
@@ -121,7 +121,23 @@ struct Persist {
   uint32_t last_epoch[MAX_ZONES];
 };
 
+// Main thermostat ("Geral"): Comfort / Eco temperatures and its own weekly schedule. Zones with
+// follow_main take their target from it. Stored in its own NVS entry (the Settings blob keeps
+// its layout, so existing installations keep their configuration).
+static constexpr uint32_t MAIN_MAGIC = 0x55464D31;  // "UFM1"
+struct MainCfg {
+  uint32_t magic;
+  uint8_t mode;       // ZoneMode: Off (following zones off) / Auto (schedule) / Heat (fixed)
+  uint8_t fixed_eco;  // Heat mode: 0 = always Comfort, 1 = always Eco
+  uint8_t reserved0[2];
+  int16_t comfort_x10;
+  int16_t eco_x10;
+  DaySchedule sched[7];
+  uint8_t reserved[8];
+};
+
 void default_settings(Settings &s, uint8_t relay_count, bool active_low);
+void default_main(MainCfg &m);
 
 }  // namespace ufh
 }  // namespace esphome

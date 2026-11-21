@@ -186,6 +186,7 @@ std::string UFHComponent::web_state_json() {
     o["n"] = z.name;
     o["m"] = z.mode;
     o["lead"] = z.leader;
+    o["fm"] = (bool) (z.follow_main && z.leader == 0);
     o["src"] = z.room.type;
     put_num(o, "t", r.has_temp ? r.temp : NAN);
     put_num(o, "h", r.hum);
@@ -203,6 +204,17 @@ std::string UFHComponent::web_state_json() {
       sum += h;
     o["duty"] = (int) (sum / 864);
     o["rate"] = roundf(p_.rate_c_per_h[i] * 100) / 100;
+  }
+  {
+    ESPTime tnow = time_ != nullptr ? time_->now() : ESPTime{};
+    float mt = this->main_target_(tnow);
+    JsonObject mo = root["main"].to<JsonObject>();
+    mo["m"] = m_.mode;
+    put_num(mo, "tg", mt);
+    mo["c"] = main_comfort_now_;
+    mo["ovr"] = main_override_;
+    mo["comfort"] = x10(m_.comfort_x10);
+    mo["eco"] = x10(m_.eco_x10);
   }
   JsonObject pmp = root["pump_h"].to<JsonObject>();
   pmp["today"] = pump_today_s_ / 60;
@@ -311,12 +323,26 @@ std::string UFHComponent::web_config_json() {
   al["host"] = s_.altherma_host;
   al["flow"] = s_.altherma_flow;
   al["ret"] = s_.altherma_return;
+  JsonObject mo = root["main"].to<JsonObject>();
+  mo["mode"] = m_.mode;
+  mo["fixed_eco"] = (bool) m_.fixed_eco;
+  mo["comfort"] = x10(m_.comfort_x10);
+  mo["eco"] = x10(m_.eco_x10);
+  JsonArray msc = mo["sched"].to<JsonArray>();
+  for (const auto &d : m_.sched) {
+    JsonArray a = msc.add<JsonArray>();
+    a.add(d.s1);
+    a.add(d.e1);
+    a.add(d.s2);
+    a.add(d.e2);
+  }
   JsonArray zs = root["zones"].to<JsonArray>();
   for (uint8_t i = 0; i < relays_.size() && i < MAX_ZONES; i++) {
     const ZoneCfg &z = s_.zones[i];
     JsonObject o = zs.add<JsonObject>();
     o["name"] = z.name;
     o["leader"] = z.leader;
+    o["follow"] = (bool) z.follow_main;
     o["mode"] = z.mode;
     o["pv_boost"] = (bool) z.pv_boost;
     o["comfort"] = x10(z.comfort_x10);
@@ -487,6 +513,10 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
       }
       if (zv["mode"].is<int>())
         z.mode = (uint8_t) std::max(0, std::min((int) ZONE_HEAT, zv["mode"].as<int>()));
+      if (zv["follow"].is<bool>()) {
+        z.follow_main = zv["follow"].as<bool>() && z.leader == 0;
+        force_publish_ = true;
+      }
       if (zv["pv_boost"].is<bool>())
         z.pv_boost = zv["pv_boost"].as<bool>();
       t10(zv["comfort"], z.comfort_x10, 5.0f, 30.0f);
@@ -519,6 +549,31 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
         this->ha_set_zone_target(i + 1, zv["target"].as<float>());
       i++;
     }
+  }
+  JsonVariantConst mv = root["main"];
+  if (mv.is<JsonObjectConst>()) {
+    if (mv["mode"].is<int>())
+      m_.mode = (uint8_t) std::max(0, std::min((int) ZONE_HEAT, mv["mode"].as<int>()));
+    if (mv["fixed_eco"].is<bool>())
+      m_.fixed_eco = mv["fixed_eco"].as<bool>();
+    t10(mv["comfort"], m_.comfort_x10, 5.0f, 30.0f);
+    t10(mv["eco"], m_.eco_x10, 5.0f, 30.0f);
+    if (mv["sched"].is<JsonArrayConst>()) {
+      uint8_t d = 0;
+      for (JsonVariantConst dv : mv["sched"].as<JsonArrayConst>()) {
+        if (d >= 7 || !dv.is<JsonArrayConst>())
+          break;
+        JsonArrayConst a = dv.as<JsonArrayConst>();
+        if (a.size() >= 4) {
+          auto c = [](JsonVariantConst x) { return (uint8_t) std::max(0, std::min(144, x.as<int>())); };
+          m_.sched[d] = {c(a[0]), c(a[1]), c(a[2]), c(a[3])};
+        }
+        d++;
+      }
+    }
+    main_override_ = false;
+    this->save_main_();
+    force_publish_ = true;
   }
   if (root["configured"].is<bool>()) {
     bool c = root["configured"].as<bool>();
