@@ -10,6 +10,9 @@ All notable changes to the firmware and installer. Format:
   follow take their target from the main thermostat and cannot be changed one by one. Choosing
   Comfort or Eco by hand (climate presets) holds until the next schedule change. House modes,
   open window and floor limit still apply. Existing settings are kept (stored separately).
+- **Pump group** on the web page (opens / closes like the zones): pump, heat demand, pump mode,
+  runtime, and the relay delays after the thermostats' demand as two settings you can change
+  directly (**Pump Start Delay** / **Pump Stop Delay**, 0–900 s, also in Home Assistant).
 
 ## [0.3.2] - 2026-11-21
 ### Changed

@@ -64,7 +64,44 @@ select:
           static const char *const M[] = {"Auto", "On", "Off"};
           for (uint8_t i = 0; i < 3; i++) if (x == M[i]) id(ufh_ctl).set_pump_mode(i);
     web_server:
-      sorting_group_id: group_house
+      sorting_group_id: group_pump
+      sorting_weight: 3
+
+# Pump / heat pump relay delays after the thermostats' demand (seconds). The thermostats decide;
+# these only shift when the relay follows them.
+number:
+  - platform: template
+    name: "Pump Start Delay"
+    icon: mdi:timer-play-outline
+    unit_of_measurement: s
+    mode: box
+    min_value: 0
+    max_value: 900
+    step: 10
+    entity_category: config
+    update_interval: 5s
+    lambda: return id(ufh_ctl).pump_start_s();
+    set_action:
+      - lambda: id(ufh_ctl).set_pump_start_s((uint16_t) x);
+    web_server:
+      sorting_group_id: group_pump
+      sorting_weight: 4
+  - platform: template
+    name: "Pump Stop Delay"
+    icon: mdi:timer-stop-outline
+    unit_of_measurement: s
+    mode: box
+    min_value: 0
+    max_value: 900
+    step: 10
+    entity_category: config
+    update_interval: 5s
+    lambda: return id(ufh_ctl).pump_stop_s();
+    set_action:
+      - lambda: id(ufh_ctl).set_pump_stop_s((uint16_t) x);
+    web_server:
+      sorting_group_id: group_pump
+      sorting_weight: 5
 
 binary_sensor:
   - platform: template
@@ -73,14 +110,16 @@ binary_sensor:
     icon: mdi:pump
     lambda: return id(ufh_ctl).pump_on();
     web_server:
-      sorting_group_id: group_house
+      sorting_group_id: group_pump
+      sorting_weight: 1
   - platform: template
     name: "Heat Demand"
     device_class: heat
     icon: mdi:fire
     lambda: return id(ufh_ctl).heat_demand();
     web_server:
-      sorting_group_id: group_house
+      sorting_group_id: group_pump
+      sorting_weight: 2
   - platform: template
     name: "Problem"
     device_class: problem
@@ -116,7 +155,8 @@ sensor:
     update_interval: 60s
     lambda: return id(ufh_ctl).pump_today_h();
     web_server:
-      sorting_group_id: group_stats
+      sorting_group_id: group_pump
+      sorting_weight: 6
   - platform: template
     name: "Pump Runtime Total"
     unit_of_measurement: h
@@ -128,7 +168,8 @@ sensor:
     update_interval: 300s
     lambda: return id(ufh_ctl).pump_total_h();
     web_server:
-      sorting_group_id: group_stats
+      sorting_group_id: group_pump
+      sorting_weight: 7
 
 button:
   - platform: template

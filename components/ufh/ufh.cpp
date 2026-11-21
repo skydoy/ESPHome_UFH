@@ -420,6 +420,16 @@ void UFHComponent::set_pump_mode(uint8_t m) {
   this->pref_settings_.save(&s_);
 }
 
+void UFHComponent::set_pump_start_s(uint16_t v) {
+  s_.pump_start_s = std::min<uint16_t>(v, 900);
+  this->save_settings_();
+}
+
+void UFHComponent::set_pump_stop_s(uint16_t v) {
+  s_.pump_stop_s = std::min<uint16_t>(v, 900);
+  this->save_settings_();
+}
+
 void UFHComponent::all_zones_off() {
   for (uint8_t i = 0; i < MAX_ZONES; i++)
     s_.zones[i].mode = ZONE_OFF;

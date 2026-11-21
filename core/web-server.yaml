@@ -10,6 +10,9 @@ web_server:
   log: true
   js_include: web-ui.js
   sorting_groups:
+    - id: group_pump
+      name: "Pump"
+      sorting_weight: 9
     - id: group_main
       name: "Main"
       sorting_weight: 8

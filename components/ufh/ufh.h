@@ -195,6 +195,10 @@ class UFHComponent : public Component
   bool demand_relay_on() const { return demand_out_; }
   uint8_t house_mode() const { return s_.house_mode; }
   uint8_t pump_mode() const { return s_.pump_mode; }
+  uint16_t pump_start_s() const { return s_.pump_start_s; }
+  uint16_t pump_stop_s() const { return s_.pump_stop_s; }
+  void set_pump_start_s(uint16_t v);
+  void set_pump_stop_s(uint16_t v);
   void set_house_mode(uint8_t m);
   void set_pump_mode(uint8_t m);
   bool problem() const { return !warnings_text_.empty(); }

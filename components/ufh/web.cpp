@@ -161,6 +161,8 @@ std::string UFHComponent::web_state_json() {
   root["exercise"] = ex_state_;
   root["warnings"] = warnings_text_;
   root["active_low"] = (bool) s_.relay_active_low;
+  root["ps"] = s_.pump_start_s;
+  root["pe"] = s_.pump_stop_s;
   if (any_relay_ && !pump_out_ && s_.pump_mode == PUMP_AUTO) {
     int32_t left = (int32_t) s_.pump_start_s - (int32_t) ((now_ms - any_since_ms_) / 1000);
     root["pump_in"] = left > 0 ? left : 0;
