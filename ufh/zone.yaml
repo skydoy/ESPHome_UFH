@@ -36,12 +36,20 @@ sensor:
       sorting_group_id: group_zone${zone}
       sorting_weight: 4
   - platform: ufh
+    type: last_reading
+    zone: ${zone}
+    name: "Zone ${zone} Last Reading"
+    entity_category: diagnostic
+    web_server:
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 5
+  - platform: ufh
     type: runtime_today
     zone: ${zone}
     name: "Zone ${zone} Runtime Today"
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 5
+      sorting_weight: 6
   - platform: ufh
     type: runtime_total
     zone: ${zone}
@@ -49,7 +57,7 @@ sensor:
     entity_category: diagnostic
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 6
+      sorting_weight: 7
   - platform: ufh
     type: duty_24h
     zone: ${zone}
@@ -57,4 +65,4 @@ sensor:
     entity_category: diagnostic
     web_server:
       sorting_group_id: group_zone${zone}
-      sorting_weight: 7
+      sorting_weight: 8

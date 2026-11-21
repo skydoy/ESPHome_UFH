@@ -39,7 +39,7 @@
 })();
 
 (function () {
-  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16", "Main Thermostat": "Termóstato geral", "Pump Start Delay": "Atraso a ligar", "Pump Stop Delay": "Atraso a desligar"};
+  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16", "Main Thermostat": "Termóstato geral", "Pump Start Delay": "Atraso a ligar", "Pump Stop Delay": "Atraso a desligar", "Heat Pump Min On Time": "Bomba de calor: mínimo ligada", "Heat Pump Min Off Time": "Bomba de calor: mínimo desligada"};
   var GROUP_PT = {"Pump": "Bomba", "Main": "Geral", "Zones": "Zonas", "House": "Casa", "Statistics": "Estatísticas", "Maintenance": "Manutenção", "Configuration": "Configuração", "Diagnostic": "Diagnóstico", "Undefined": "Outros"};
   var KEY = 'esphome_ufh_lang', lang;
   try { lang = localStorage.getItem(KEY); } catch (e) {}
@@ -139,17 +139,18 @@
     if (on) o.push(n);
     try { localStorage.setItem(OPEN_KEY, JSON.stringify(o)); } catch (e) {}
   }
-  var ROW_LBL = {'': ['Termóstato', 'Thermostat'], 'Follows Main': ['Segue a geral', 'Follows main'], 'Heating': ['A aquecer', 'Heating'], 'Temperature': ['Temperatura', 'Temperature'],
+  var ROW_LBL = {'': ['Termóstato', 'Thermostat'], 'Follows Main': ['Segue a geral', 'Follows main'], 'Last Reading': ['Última leitura', 'Last reading'], 'Heating': ['A aquecer', 'Heating'], 'Temperature': ['Temperatura', 'Temperature'],
                  'Runtime Today': ['Horas hoje', 'Runtime today'], 'Runtime Total': ['Horas total', 'Runtime total'],
                  'Duty 24h': ['Ocupação 24 h', 'Duty 24 h']};
   function TT(pt, en) { return lang === 'pt' ? pt : en; }
+  function ago(m) { return m < 60 ? m + ' min' : (m < 2880 ? Math.round(m / 60) + ' h' : Math.round(m / 1440) + TT(' dias', ' days')); }
   function fmt(v) { return (v === null || v === undefined || isNaN(v)) ? '—' : (+v).toFixed(1) + ' °C'; }
   function zoneGroups(sr) {
     var st = window.__ufhState, zs = (st && st.zones) || [], open = openZones();
     sr.querySelectorAll('.tab-header').forEach(function (h) {
       if (h.__zone === undefined) {
         var ht = h.textContent.trim(), m = /^Zon[ea] (\d+)$/.exec(ht);
-        h.__zone = m ? +m[1] : (ht === 'Pump' || ht === 'Bomba' ? 100 : 0);
+        h.__zone = m ? +m[1] : (ht === 'Pump' || ht === 'Bomba' ? 100 : (ht === 'Main' || ht === 'Geral' ? 101 : 0));
       }
       var n = h.__zone;
       if (!n) return;
@@ -164,11 +165,22 @@
           (st.pump_in > 0 ? ' · ' + TT('liga em ', 'starts in ') + st.pump_in + ' s' : '') +
           ' · ' + [TT('automático', 'auto'), TT('sempre ligada', 'always on'), TT('desligada', 'off')][st.pump_mode || 0] +
           (st.ps != null ? ' · ⏱ ' + st.ps + ' s / ' + st.pe + ' s' : '')) : '';
+      } else if (n === 101) {
+        // main thermostat group
+        name = TT('Geral', 'Main');
+        var M = st && st.main;
+        z = {};
+        if (M) {
+          var nf = zs.filter(function (q) { return q.fm; }).length;
+          sum = M.m === 0 ? TT('desligada', 'off') :
+            ((M.c ? TT('Conforto', 'Comfort') : 'Eco') + ' ' + fmt(M.tg) + (M.ovr ? TT(' (à mão)', ' (manual)') : '') + (M.m === 2 ? TT(' · fixo', ' · fixed') : ''));
+          sum += ' · ' + nf + (nf === 1 ? TT(' zona', ' zone') : TT(' zonas', ' zones'));
+        } else sum = '';
       } else if (z.lead) {
         var L = zs[z.lead - 1];
         sum = TT('segue ', 'follows ') + (L && L.n ? L.n : 'Z' + z.lead);
       } else if (z.n !== undefined) {
-        sum = (z.fm ? TT('geral · ', 'main · ') : '') + fmt(z.t) + ' → ' + (z.m === 0 || z.tg === null || isNaN(z.tg) ? TT('desligada', 'off') : fmt(z.tg));
+        sum = (z.fm ? TT('geral · ', 'main · ') : '') + (z.age >= 0 ? TT('há ', '') + ago(z.age) + TT('', ' ago') + ' · ' : '') + fmt(z.t) + ' → ' + (z.m === 0 || z.tg === null || isNaN(z.tg) ? TT('desligada', 'off') : fmt(z.tg));
       } else sum = '';
       if (z.r) sum += (sum ? ' · ' : '') + '🔥 ' + TT('a aquecer', 'heating');
       if (z.w) sum += ' ⚠️';
@@ -194,6 +206,30 @@
             if (tn.__en === undefined) tn.__en = tn.nodeValue.trim();
             var en = tn.__en, rest = en === z.n ? '' : (en.indexOf(z.n + ' ') === 0 ? en.slice(z.n.length + 1) : null);
             if (rest !== null && ROW_LBL[rest]) tn.nodeValue = ROW_LBL[rest][lang === 'pt' ? 0 : 1];
+            var val = row.children[2];
+            // last reading: epoch -> local time
+            if (rest === 'Last Reading' && val) {
+              var w2 = document.createTreeWalker(val, NodeFilter.SHOW_TEXT), vn;
+              while ((vn = w2.nextNode())) {
+                var num = parseFloat(vn.nodeValue);
+                if (/^\s*\d{9,}(\.\d+)?\s*$/.test(vn.nodeValue) && num > 1e9) {
+                  var d = new Date(num * 1000);
+                  vn.nodeValue = d.toLocaleString(lang === 'pt' ? 'pt-PT' : 'en-GB', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'});
+                }
+              }
+            }
+            // thermostat of a zone that follows the main one: no slider, only a note
+            if (rest === '' && val) {
+              val.querySelectorAll('input[type=range]').forEach(function (r) {
+                r.style.display = z.fm ? 'none' : '';
+                var note = r.parentNode && r.parentNode.querySelector('.ufh-fm');
+                if (z.fm && !note) {
+                  note = document.createElement('span'); note.className = 'ufh-fm'; note.style.cssText = 'opacity:.8';
+                  r.parentNode.insertBefore(note, r);
+                }
+                if (note) { note.textContent = z.fm ? '🏠 ' + TT('segue a geral', 'follows main') : ''; }
+              });
+            }
           }
         });
       }

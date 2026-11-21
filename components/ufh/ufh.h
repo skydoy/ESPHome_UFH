@@ -58,7 +58,13 @@ class UFHZoneClimate : public climate::Climate, public Component {
   uint8_t zone_{0};
 };
 
-enum ZoneSensorType : uint8_t { ZS_RUNTIME_TODAY = 0, ZS_RUNTIME_TOTAL = 1, ZS_DUTY_24H = 2, ZS_TEMPERATURE = 3 };
+enum ZoneSensorType : uint8_t {
+  ZS_RUNTIME_TODAY = 0,
+  ZS_RUNTIME_TOTAL = 1,
+  ZS_DUTY_24H = 2,
+  ZS_TEMPERATURE = 3,
+  ZS_LAST_READING = 4,
+};
 
 class UFHZoneSensor : public sensor::Sensor {
  public:
@@ -127,7 +133,7 @@ struct ZoneRt {
   uint16_t hour_s[24]{};     // seconds on, per hour of the last 24 h (ring indexed by hour)
   uint32_t warn{0};          // WARN_* bits
   // name storage for renamed entities
-  std::string name_climate, name_heating, name_today, name_total, name_duty, name_temp, name_follow;
+  std::string name_climate, name_heating, name_today, name_total, name_duty, name_temp, name_follow, name_last;
 };
 
 enum WarnBits : uint32_t {
@@ -199,6 +205,10 @@ class UFHComponent : public Component
   uint16_t pump_stop_s() const { return s_.pump_stop_s; }
   void set_pump_start_s(uint16_t v);
   void set_pump_stop_s(uint16_t v);
+  uint16_t hp_min_on_s() const { return s_.hp_min_on_s; }
+  uint16_t hp_min_off_s() const { return s_.hp_min_off_s; }
+  void set_hp_min_on_s(uint16_t v);
+  void set_hp_min_off_s(uint16_t v);
   void set_house_mode(uint8_t m);
   void set_pump_mode(uint8_t m);
   bool problem() const { return !warnings_text_.empty(); }
@@ -287,6 +297,7 @@ class UFHComponent : public Component
   bool main_comfort_now_{true};
   bool force_publish_{false};
   bool sw_published_[MAX_ZONES]{};
+  uint32_t role_since_ms_[MAX_RELAYS]{};  // last change of each pump / demand relay (anti short-cycle)
   ZoneRt zr_[MAX_ZONES];
   bool relay_state_[MAX_RELAYS]{};
 

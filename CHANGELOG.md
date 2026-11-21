@@ -13,6 +13,12 @@ All notable changes to the firmware and installer. Format:
 - **Pump group** on the web page (opens / closes like the zones): pump, heat demand, pump mode,
   runtime, and the relay delays after the thermostats' demand as two settings you can change
   directly (**Pump Start Delay** / **Pump Stop Delay**, 0–900 s, also in Home Assistant).
+- **Heat pump anti short-cycle**: minimum on / off time (0–60 min, 0 = off) of the relay with the
+  heat demand function, in the pump group and in Home Assistant.
+- **Last reading** per zone: header shows "x min ago"; new Home Assistant sensor "Zone N Last Reading"
+  (timestamp, about 2 min resolution).
+- Main thermostat group opens / closes like the zones, with a summary (Comfort/Eco, target,
+  zones following). Zones that follow the main thermostat show "follows main" instead of a slider.
 
 ## [0.3.2] - 2026-11-21
 ### Changed

@@ -105,7 +105,10 @@ struct Settings {
   char altherma_host[48];
   char altherma_flow[80];
   char altherma_return[80];
-  uint8_t reserved[16];
+  // heat pump anti short-cycle (relays with the heat demand function); 0 = off. Was reserved (0).
+  uint16_t hp_min_on_s;
+  uint16_t hp_min_off_s;
+  uint8_t reserved[12];
   ZoneCfg zones[MAX_ZONES];
 };
 

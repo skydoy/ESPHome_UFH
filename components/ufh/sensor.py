@@ -5,6 +5,7 @@ from esphome.const import (
     CONF_TYPE,
     DEVICE_CLASS_DURATION,
     DEVICE_CLASS_TEMPERATURE,
+    DEVICE_CLASS_TIMESTAMP,
     STATE_CLASS_MEASUREMENT,
     STATE_CLASS_TOTAL_INCREASING,
     UNIT_CELSIUS,
@@ -28,6 +29,9 @@ TYPES = {
     "temperature": (3, sensor.sensor_schema(UFHZoneSensor, unit_of_measurement=UNIT_CELSIUS, accuracy_decimals=1,
                                             device_class=DEVICE_CLASS_TEMPERATURE,
                                             state_class=STATE_CLASS_MEASUREMENT)),
+    # when the last room reading arrived (e.g. from the Shelly H&T); Home Assistant shows "5 minutes ago"
+    "last_reading": (4, sensor.sensor_schema(UFHZoneSensor, accuracy_decimals=0, device_class=DEVICE_CLASS_TIMESTAMP,
+                                             icon="mdi:clock-check-outline")),
 }
 
 CONFIG_SCHEMA = cv.typed_schema(

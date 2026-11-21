@@ -261,6 +261,7 @@ void UFHComponent::apply_entities_() {
     r.name_duty = std::string(n) + " Duty 24h";
     r.name_temp = std::string(n) + " Temperature";
     r.name_follow = std::string(n) + " Follows Main";
+    r.name_last = std::string(n) + " Last Reading";
   }
   for (auto *sw : zone_switches_) {
     uint8_t i = sw->zone() - 1;
@@ -296,7 +297,7 @@ void UFHComponent::apply_entities_() {
     if (i >= MAX_ZONES)
       continue;
     bool hide = i >= zc;
-    if (s->kind() == ZS_TEMPERATURE && s_.zones[i].leader != 0)
+    if ((s->kind() == ZS_TEMPERATURE || s->kind() == ZS_LAST_READING) && s_.zones[i].leader != 0)
       hide = true;
     if (!hide) {
       switch (s->kind()) {
@@ -308,6 +309,9 @@ void UFHComponent::apply_entities_() {
           break;
         case ZS_DUTY_24H:
           s->rename(zr_[i].name_duty.c_str());
+          break;
+        case ZS_LAST_READING:
+          s->rename(zr_[i].name_last.c_str());
           break;
         default:
           s->rename(zr_[i].name_temp.c_str());
@@ -427,6 +431,16 @@ void UFHComponent::set_pump_start_s(uint16_t v) {
 
 void UFHComponent::set_pump_stop_s(uint16_t v) {
   s_.pump_stop_s = std::min<uint16_t>(v, 900);
+  this->save_settings_();
+}
+
+void UFHComponent::set_hp_min_on_s(uint16_t v) {
+  s_.hp_min_on_s = std::min<uint16_t>(v, 3600);
+  this->save_settings_();
+}
+
+void UFHComponent::set_hp_min_off_s(uint16_t v) {
+  s_.hp_min_off_s = std::min<uint16_t>(v, 3600);
   this->save_settings_();
 }
 
@@ -992,8 +1006,21 @@ void UFHComponent::update_outputs_(uint32_t now_ms, const ESPTime &now) {
       default:
         on = false;
     }
-    if (relay_state_[k] != on)
+    // anti short-cycle for the heat pump: the demand relay stays on / off for a minimum time
+    // (not during the pump exercise or with the pump forced on / off by hand)
+    uint8_t role = s_.relay_role[k];
+    bool guarded = (role == ROLE_DEMAND || (role == ROLE_PUMP_DEMAND && s_.pump_mode == PUMP_AUTO)) && ex_state_ == 0;
+    if (guarded && on != relay_state_[k]) {
+      uint32_t held = now_ms - role_since_ms_[k];
+      if (relay_state_[k] && held < (uint32_t) s_.hp_min_on_s * 1000UL)
+        on = true;  // minimum on time not reached
+      else if (!relay_state_[k] && role_since_ms_[k] != 0 && held < (uint32_t) s_.hp_min_off_s * 1000UL)
+        on = false;  // minimum off time not reached
+    }
+    if (relay_state_[k] != on) {
       this->write_relay_(k, on);
+      role_since_ms_[k] = now_ms ? now_ms : 1;
+    }
   }
   pump_out_ = has_pump && pump;
   demand_out_ = has_demand ? demand : (any && s_.house_mode != HOUSE_SUMMER);
@@ -1187,6 +1214,10 @@ void UFHComponent::publish_entities_() {
         s->publish_state(sum / 864.0f);
         break;
       }
+      case ZS_LAST_READING:
+        if (p_.last_epoch[i] != 0 && (std::isnan(s->state) || (uint32_t) s->state != p_.last_epoch[i]))
+          s->publish_state((float) p_.last_epoch[i]);
+        break;
       default:
         if (r.has_temp)
           s->publish_state(r.temp);

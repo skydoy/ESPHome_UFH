@@ -102,6 +102,39 @@ number:
     web_server:
       sorting_group_id: group_pump
       sorting_weight: 5
+  # heat pump anti short-cycle (relay with the heat demand function), minutes; 0 = off
+  - platform: template
+    name: "Heat Pump Min On Time"
+    icon: mdi:timer-lock-outline
+    unit_of_measurement: min
+    mode: box
+    min_value: 0
+    max_value: 60
+    step: 1
+    entity_category: config
+    update_interval: 5s
+    lambda: return id(ufh_ctl).hp_min_on_s() / 60.0f;
+    set_action:
+      - lambda: id(ufh_ctl).set_hp_min_on_s((uint16_t) (x * 60));
+    web_server:
+      sorting_group_id: group_pump
+      sorting_weight: 6
+  - platform: template
+    name: "Heat Pump Min Off Time"
+    icon: mdi:timer-lock-open-outline
+    unit_of_measurement: min
+    mode: box
+    min_value: 0
+    max_value: 60
+    step: 1
+    entity_category: config
+    update_interval: 5s
+    lambda: return id(ufh_ctl).hp_min_off_s() / 60.0f;
+    set_action:
+      - lambda: id(ufh_ctl).set_hp_min_off_s((uint16_t) (x * 60));
+    web_server:
+      sorting_group_id: group_pump
+      sorting_weight: 7
 
 binary_sensor:
   - platform: template
@@ -156,7 +189,7 @@ sensor:
     lambda: return id(ufh_ctl).pump_today_h();
     web_server:
       sorting_group_id: group_pump
-      sorting_weight: 6
+      sorting_weight: 8
   - platform: template
     name: "Pump Runtime Total"
     unit_of_measurement: h
@@ -169,7 +202,7 @@ sensor:
     lambda: return id(ufh_ctl).pump_total_h();
     web_server:
       sorting_group_id: group_pump
-      sorting_weight: 7
+      sorting_weight: 9
 
 button:
   - platform: template
