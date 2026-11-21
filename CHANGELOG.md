@@ -4,6 +4,9 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- Docs: **Replacing a DAEnetIP4** — photo guide for the Denkovi 12-relay board (DAE-PB/Ro12/Di8/Ai8):
+  which sockets to use (JP1, JP2), wiring diagram to the Unit PoE-P4, 12 V supply, multimeter checks.
 
 ## [0.4.1] - 2026-11-21
 ### Fixed

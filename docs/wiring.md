@@ -7,7 +7,7 @@
 
 ![Relays on the ESP pins](img/wiring-direct-en.svg)
 
-For relay boards whose inputs work with **3.3 V** logic, such as the Denkovi boards driven by a DAEnetIP4 (its outputs were 0 / 3.3 V). The ESP replaces the DAEnetIP4: the relay board, the 230 V wiring and the numbering stay.
+For relay boards whose inputs work with **3.3 V** logic, such as the Denkovi boards driven by a DAEnetIP4 (its outputs were 0 / 3.3 V). The ESP replaces the DAEnetIP4: the relay board, the 230 V wiring and the numbering stay. Have a Denkovi 12-relay board? Follow the [photo guide](denkovi.md).
 
 | Relay | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|

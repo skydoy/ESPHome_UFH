@@ -7,7 +7,7 @@
 
 ![Relés nos pinos do ESP](img/wiring-direct-pt.svg)
 
-Para placas de relés com entradas de **3,3 V**, como as Denkovi comandadas por um DAEnetIP4 (as saídas dele eram de 0 / 3,3 V). O ESP substitui o DAEnetIP4: a placa de relés, as ligações de 230 V e a numeração ficam iguais.
+Para placas de relés com entradas de **3,3 V**, como as Denkovi comandadas por um DAEnetIP4 (as saídas dele eram de 0 / 3,3 V). Tens uma Denkovi de 12 relés? Segue o [guia com fotos](denkovi.md). O ESP substitui o DAEnetIP4: a placa de relés, as ligações de 230 V e a numeração ficam iguais.
 
 | Relé | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|

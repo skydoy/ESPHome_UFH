@@ -69,6 +69,7 @@ plugins:
             Getting started: Primeiros passos
             Install: Instalar
             Wiring: Ligações
+            Replacing a DAEnetIP4: Trocar uma DAEnetIP4
             Configuration: Configuração
             Home Assistant: Home Assistant
             Updates: Atualizações
@@ -83,6 +84,7 @@ nav:
   - Getting started: getting-started.md
   - Install: install.md
   - Wiring: wiring.md
+  - Replacing a DAEnetIP4: denkovi.md
   - Home Assistant: home-assistant.md
   - Configuration: configuration.md
   - Updates: updates.md

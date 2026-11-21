@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="1120" viewBox="0 0 1180 1120" font-family="Arial, Helvetica, sans-serif">
+<rect width="1180" height="1120" fill="#ffffff"/>
+<text x="30" y="42" font-size="25" font-weight="bold" fill="#0d1b2a">Denkovi relay board (12 relays) → M5Stack Unit PoE-P4</text>
+<text x="30" y="68" font-size="14" fill="#555">Remove the DAEnetIP4. The wires go to the relay board sockets it plugged into: the middle 2×5 (“JP1”) and the long JP2 (where the DAEnetIP4 JP3 plugged in).</text>
+<rect x="30" y="95" width="380" height="650" rx="12" fill="#f3f6fa" stroke="#0d1b2a" stroke-width="2"/>
+<rect x="790" y="95" width="360" height="650" rx="12" fill="#f3f6fa" stroke="#0d1b2a" stroke-width="2"/>
+<text x="46" y="125" font-size="18" fill="#0d1b2a" text-anchor="start" font-weight="bold">Relay board</text>
+<text x="46" y="145" font-size="12" fill="#555" text-anchor="start" font-weight="normal">sockets the DAEnetIP4 plugged into</text>
+<text x="806" y="125" font-size="18" fill="#0d1b2a" text-anchor="start" font-weight="bold">M5Stack Unit PoE-P4</text>
+<text x="806" y="145" font-size="12" fill="#555" text-anchor="start" font-weight="normal">Hat2-Bus and SDIO headers (2.54 mm)</text>
+<text x="386" y="185" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pin 1  →  <tspan font-weight="bold">Relay 1</tspan></text>
+<circle cx="410" cy="180" r="6" fill="#fff" stroke="#e6194b" stroke-width="3"/><line x1="416" y1="180" x2="784" y2="180" stroke="#e6194b" stroke-width="4"/><circle cx="790" cy="180" r="6" fill="#fff" stroke="#e6194b" stroke-width="3"/>
+<text x="810" y="185" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 2  ·  G44</text>
+<text x="386" y="221" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pin 2  →  <tspan font-weight="bold">Relay 2</tspan></text>
+<circle cx="410" cy="216" r="6" fill="#fff" stroke="#3cb44b" stroke-width="3"/><line x1="416" y1="216" x2="784" y2="216" stroke="#3cb44b" stroke-width="4"/><circle cx="790" cy="216" r="6" fill="#fff" stroke="#3cb44b" stroke-width="3"/>
+<text x="810" y="221" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 4  ·  G43</text>
+<text x="386" y="257" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pin 3  →  <tspan font-weight="bold">Relay 3</tspan></text>
+<circle cx="410" cy="252" r="6" fill="#fff" stroke="#f58231" stroke-width="3"/><line x1="416" y1="252" x2="784" y2="252" stroke="#f58231" stroke-width="4"/><circle cx="790" cy="252" r="6" fill="#fff" stroke="#f58231" stroke-width="3"/>
+<text x="810" y="257" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 5  ·  G21</text>
+<text x="386" y="293" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pin 4  →  <tspan font-weight="bold">Relay 4</tspan></text>
+<circle cx="410" cy="288" r="6" fill="#fff" stroke="#4363d8" stroke-width="3"/><line x1="416" y1="288" x2="784" y2="288" stroke="#4363d8" stroke-width="4"/><circle cx="790" cy="288" r="6" fill="#fff" stroke="#4363d8" stroke-width="3"/>
+<text x="810" y="293" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 6  ·  G42</text>
+<text x="386" y="329" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pin 5  →  <tspan font-weight="bold">Relay 5</tspan></text>
+<circle cx="410" cy="324" r="6" fill="#fff" stroke="#911eb4" stroke-width="3"/><line x1="416" y1="324" x2="784" y2="324" stroke="#911eb4" stroke-width="4"/><circle cx="790" cy="324" r="6" fill="#fff" stroke="#911eb4" stroke-width="3"/>
+<text x="810" y="329" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 7  ·  G20</text>
+<text x="386" y="365" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pin 6  →  <tspan font-weight="bold">Relay 6</tspan></text>
+<circle cx="410" cy="360" r="6" fill="#fff" stroke="#42d4f4" stroke-width="3"/><line x1="416" y1="360" x2="784" y2="360" stroke="#42d4f4" stroke-width="4"/><circle cx="790" cy="360" r="6" fill="#fff" stroke="#42d4f4" stroke-width="3"/>
+<text x="810" y="365" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 8  ·  G41</text>
+<text x="386" y="401" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pin 7  →  <tspan font-weight="bold">Relay 7</tspan></text>
+<circle cx="410" cy="396" r="6" fill="#fff" stroke="#f032e6" stroke-width="3"/><line x1="416" y1="396" x2="784" y2="396" stroke="#f032e6" stroke-width="4"/><circle cx="790" cy="396" r="6" fill="#fff" stroke="#f032e6" stroke-width="3"/>
+<text x="810" y="401" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 9  ·  G19</text>
+<text x="386" y="437" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pin 8  →  <tspan font-weight="bold">Relay 8</tspan></text>
+<circle cx="410" cy="432" r="6" fill="#fff" stroke="#9a6324" stroke-width="3"/><line x1="416" y1="432" x2="784" y2="432" stroke="#9a6324" stroke-width="4"/><circle cx="790" cy="432" r="6" fill="#fff" stroke="#9a6324" stroke-width="3"/>
+<text x="810" y="437" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 10  ·  G40</text>
+<text x="386" y="473" font-size="14" text-anchor="end" fill="#0d1b2a">JP2 (long) · pin 1  →  <tspan font-weight="bold">Relay 9</tspan></text>
+<circle cx="410" cy="468" r="6" fill="#fff" stroke="#800000" stroke-width="3"/><line x1="416" y1="468" x2="784" y2="468" stroke="#800000" stroke-width="4"/><circle cx="790" cy="468" r="6" fill="#fff" stroke="#800000" stroke-width="3"/>
+<text x="810" y="473" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 12  ·  G39</text>
+<text x="386" y="509" font-size="14" text-anchor="end" fill="#0d1b2a">JP2 (long) · pin 2  →  <tspan font-weight="bold">Relay 10</tspan></text>
+<circle cx="410" cy="504" r="6" fill="#fff" stroke="#469990" stroke-width="3"/><line x1="416" y1="504" x2="784" y2="504" stroke="#469990" stroke-width="4"/><circle cx="790" cy="504" r="6" fill="#fff" stroke="#469990" stroke-width="3"/>
+<text x="810" y="509" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 14  ·  G23</text>
+<text x="386" y="545" font-size="14" text-anchor="end" fill="#0d1b2a">JP2 (long) · pin 3  →  <tspan font-weight="bold">Relay 11</tspan></text>
+<circle cx="410" cy="540" r="6" fill="#fff" stroke="#000075" stroke-width="3"/><line x1="416" y1="540" x2="784" y2="540" stroke="#000075" stroke-width="4"/><circle cx="790" cy="540" r="6" fill="#fff" stroke="#000075" stroke-width="3"/>
+<text x="810" y="545" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 16  ·  G22</text>
+<text x="386" y="581" font-size="14" text-anchor="end" fill="#0d1b2a">JP2 (long) · pin 4  →  <tspan font-weight="bold">Relay 12 (pump)</tspan></text>
+<circle cx="410" cy="576" r="6" fill="#fff" stroke="#808000" stroke-width="3"/><line x1="416" y1="576" x2="784" y2="576" stroke="#808000" stroke-width="4"/><circle cx="790" cy="576" r="6" fill="#fff" stroke="#808000" stroke-width="3"/>
+<text x="810" y="581" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">SDIO · pin 1  ·  G13</text>
+<text x="386" y="625" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pin 9  →  <tspan font-weight="bold">GND</tspan></text>
+<circle cx="410" cy="620" r="6" fill="#000"/><line x1="410" y1="620" x2="790" y2="620" stroke="#000" stroke-width="5"/><circle cx="790" cy="620" r="6" fill="#000"/>
+<text x="810" y="625" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pin 1  ·  GND</text>
+<text x="386" y="657" font-size="14" fill="#b00" text-anchor="end" font-weight="normal">JP1 · pin 10 (3V3)  →  do not connect</text>
+<text x="386" y="683" font-size="14" fill="#b00" text-anchor="end" font-weight="normal">JP2 (long) · pins 5 to 10  →  do not connect</text>
+<text x="386" y="709" font-size="14" fill="#b00" text-anchor="end" font-weight="bold">(6 and 7 = +12 V supply, never to the ESP)</text>
+<rect x="30" y="770" width="560" height="330" rx="12" fill="#ffffff" stroke="#9aa3ad" stroke-width="2"/>
+<text x="46" y="798" font-size="15" fill="#0d1b2a" text-anchor="start" font-weight="bold">The sockets (front view, board as in the photos)</text>
+<text x="70" y="818" font-size="13" fill="#333" text-anchor="start" font-weight="normal">JP1 (2×5, the middle one)</text>
+<rect x="80" y="830" width="38" height="38" rx="5" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="99" y="855" font-size="15" fill="#fff" text-anchor="middle" font-weight="bold">9</text>
+<rect x="124" y="830" width="38" height="38" rx="5" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="143" y="855" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">10</text>
+<rect x="80" y="874" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="99" y="899" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">7</text>
+<rect x="124" y="874" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="143" y="899" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">8</text>
+<rect x="80" y="918" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="99" y="943" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">5</text>
+<rect x="124" y="918" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="143" y="943" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">6</text>
+<rect x="80" y="962" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="99" y="987" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">3</text>
+<rect x="124" y="962" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="143" y="987" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">4</text>
+<rect x="80" y="1006" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="99" y="1031" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">1</text>
+<rect x="124" y="1006" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="143" y="1031" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">2</text>
+<text x="180" y="860" font-size="12" fill="#333" text-anchor="start" font-weight="normal">← 9 = GND, 10 = 3V3</text>
+<text x="180" y="1020" font-size="12" fill="#333" text-anchor="start" font-weight="normal">← 1 and 2 at the bottom (a “2”</text>
+<text x="180" y="1036" font-size="12" fill="#333" text-anchor="start" font-weight="normal">   is printed next to the socket)</text>
+<text x="350" y="818" font-size="13" fill="#333" text-anchor="start" font-weight="normal">JP2 (long, single row)</text>
+<rect x="360" y="830" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="846" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">1</text>
+<text x="404" y="846" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R9</text>
+<rect x="360" y="855" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="871" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">2</text>
+<text x="404" y="871" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R10</text>
+<rect x="360" y="880" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="896" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">3</text>
+<text x="404" y="896" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R11</text>
+<rect x="360" y="905" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="921" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">4</text>
+<text x="404" y="921" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R12</text>
+<rect x="360" y="930" width="34" height="22" rx="4" fill="#eee" stroke="#333" stroke-width="2"/>
+<text x="377" y="946" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">5</text>
+<text x="404" y="946" font-size="12" fill="#333" text-anchor="start" font-weight="normal">—</text>
+<rect x="360" y="955" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="377" y="971" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">6</text>
+<text x="404" y="971" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
+<rect x="360" y="980" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="377" y="996" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">7</text>
+<text x="404" y="996" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
+<rect x="360" y="1005" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="1021" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">8</text>
+<text x="404" y="1021" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<rect x="360" y="1030" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="1046" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">9</text>
+<text x="404" y="1046" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<rect x="360" y="1055" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="1071" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">10</text>
+<text x="404" y="1071" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<text x="460" y="890" font-size="12" fill="#333" text-anchor="start" font-weight="normal">the pin 1 end</text>
+<text x="460" y="906" font-size="12" fill="#333" text-anchor="start" font-weight="normal">is confirmed with the</text>
+<text x="460" y="922" font-size="12" fill="#333" text-anchor="start" font-weight="normal">multimeter →</text>
+<rect x="610" y="770" width="540" height="330" rx="12" fill="#fff6e8" stroke="#f0a020" stroke-width="2"/>
+<text x="626" y="798" font-size="15" fill="#5a3b00" text-anchor="start" font-weight="bold">Step by step (with a multimeter)</text><text x="626" y="828" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">1. Everything off. Multimeter on continuity (beep), black probe</text><text x="626" y="852" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   on the relay board GND (“GND” pin of the AIN header, on the left).</text><text x="626" y="876" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">2. JP2 (long): 3 pins in a row that beep = 8, 9, 10.</text><text x="626" y="900" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   The next 2 = 7 and 6 (+12 V). The one at the other end = pin 1.</text><text x="626" y="924" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">3. JP1 (2×5): the pin that beeps = 9; 10 is next to it;</text><text x="626" y="948" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   1 is at the other end, in the same column as 9.</text><text x="626" y="972" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">4. 12 V supply of the old DAEnetIP4: + → JP2 pin 6, − → JP2 pin 8.</text><text x="626" y="996" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   Power it: no relay should switch on.</text><text x="626" y="1020" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">5. Measure JP1 pin 1 to GND: it must read 0 V.</text><text x="626" y="1044" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">6. Only then connect the relay wires and GND to the Unit PoE-P4</text><text x="626" y="1068" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   (powered by PoE, separate from the 12 V).</text>
+</svg>

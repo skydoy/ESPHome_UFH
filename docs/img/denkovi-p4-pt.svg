@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="1120" viewBox="0 0 1180 1120" font-family="Arial, Helvetica, sans-serif">
+<rect width="1180" height="1120" fill="#ffffff"/>
+<text x="30" y="42" font-size="25" font-weight="bold" fill="#0d1b2a">Placa de relés Denkovi (12 relés) → M5Stack Unit PoE-P4</text>
+<text x="30" y="68" font-size="14" fill="#555">Tira a DAEnetIP4. Os fios ligam às fichas fêmea da placa de relés onde ela encaixava: a 2×5 do meio (“JP1”) e a comprida JP2 (onde encaixava o JP3 da DAEnetIP4).</text>
+<rect x="30" y="95" width="380" height="650" rx="12" fill="#f3f6fa" stroke="#0d1b2a" stroke-width="2"/>
+<rect x="790" y="95" width="360" height="650" rx="12" fill="#f3f6fa" stroke="#0d1b2a" stroke-width="2"/>
+<text x="46" y="125" font-size="18" fill="#0d1b2a" text-anchor="start" font-weight="bold">Placa de relés</text>
+<text x="46" y="145" font-size="12" fill="#555" text-anchor="start" font-weight="normal">fichas onde encaixava a DAEnetIP4</text>
+<text x="806" y="125" font-size="18" fill="#0d1b2a" text-anchor="start" font-weight="bold">M5Stack Unit PoE-P4</text>
+<text x="806" y="145" font-size="12" fill="#555" text-anchor="start" font-weight="normal">fichas Hat2-Bus e SDIO (2,54 mm)</text>
+<text x="386" y="185" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pino 1  →  <tspan font-weight="bold">Relé 1</tspan></text>
+<circle cx="410" cy="180" r="6" fill="#fff" stroke="#e6194b" stroke-width="3"/><line x1="416" y1="180" x2="784" y2="180" stroke="#e6194b" stroke-width="4"/><circle cx="790" cy="180" r="6" fill="#fff" stroke="#e6194b" stroke-width="3"/>
+<text x="810" y="185" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 2  ·  G44</text>
+<text x="386" y="221" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pino 2  →  <tspan font-weight="bold">Relé 2</tspan></text>
+<circle cx="410" cy="216" r="6" fill="#fff" stroke="#3cb44b" stroke-width="3"/><line x1="416" y1="216" x2="784" y2="216" stroke="#3cb44b" stroke-width="4"/><circle cx="790" cy="216" r="6" fill="#fff" stroke="#3cb44b" stroke-width="3"/>
+<text x="810" y="221" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 4  ·  G43</text>
+<text x="386" y="257" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pino 3  →  <tspan font-weight="bold">Relé 3</tspan></text>
+<circle cx="410" cy="252" r="6" fill="#fff" stroke="#f58231" stroke-width="3"/><line x1="416" y1="252" x2="784" y2="252" stroke="#f58231" stroke-width="4"/><circle cx="790" cy="252" r="6" fill="#fff" stroke="#f58231" stroke-width="3"/>
+<text x="810" y="257" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 5  ·  G21</text>
+<text x="386" y="293" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pino 4  →  <tspan font-weight="bold">Relé 4</tspan></text>
+<circle cx="410" cy="288" r="6" fill="#fff" stroke="#4363d8" stroke-width="3"/><line x1="416" y1="288" x2="784" y2="288" stroke="#4363d8" stroke-width="4"/><circle cx="790" cy="288" r="6" fill="#fff" stroke="#4363d8" stroke-width="3"/>
+<text x="810" y="293" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 6  ·  G42</text>
+<text x="386" y="329" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pino 5  →  <tspan font-weight="bold">Relé 5</tspan></text>
+<circle cx="410" cy="324" r="6" fill="#fff" stroke="#911eb4" stroke-width="3"/><line x1="416" y1="324" x2="784" y2="324" stroke="#911eb4" stroke-width="4"/><circle cx="790" cy="324" r="6" fill="#fff" stroke="#911eb4" stroke-width="3"/>
+<text x="810" y="329" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 7  ·  G20</text>
+<text x="386" y="365" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pino 6  →  <tspan font-weight="bold">Relé 6</tspan></text>
+<circle cx="410" cy="360" r="6" fill="#fff" stroke="#42d4f4" stroke-width="3"/><line x1="416" y1="360" x2="784" y2="360" stroke="#42d4f4" stroke-width="4"/><circle cx="790" cy="360" r="6" fill="#fff" stroke="#42d4f4" stroke-width="3"/>
+<text x="810" y="365" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 8  ·  G41</text>
+<text x="386" y="401" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pino 7  →  <tspan font-weight="bold">Relé 7</tspan></text>
+<circle cx="410" cy="396" r="6" fill="#fff" stroke="#f032e6" stroke-width="3"/><line x1="416" y1="396" x2="784" y2="396" stroke="#f032e6" stroke-width="4"/><circle cx="790" cy="396" r="6" fill="#fff" stroke="#f032e6" stroke-width="3"/>
+<text x="810" y="401" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 9  ·  G19</text>
+<text x="386" y="437" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pino 8  →  <tspan font-weight="bold">Relé 8</tspan></text>
+<circle cx="410" cy="432" r="6" fill="#fff" stroke="#9a6324" stroke-width="3"/><line x1="416" y1="432" x2="784" y2="432" stroke="#9a6324" stroke-width="4"/><circle cx="790" cy="432" r="6" fill="#fff" stroke="#9a6324" stroke-width="3"/>
+<text x="810" y="437" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 10  ·  G40</text>
+<text x="386" y="473" font-size="14" text-anchor="end" fill="#0d1b2a">JP2 (comprida) · pino 1  →  <tspan font-weight="bold">Relé 9</tspan></text>
+<circle cx="410" cy="468" r="6" fill="#fff" stroke="#800000" stroke-width="3"/><line x1="416" y1="468" x2="784" y2="468" stroke="#800000" stroke-width="4"/><circle cx="790" cy="468" r="6" fill="#fff" stroke="#800000" stroke-width="3"/>
+<text x="810" y="473" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 12  ·  G39</text>
+<text x="386" y="509" font-size="14" text-anchor="end" fill="#0d1b2a">JP2 (comprida) · pino 2  →  <tspan font-weight="bold">Relé 10</tspan></text>
+<circle cx="410" cy="504" r="6" fill="#fff" stroke="#469990" stroke-width="3"/><line x1="416" y1="504" x2="784" y2="504" stroke="#469990" stroke-width="4"/><circle cx="790" cy="504" r="6" fill="#fff" stroke="#469990" stroke-width="3"/>
+<text x="810" y="509" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 14  ·  G23</text>
+<text x="386" y="545" font-size="14" text-anchor="end" fill="#0d1b2a">JP2 (comprida) · pino 3  →  <tspan font-weight="bold">Relé 11</tspan></text>
+<circle cx="410" cy="540" r="6" fill="#fff" stroke="#000075" stroke-width="3"/><line x1="416" y1="540" x2="784" y2="540" stroke="#000075" stroke-width="4"/><circle cx="790" cy="540" r="6" fill="#fff" stroke="#000075" stroke-width="3"/>
+<text x="810" y="545" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 16  ·  G22</text>
+<text x="386" y="581" font-size="14" text-anchor="end" fill="#0d1b2a">JP2 (comprida) · pino 4  →  <tspan font-weight="bold">Relé 12 (bomba)</tspan></text>
+<circle cx="410" cy="576" r="6" fill="#fff" stroke="#808000" stroke-width="3"/><line x1="416" y1="576" x2="784" y2="576" stroke="#808000" stroke-width="4"/><circle cx="790" cy="576" r="6" fill="#fff" stroke="#808000" stroke-width="3"/>
+<text x="810" y="581" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">SDIO · pino 1  ·  G13</text>
+<text x="386" y="625" font-size="14" text-anchor="end" fill="#0d1b2a">JP1 (2×5) · pino 9  →  <tspan font-weight="bold">GND</tspan></text>
+<circle cx="410" cy="620" r="6" fill="#000"/><line x1="410" y1="620" x2="790" y2="620" stroke="#000" stroke-width="5"/><circle cx="790" cy="620" r="6" fill="#000"/>
+<text x="810" y="625" font-size="14" fill="#0d1b2a" text-anchor="start" font-weight="normal">Hat2 · pino 1  ·  GND</text>
+<text x="386" y="657" font-size="14" fill="#b00" text-anchor="end" font-weight="normal">JP1 · pino 10 (3V3)  →  não ligar</text>
+<text x="386" y="683" font-size="14" fill="#b00" text-anchor="end" font-weight="normal">JP2 (comprida) · pinos 5 a 10  →  não ligar</text>
+<text x="386" y="709" font-size="14" fill="#b00" text-anchor="end" font-weight="bold">(6 e 7 = +12 V da fonte, nunca ao ESP)</text>
+<rect x="30" y="770" width="560" height="330" rx="12" fill="#ffffff" stroke="#9aa3ad" stroke-width="2"/>
+<text x="46" y="798" font-size="15" fill="#0d1b2a" text-anchor="start" font-weight="bold">Como estão as fichas (vista de frente, placa como nas fotos)</text>
+<text x="70" y="818" font-size="13" fill="#333" text-anchor="start" font-weight="normal">JP1 (2×5, a do meio)</text>
+<rect x="80" y="830" width="38" height="38" rx="5" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="99" y="855" font-size="15" fill="#fff" text-anchor="middle" font-weight="bold">9</text>
+<rect x="124" y="830" width="38" height="38" rx="5" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="143" y="855" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">10</text>
+<rect x="80" y="874" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="99" y="899" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">7</text>
+<rect x="124" y="874" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="143" y="899" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">8</text>
+<rect x="80" y="918" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="99" y="943" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">5</text>
+<rect x="124" y="918" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="143" y="943" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">6</text>
+<rect x="80" y="962" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="99" y="987" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">3</text>
+<rect x="124" y="962" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="143" y="987" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">4</text>
+<rect x="80" y="1006" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="99" y="1031" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">1</text>
+<rect x="124" y="1006" width="38" height="38" rx="5" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="143" y="1031" font-size="15" fill="#0d1b2a" text-anchor="middle" font-weight="bold">2</text>
+<text x="180" y="860" font-size="12" fill="#333" text-anchor="start" font-weight="normal">← 9 = GND, 10 = 3V3</text>
+<text x="180" y="1020" font-size="12" fill="#333" text-anchor="start" font-weight="normal">← 1 e 2 em baixo (há um “2”</text>
+<text x="180" y="1036" font-size="12" fill="#333" text-anchor="start" font-weight="normal">   impresso junto à ficha)</text>
+<text x="350" y="818" font-size="13" fill="#333" text-anchor="start" font-weight="normal">JP2 (comprida, 1 fila)</text>
+<rect x="360" y="830" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="846" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">1</text>
+<text x="404" y="846" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R9</text>
+<rect x="360" y="855" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="871" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">2</text>
+<text x="404" y="871" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R10</text>
+<rect x="360" y="880" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="896" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">3</text>
+<text x="404" y="896" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R11</text>
+<rect x="360" y="905" width="34" height="22" rx="4" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="377" y="921" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">4</text>
+<text x="404" y="921" font-size="12" fill="#333" text-anchor="start" font-weight="normal">R12</text>
+<rect x="360" y="930" width="34" height="22" rx="4" fill="#eee" stroke="#333" stroke-width="2"/>
+<text x="377" y="946" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">5</text>
+<text x="404" y="946" font-size="12" fill="#333" text-anchor="start" font-weight="normal">—</text>
+<rect x="360" y="955" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="377" y="971" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">6</text>
+<text x="404" y="971" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
+<rect x="360" y="980" width="34" height="22" rx="4" fill="#fde2e2" stroke="#333" stroke-width="2"/>
+<text x="377" y="996" font-size="13" fill="#0d1b2a" text-anchor="middle" font-weight="bold">7</text>
+<text x="404" y="996" font-size="12" fill="#b00" text-anchor="start" font-weight="normal">+12V</text>
+<rect x="360" y="1005" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="1021" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">8</text>
+<text x="404" y="1021" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<rect x="360" y="1030" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="1046" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">9</text>
+<text x="404" y="1046" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<rect x="360" y="1055" width="34" height="22" rx="4" fill="#000" stroke="#333" stroke-width="2"/>
+<text x="377" y="1071" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">10</text>
+<text x="404" y="1071" font-size="12" fill="#333" text-anchor="start" font-weight="normal">GND</text>
+<text x="460" y="890" font-size="12" fill="#333" text-anchor="start" font-weight="normal">o lado do pino 1</text>
+<text x="460" y="906" font-size="12" fill="#333" text-anchor="start" font-weight="normal">confirma-se com o</text>
+<text x="460" y="922" font-size="12" fill="#333" text-anchor="start" font-weight="normal">multímetro →</text>
+<rect x="610" y="770" width="540" height="330" rx="12" fill="#fff6e8" stroke="#f0a020" stroke-width="2"/>
+<text x="626" y="798" font-size="15" fill="#5a3b00" text-anchor="start" font-weight="bold">Passo a passo (com multímetro)</text><text x="626" y="828" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">1. Tudo desligado. Multímetro em continuidade (bip), ponta preta</text><text x="626" y="852" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   no GND da placa de relés (pino “GND” da ficha AIN, à esquerda).</text><text x="626" y="876" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">2. JP2 (comprida): 3 pinos seguidos que apitam = 8, 9, 10.</text><text x="626" y="900" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   Os 2 a seguir = 7 e 6 (+12 V). O da outra ponta = pino 1.</text><text x="626" y="924" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">3. JP1 (2×5): o pino que apita = 9; o 10 está ao lado;</text><text x="626" y="948" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   o 1 está na outra ponta, na mesma coluna do 9.</text><text x="626" y="972" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">4. Fonte 12 V da antiga DAEnetIP4: + → JP2 pino 6, − → JP2 pino 8.</text><text x="626" y="996" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   Liga a fonte: nenhum relé deve ligar.</text><text x="626" y="1020" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">5. Mede JP1 pino 1 contra GND: tem de dar 0 V.</text><text x="626" y="1044" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">6. Só então liga os fios dos relés e o GND à Unit PoE-P4</text><text x="626" y="1068" font-size="13" fill="#5a3b00" text-anchor="start" font-weight="normal">   (alimentada pelo PoE, separada dos 12 V).</text>
+</svg>
