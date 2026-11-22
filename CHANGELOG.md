@@ -8,6 +8,11 @@ All notable changes to the firmware and installer. Format:
 - Docs: **Replacing a DAEnetIP4** — photo guide for the Denkovi 12-relay board (DAE-PB/Ro12/Di8/Ai8):
   which sockets to use (JP1, JP2), wiring diagram to the Unit PoE-P4, 12 V supply, multimeter checks.
 
+### Fixed
+- Two zones set as "same room as" each other (e.g. Z8 → Z11 and Z11 → Z8) were both left off.
+  Loops and chains are now fixed on start and on save (the lower zone gets its own thermostat back),
+  and the installer only offers zones that have their own thermostat.
+
 ## [0.4.1] - 2026-11-21
 ### Fixed
 - The controller rebooted every 15 minutes when no Home Assistant was connected (ESPHome API

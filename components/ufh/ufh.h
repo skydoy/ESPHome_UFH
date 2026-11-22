@@ -302,6 +302,7 @@ class UFHComponent : public Component
  protected:
   friend class UFHWebHandler;
   void load_settings_();
+  bool fix_leaders_();
   void save_settings_();
   void save_persist_();
   void save_main_();

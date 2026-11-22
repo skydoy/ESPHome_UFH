@@ -239,6 +239,7 @@ void UFHComponent::load_settings_() {
     if (z.follow_main > 1)
       z.follow_main = 0;
   }
+  this->fix_leaders_();
   s_.mqtt_host[sizeof(s_.mqtt_host) - 1] = 0;
   s_.mqtt_user[sizeof(s_.mqtt_user) - 1] = 0;
   s_.mqtt_pass[sizeof(s_.mqtt_pass) - 1] = 0;
@@ -1081,6 +1082,25 @@ void UFHComponent::update_zone_(uint8_t i, uint32_t now_ms, const ESPTime &now) 
   if (r.relay && r.has_temp && !std::isnan(r.heat_start_temp) && now_ms - r.heat_start_ms > 4 * HOUR_MS &&
       r.temp - r.heat_start_temp < 0.2f)
     r.warn |= WARN_NOT_HEATING;
+}
+
+// A zone can only follow a zone that has its own thermostat. Breaks loops (8 -> 11 -> 8) and
+// chains: zones are checked in order, so in a loop the lower-numbered zone gets its own thermostat
+// back and the other one keeps following it.
+bool UFHComponent::fix_leaders_() {
+  bool changed = false;
+  for (uint8_t i = 0; i < MAX_ZONES; i++) {
+    ZoneCfg &z = s_.zones[i];
+    uint8_t L = z.leader;
+    if (L == 0)
+      continue;
+    if (L > MAX_ZONES || L == i + 1 || s_.zones[L - 1].leader != 0) {
+      ESP_LOGW(TAG, "Zone %u: invalid 'same room as' %u (loop or chain), it now has its own thermostat", i + 1, L);
+      z.leader = 0;
+      changed = true;
+    }
+  }
+  return changed;
 }
 
 void UFHComponent::update_outputs_(uint32_t now_ms, const ESPTime &now) {

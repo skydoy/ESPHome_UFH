@@ -601,6 +601,8 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
         this->ha_set_zone_target(i + 1, zv["target"].as<float>());
       i++;
     }
+    if (this->fix_leaders_())
+      restart = true;
   }
   JsonVariantConst xv = root["extra"];
   if (xv.is<JsonObjectConst>()) {

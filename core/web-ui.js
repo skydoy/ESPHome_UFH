@@ -654,7 +654,10 @@
       for (var i = 0; i < W.zone_count; i++) {
         var z = W.zones[i];
         var leaders = [[0, T('Própria (tem sensor/termóstato)', 'Own (has a sensor/thermostat)')]];
-        for (var j = 0; j < W.zone_count; j++) if (j !== i) leaders.push([j + 1, T('Mesma divisão que ', 'Same room as ') + (j + 1) + ' · ' + (W.zones[j].name || '')]);
+        // only zones with their own thermostat can be followed, and a zone that others follow can't follow anyone
+        var hasFollowers = W.zones.slice(0, W.zone_count).some(function (o, k) { return k !== i && o.leader === i + 1; });
+        if (!hasFollowers) for (var j = 0; j < W.zone_count; j++) if (j !== i && !W.zones[j].leader) leaders.push([j + 1, T('Mesma divisão que ', 'Same room as ') + (j + 1) + ' · ' + (W.zones[j].name || '')]);
+        if (z.leader && !leaders.some(function (o) { return o[0] === z.leader; })) z.leader = 0;
         h += '<div class="zone"><h4>' + T('Zona ', 'Zone ') + (i + 1) + ' · ' + T('relé ', 'relay ') + (i + 1) + '</h4>' +
           '<div class="row"><div style="flex:1;min-width:160px"><label>' + T('Nome', 'Name') + '</label><input type="text" maxlength="22" id="zn' + i + '" value="' + esc(z.name) + '"></div>' +
           '<div style="flex:1;min-width:160px"><label>' + T('Termóstato', 'Thermostat') + '</label><select class="w" id="zl' + i + '" data-re="1">' + opts(leaders, z.leader) + '</select></div></div>';
