@@ -490,8 +490,8 @@
       if (z.w & 16) badge.push('🪟');
       if (z.w & 64) badge.push('🌐 ' + T('sem resposta', 'offline'));
       if (z.early) badge.push('⏰');
-      if (z.estop) badge.push('⏹');
-      if (z.ext) badge.push('🌐');
+      if (z.estop) badge.push('⏬');
+      if (z.ext && !(z.w & 64)) badge.push('🌐');
       if (z.ovr) badge.push('✋');
       o.push('<text x="' + (x + 8) + '" y="' + (y + 48) + '" font-size="10" fill="#b55a00">' + esc(badge.join(' ')) + '</text>');
       o.push('<text x="' + (x + zw - 6) + '" y="' + (y + 17) + '" text-anchor="end" font-size="10" fill="#888">' + (i + 1) + '</text>');
