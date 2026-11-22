@@ -147,7 +147,8 @@ struct ExtraCfg {
   uint16_t boost_min;  // boost duration
   uint8_t opt_outdoor;  // optimum start starts earlier when it is cold outside
   uint8_t prev_house;   // house mode to go back to when the "Heating" switch is turned on again
-  uint8_t reserved0[2];
+  uint8_t opt_stop;     // optimum stop: end Comfort early using the learned cooling rate (was reserved, 0)
+  uint8_t reserved0;
   char alt_outdoor[80];  // ESPHome_Altherma path of the outdoor temperature
   uint8_t reserved[64];
 };
@@ -159,6 +160,38 @@ struct WeekLog {
   uint16_t min[MAX_ZONES][7];  // ring, idx = slot of "yesterday"
   uint8_t idx;
   uint8_t reserved[3];
+};
+
+// Zones whose relay is on another device (Shelly, any HTTP URL). They come after the zones of the
+// board: zones zone_count+1 .. zone_count+count. Own NVS entry.
+static constexpr uint32_t NET_MAGIC = 0x55464E31;  // "UFN1"
+static constexpr uint8_t MAX_EXT = 8;
+enum ExtType : uint8_t {
+  EXT_SHELLY = 0,  // Shelly Gen2/Gen3/Pro: GET http://host/rpc/Switch.Set?id=ch&on=..&toggle_after=..
+  EXT_HTTP = 1,    // any device: one URL to switch on, one to switch off
+};
+struct ExtOut {
+  uint8_t type;
+  uint8_t channel;  // Shelly switch id (0 = first relay)
+  uint8_t reserved[2];
+  char host[48];      // Shelly IP / host name
+  char url_on[100];   // generic HTTP
+  char url_off[100];
+};
+struct NetCfg {
+  uint32_t magic;
+  uint8_t count;  // external zones (0..MAX_EXT)
+  uint8_t reserved[3];
+  ExtOut out[MAX_EXT];
+  uint8_t reserved2[32];
+};
+
+// Learned values added after Persist (its layout keeps the runtime counters). Saved with it.
+static constexpr uint32_t LEARN_MAGIC = 0x55464C31;  // "UFL1"
+struct Learn {
+  uint32_t magic;
+  float cool_c_per_h[MAX_ZONES];  // learned cooling rate with the zone closed (optimum stop)
+  uint8_t reserved[64];
 };
 
 void default_settings(Settings &s, uint8_t relay_count, bool active_low);

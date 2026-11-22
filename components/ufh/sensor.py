@@ -32,6 +32,11 @@ TYPES = {
     # when the last room reading arrived (e.g. from the Shelly H&T); Home Assistant shows "5 minutes ago"
     "last_reading": (4, sensor.sensor_schema(UFHZoneSensor, accuracy_decimals=0, device_class=DEVICE_CLASS_TIMESTAMP,
                                              icon="mdi:clock-check-outline")),
+    # learned rates: how fast the room warms with the zone open / cools with it closed
+    "heating_rate": (5, sensor.sensor_schema(UFHZoneSensor, unit_of_measurement="°C/h", accuracy_decimals=2,
+                                             state_class=STATE_CLASS_MEASUREMENT, icon="mdi:thermometer-chevron-up")),
+    "cooling_rate": (6, sensor.sensor_schema(UFHZoneSensor, unit_of_measurement="°C/h", accuracy_decimals=2,
+                                             state_class=STATE_CLASS_MEASUREMENT, icon="mdi:thermometer-chevron-down")),
 }
 
 CONFIG_SCHEMA = cv.typed_schema(

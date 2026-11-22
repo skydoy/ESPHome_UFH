@@ -117,7 +117,8 @@
     return s;
   }
   var SUFFIX_PT = [[' Heating', ' · a aquecer'], [' Temperature', ' · temperatura'], [' Runtime Today', ' · horas hoje'],
-                   [' Runtime Total', ' · horas total'], [' Duty 24h', ' · ocupação 24 h']];
+                   [' Runtime Total', ' · horas total'], [' Duty 24h', ' · ocupação 24 h'],
+                   [' Heating Rate', ' · aquece °C/h'], [' Cooling Rate', ' · arrefece °C/h']];
   function suffixPT(en) {
     for (var i = 0; i < SUFFIX_PT.length; i++) {
       var sf = SUFFIX_PT[i][0];
@@ -141,7 +142,8 @@
   }
   var ROW_LBL = {'': ['Termóstato', 'Thermostat'], 'Follows Main': ['Segue a geral', 'Follows main'], 'Last Reading': ['Última leitura', 'Last reading'], 'Boost': ['Boost', 'Boost'], 'Heating': ['A aquecer', 'Heating'], 'Temperature': ['Temperatura', 'Temperature'],
                  'Runtime Today': ['Horas hoje', 'Runtime today'], 'Runtime Total': ['Horas total', 'Runtime total'],
-                 'Duty 24h': ['Ocupação 24 h', 'Duty 24 h']};
+                 'Duty 24h': ['Ocupação 24 h', 'Duty 24 h'], 'Heating Rate': ['Aquece (aprendido)', 'Heating rate (learned)'],
+                 'Cooling Rate': ['Arrefece (aprendido)', 'Cooling rate (learned)']};
   function TT(pt, en) { return lang === 'pt' ? pt : en; }
   function ago(m) { return m < 60 ? m + ' min' : (m < 2880 ? Math.round(m / 60) + ' h' : Math.round(m / 1440) + TT(' dias', ' days')); }
   function fmt(v) { return (v === null || v === undefined || isNaN(v)) ? '—' : (+v).toFixed(1) + ' °C'; }
@@ -428,7 +430,7 @@
   function warnPT(w) {
     if (L() !== 'pt') return w;
     return w.replace(/^setup(; )?/, 'por configurar$1').replace(/: sensor/g, ': sensor sem dados').replace(/: battery/g, ': pilha fraca')
-      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace('pump on, no zone open', 'bomba ligada sem zonas abertas').replace(/flow\/return dT ([\d.-]+) C/, 'diferença ida/retorno $1 °C (caudal?)');
+      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace(/: device offline/g, ': aparelho sem resposta').replace('pump on, no zone open', 'bomba ligada sem zonas abertas').replace(/flow\/return dT ([\d.-]+) C/, 'diferença ida/retorno $1 °C (caudal?)');
   }
 
   // ---------- live diagram ----------
@@ -486,7 +488,10 @@
       if (z.w & 4) badge.push('⚠ ' + T('não aquece', 'not heating'));
       if (z.w & 8) badge.push(T('chão', 'floor') + ' ⛔');
       if (z.w & 16) badge.push('🪟');
+      if (z.w & 64) badge.push('🌐 ' + T('sem resposta', 'offline'));
       if (z.early) badge.push('⏰');
+      if (z.estop) badge.push('⏹');
+      if (z.ext) badge.push('🌐');
       if (z.ovr) badge.push('✋');
       o.push('<text x="' + (x + 8) + '" y="' + (y + 48) + '" font-size="10" fill="#b55a00">' + esc(badge.join(' ')) + '</text>');
       o.push('<text x="' + (x + zw - 6) + '" y="' + (y + 17) + '" text-anchor="end" font-size="10" fill="#888">' + (i + 1) + '</text>');
@@ -536,6 +541,14 @@
 
   // ---------- wizard ----------
   var W = null;  // working copy of the config
+  // zones on the board relays + external zones (relay on another device, over the network)
+  function extMax() { return Math.max(0, Math.min(8, 16 - W.zone_count)); }
+  function ZT() { var n = (W.net && W.net.count) || 0; return W.zone_count + Math.min(n, extMax()); }
+  function extDesc(i) {
+    var e = W.net && W.net.out && W.net.out[i - W.zone_count];
+    if (!e) return '';
+    return e.type === 1 ? T('rede · URL', 'network · URL') : 'Shelly ' + (e.host || '?') + (e.ch ? ' #' + e.ch : '');
+  }
   var step = 0;
   function stepsBar(names) { return '<div class="steps">' + names.map(function (n, i) { return '<span class="' + (i === step ? 'on' : '') + '">' + (i + 1) + '. ' + esc(n) + '</span>'; }).join('') + '</div>'; }
   function wizNames() { return [T('Relés', 'Relays'), T('Zonas e sensores', 'Zones & sensors'), T('Temperaturas e horários', 'Temperatures & schedules'), T('Opções', 'Options'), T('Gravar', 'Save')]; }
@@ -550,8 +563,19 @@
       W.zone_count = +val(m, '#zc');
       W.active_low = val(m, '#al') === '1';
       W.roles = W.roles.map(function (r, k) { var e = m.querySelector('#role' + k); return e ? +e.value : 0; });
+      W.net = W.net || {count: 0, out: []};
+      var xc = m.querySelector('#xc'); if (xc) W.net.count = Math.min(+xc.value, extMax());
+      for (var x = 0; x < 8; x++) {
+        var eo = W.net.out[x] || (W.net.out[x] = {type: 0, ch: 0, host: '', on: '', off: ''});
+        var g = function (id) { var el = m.querySelector('#' + id + x); return el ? el.value.trim() : null; };
+        if (g('xt') !== null) eo.type = +g('xt');
+        if (g('xh') !== null) eo.host = g('xh');
+        if (g('xch') !== null) eo.ch = +g('xch') || 0;
+        if (g('xon') !== null) eo.on = g('xon');
+        if (g('xoff') !== null) eo.off = g('xoff');
+      }
     } else if (step === 1) {
-      for (var i = 0; i < W.zone_count; i++) {
+      for (var i = 0; i < ZT(); i++) {
         var z = W.zones[i];
         z.name = (val(m, '#zn' + i) || '').trim() || ('Zone ' + (i + 1));
         z.leader = +val(m, '#zl' + i);
@@ -564,7 +588,7 @@
         var fk = m.querySelector('#zfk' + i); if (fk) z.floor.key = fk.value.trim();
       }
     } else if (step === 2) {
-      for (var j = 0; j < W.zone_count; j++) {
+      for (var j = 0; j < ZT(); j++) {
         var zz = W.zones[j];
         if (zz.leader) continue;
         zz.comfort = +val(m, '#zc' + j); zz.eco = +val(m, '#ze' + j);
@@ -574,6 +598,7 @@
     } else if (step === 3) {
       W.opt = W.opt || {};
       ['pump_exercise', 'valve_exercise', 'window', 'optimum_start', 'pv', 'tariff', 'altherma'].forEach(function (k) { W.opt[k] = chk(m, '#o_' + k); });
+      W.extra = W.extra || {}; W.extra.stop = chk(m, '#o_stop');
       W.pump_start_s = +val(m, '#ps'); W.pump_stop_s = +val(m, '#pe');
       W.stale_min = Math.round(+val(m, '#stale') * 60);
       W.holiday = +val(m, '#hol');
@@ -650,15 +675,39 @@
         '<label>' + T('Os relés ligam com o sinal…', 'The relays switch on with…') + '</label><select id="al">' +
         opts([[0, T('ALTO (Denkovi, maioria das placas com transístor)', 'HIGH (Denkovi, most transistor boards)')], [1, T('BAIXO (placas com optoacoplador “low level trigger”)', 'LOW (opto boards, “low level trigger”)')]], W.active_low ? 1 : 0) + '</select>';
       h += '<div id="roles"></div>';
+      // external zones
+      W.net = W.net || {count: 0, out: []};
+      var xm = extMax(), xopts = [];
+      for (var xn = 0; xn <= xm; xn++) xopts.push([xn, xn]);
+      h += '<div class="opt"><b>🌐 ' + T('Zonas externas (pela rede)', 'External zones (over the network)') + '</b><div class="hint">' +
+        T('Zonas cujo relé está noutro aparelho: um Shelly (Plus, Pro, Gen3) ou qualquer aparelho que ligue e desligue com um endereço HTTP. Ficam a seguir às zonas da placa (zona ', 'Zones whose relay is on another device: a Shelly (Plus, Pro, Gen3) or any device switched on and off by an HTTP address. They come after the board zones (zone ') +
+        (W.zone_count + 1) + T(' em diante). O Shelly desliga sozinho ao fim de 5 min se deixar de receber ordens desta placa.', ' onwards). The Shelly switches itself off after 5 min if this controller stops sending.') + '</div>' +
+        '<label>' + T('Quantas?', 'How many?') + '</label><select id="xc" data-re="1">' + opts(xopts, Math.min(W.net.count || 0, xm)) + '</select>';
+      for (var xi = 0; xi < Math.min(W.net.count || 0, xm); xi++) {
+        var xe = W.net.out[xi] || (W.net.out[xi] = {type: 0, ch: 0, host: '', on: '', off: ''});
+        h += '<div class="zone"><h4>' + T('Zona ', 'Zone ') + (W.zone_count + xi + 1) + ' · ' + T('externa ', 'external ') + (xi + 1) + '</h4>' +
+          '<label>' + T('Aparelho', 'Device') + '</label><select class="w" id="xt' + xi + '" data-re="1">' + opts([[0, 'Shelly (Gen2 / Gen3 / Pro)'], [1, T('URL HTTP (qualquer aparelho)', 'HTTP URL (any device)')]], xe.type) + '</select>';
+        if (xe.type === 1) {
+          h += '<label>' + T('URL para ligar', 'URL to switch on') + '</label><input type="text" id="xon' + xi + '" value="' + esc(xe.on) + '" placeholder="http://192.168.1.50/relay/0?turn=on">' +
+            '<label>' + T('URL para desligar', 'URL to switch off') + '</label><input type="text" id="xoff' + xi + '" value="' + esc(xe.off) + '" placeholder="http://192.168.1.50/relay/0?turn=off">' +
+            '<div class="hint">' + T('É chamado ao mudar e repetido a cada minuto. Tem de responder com 200 OK.', 'Called on change and repeated every minute. Must answer 200 OK.') + '</div>';
+        } else {
+          h += '<div class="row"><div style="flex:2"><label>' + T('Endereço do Shelly (IP)', 'Shelly address (IP)') + '</label><input type="text" id="xh' + xi + '" value="' + esc(xe.host) + '" placeholder="192.168.1.50"></div>' +
+            '<div><label>' + T('Relé nº', 'Relay #') + '</label><input type="number" min="0" max="3" id="xch' + xi + '" value="' + (xe.ch || 0) + '"></div></div>' +
+            '<div class="hint">' + T('Relé nº 0 = o primeiro. O Shelly não pode ter palavra-passe.', 'Relay # 0 = the first one. The Shelly must not have a password.') + '</div>';
+        }
+        h += '</div>';
+      }
+      h += '</div>';
     } else if (step === 1) {
-      for (var i = 0; i < W.zone_count; i++) {
+      for (var i = 0; i < ZT(); i++) {
         var z = W.zones[i];
         var leaders = [[0, T('Própria (tem sensor/termóstato)', 'Own (has a sensor/thermostat)')]];
         // only zones with their own thermostat can be followed, and a zone that others follow can't follow anyone
-        var hasFollowers = W.zones.slice(0, W.zone_count).some(function (o, k) { return k !== i && o.leader === i + 1; });
-        if (!hasFollowers) for (var j = 0; j < W.zone_count; j++) if (j !== i && !W.zones[j].leader) leaders.push([j + 1, T('Mesma divisão que ', 'Same room as ') + (j + 1) + ' · ' + (W.zones[j].name || '')]);
+        var hasFollowers = W.zones.slice(0, ZT()).some(function (o, k) { return k !== i && o.leader === i + 1; });
+        if (!hasFollowers) for (var j = 0; j < ZT(); j++) if (j !== i && !W.zones[j].leader) leaders.push([j + 1, T('Mesma divisão que ', 'Same room as ') + (j + 1) + ' · ' + (W.zones[j].name || '')]);
         if (z.leader && !leaders.some(function (o) { return o[0] === z.leader; })) z.leader = 0;
-        h += '<div class="zone"><h4>' + T('Zona ', 'Zone ') + (i + 1) + ' · ' + T('relé ', 'relay ') + (i + 1) + '</h4>' +
+        h += '<div class="zone"><h4>' + T('Zona ', 'Zone ') + (i + 1) + ' · ' + (i < W.zone_count ? T('relé ', 'relay ') + (i + 1) : '🌐 ' + esc(extDesc(i))) + '</h4>' +
           '<div class="row"><div style="flex:1;min-width:160px"><label>' + T('Nome', 'Name') + '</label><input type="text" maxlength="22" id="zn' + i + '" value="' + esc(z.name) + '"></div>' +
           '<div style="flex:1;min-width:160px"><label>' + T('Termóstato', 'Thermostat') + '</label><select class="w" id="zl' + i + '" data-re="1">' + opts(leaders, z.leader) + '</select></div></div>';
         if (!z.leader) {
@@ -671,7 +720,7 @@
         h += '</div>';
       }
     } else if (step === 2) {
-      for (var q = 0; q < W.zone_count; q++) {
+      for (var q = 0; q < ZT(); q++) {
         var zz = W.zones[q];
         if (zz.leader) continue;
         h += '<div class="zone"><h4>' + esc(zz.name) + '</h4><div class="row">' +
@@ -695,10 +744,13 @@
       h += box('valve_exercise', T('Anti-bloqueio dos atuadores', 'Actuator anti-seize'), T('À mesma hora abre e fecha todas as zonas.', 'At the same time opens and closes every zone.'));
       h += box('window', T('Janela aberta', 'Open window'), T('Queda de 1 °C em 10 min fecha a zona 30 min.', 'A 1 °C drop within 10 min closes the zone for 30 min.'));
       h += box('optimum_start', T('Arranque antecipado', 'Optimum start'), T('Aprende quanto cada zona demora a aquecer e começa mais cedo (até 4 h).', 'Learns how long each zone takes to heat and starts earlier (up to 4 h).'));
+      h += '<div class="opt"><label><input type="checkbox" id="o_stop"' + ((W.extra || {}).stop ? ' checked' : '') + '> ' + T('Paragem antecipada', 'Optimum stop') + '</label><div class="hint">' +
+        T('Aprende quanto cada divisão arrefece com a zona fechada e fecha antes do fim do Conforto (até 90 min) se a temperatura não descer mais de 0,5 °C até lá. O chão continua a dar calor.',
+          'Learns how fast each room cools with the zone closed and closes before Comfort ends (up to 90 min) if it stays within 0.5 °C until then. The floor keeps giving heat.') + '</div></div>';
       h += box('pv', T('Excedente solar', 'Solar surplus'), T('Com excedente sobe a temperatura das zonas escolhidas (Home Assistant: ação set_pv_surplus, ou MQTT).', 'With surplus raises the chosen zones (Home Assistant: action set_pv_surplus, or MQTT).'),
         '<div class="row"><div><label>+°C</label><input type="number" step="0.5" id="pvd" value="' + W.pv.delta + '"></div><div style="flex:2"><label>' + T('Tópico MQTT (opcional)', 'MQTT topic (optional)') + '</label><input type="text" id="pvt" value="' + esc(W.pv.topic) + '"></div>' +
         '<div><label>' + T('Campo', 'Field') + '</label><input type="text" id="pvk" value="' + esc(W.pv.key) + '"></div><div><label>W &gt;</label><input type="number" id="pvw" value="' + W.pv.threshold_w + '"></div></div>' +
-        '<div class="hint">' + T('Zonas: ', 'Zones: ') + W.zones.slice(0, W.zone_count).map(function (z, i) { return z.leader ? '' : '<label style="display:inline;font-weight:400"><input type="checkbox" id="pvz' + i + '"' + (z.pv_boost ? ' checked' : '') + '> ' + esc(z.name) + '</label>'; }).join(' ') + '</div>');
+        '<div class="hint">' + T('Zonas: ', 'Zones: ') + W.zones.slice(0, ZT()).map(function (z, i) { return z.leader ? '' : '<label style="display:inline;font-weight:400"><input type="checkbox" id="pvz' + i + '"' + (z.pv_boost ? ' checked' : '') + '> ' + esc(z.name) + '</label>'; }).join(' ') + '</div>');
       h += box('tariff', T('Tarifa bi-horária', 'Two-rate tariff'), T('Horas de vazio: +°C; resto do dia: −°C.', 'Cheap hours: +°C; rest of the day: −°C.'),
         '<div class="row"><div><label>' + T('Vazio 1', 'Cheap 1') + '</label><input type="time" step="600" id="ts1" value="' + slotToTime(W.tariff.s1) + '"> – <input type="time" step="600" id="te1" value="' + slotToTime(W.tariff.e1) + '"></div>' +
         '<div><label>' + T('Vazio 2', 'Cheap 2') + '</label><input type="time" step="600" id="ts2" value="' + slotToTime(W.tariff.s2) + '"> – <input type="time" step="600" id="te2" value="' + slotToTime(W.tariff.e2) + '"></div>' +
@@ -714,7 +766,7 @@
         '<div style="flex:1"><label>' + T('Palavra-passe', 'Password') + '</label><input type="password" id="mw" value="' + esc(W.mqtt.pass) + '"></div></div></div>';
     } else {
       var used = W.roles.slice(W.zone_count).map(function (r, k) { return T('Relé ', 'Relay ') + (W.zone_count + k + 1) + ': ' + (ROLES()[r] || ROLES()[0])[1]; });
-      h += '<p>' + T('Zonas: ', 'Zones: ') + '<b>' + W.zone_count + '</b> · ' + esc(W.zones.slice(0, W.zone_count).map(function (z) { return z.name; }).join(', ')) + '</p>' +
+      h += '<p>' + T('Zonas: ', 'Zones: ') + '<b>' + ZT() + '</b>' + (ZT() > W.zone_count ? ' (' + (ZT() - W.zone_count) + ' ' + T('externas', 'external') + ')' : '') + ' · ' + esc(W.zones.slice(0, ZT()).map(function (z) { return z.name; }).join(', ')) + '</p>' +
         '<p>' + esc(used.join(' · ')) + '</p>' +
         '<p class="hint">' + T('Ao gravar, a placa reinicia (cerca de 15 s) para aplicar os nomes das zonas. Se já adicionaste a placa ao Home Assistant, mudar nomes cria entidades novas.',
           'Saving restarts the device (about 15 s) to apply the zone names. If the device is already in Home Assistant, renaming creates new entities.') + '</p>';
@@ -747,7 +799,7 @@
       if (t.getAttribute('data-copyall')) {
         collect(m);
         var src = null;
-        for (var a = 0; a < W.zone_count; a++) if (!W.zones[a].leader) { src = W.zones[a].sched; break; }
+        for (var a = 0; a < ZT(); a++) if (!W.zones[a].leader) { src = W.zones[a].sched; break; }
         if (src) W.zones.forEach(function (z) { z.sched = JSON.parse(JSON.stringify(src)); });
         showStep();
         return;
@@ -786,7 +838,7 @@
         '<div><label>' + T('Conforto °C', 'Comfort °C') + '</label><input type="number" step="0.5" id="mc" value="' + M.comfort + '"></div>' +
         '<div><label>Eco °C</label><input type="number" step="0.5" id="me" value="' + M.eco + '"></div></div>' +
         '<details><summary>' + T('Horário', 'Schedule') + '</summary>' + schedEditor('sm_', M.sched) + '</details></div>';
-      for (var q = 0; q < W.zone_count; q++) {
+      for (var q = 0; q < ZT(); q++) {
         var zz = W.zones[q];
         if (zz.leader) continue;
         h += '<div class="zone"><h4>' + esc(zz.name) + '</h4>' +
@@ -819,12 +871,12 @@
     if (!state) return;
     var rows = (state.zones || []).map(function (z, i) {
       return '<tr><td>' + (i + 1) + '</td><td>' + esc(z.n) + '</td><td>' + (z.duty == null ? '–' : z.duty + '%') + '</td><td>' + Math.round((z.today || 0)) + ' min</td><td>' +
-        (z.lead ? '–' : (z.rate || '–') + ' °C/h') + '</td></tr>';
+        (z.lead ? '–' : (z.rate || '–') + ' °C/h') + '</td><td>' + (z.lead ? '–' : (z.cool || '–') + ' °C/h') + '</td></tr>';
     }).join('');
     var m = modal('<h2>' + T('Equilíbrio das zonas', 'Zone balance') + '</h2><p class="sub">' +
-      T('Percentagem do tempo a aquecer nas últimas 24 h e velocidade de aquecimento aprendida. Zonas com muito mais tempo que as outras para a mesma temperatura costumam precisar de mais caudal no coletor.',
-        'Share of time heating over the last 24 h and learned heating rate. Zones needing much more time than the others for the same temperature usually need more flow at the manifold.') +
-      '</p><table><tr><td>#</td><td>' + T('Zona', 'Zone') + '</td><td>24 h</td><td>' + T('Hoje', 'Today') + '</td><td>' + T('Aquece', 'Heats') + '</td></tr>' + rows + '</table>' +
+      T('Percentagem do tempo a aquecer nas últimas 24 h e velocidades aprendidas: quanto sobe por hora com a zona aberta e quanto desce com ela fechada. Zonas com muito mais tempo que as outras para a mesma temperatura costumam precisar de mais caudal no coletor.',
+        'Share of time heating over the last 24 h and learned rates: how much it rises per hour with the zone open and drops with it closed. Zones needing much more time than the others for the same temperature usually need more flow at the manifold.') +
+      '</p><table><tr><td>#</td><td>' + T('Zona', 'Zone') + '</td><td>24 h</td><td>' + T('Hoje', 'Today') + '</td><td>' + T('Aquece', 'Heats') + '</td><td>' + T('Arrefece', 'Cools') + '</td></tr>' + rows + '</table>' +
       weekChart() +
       '<div class="nav"><span></span><button type="button" class="pri" data-n="close">OK</button></div>');
     m.addEventListener('click', function (e) { if (e.target.getAttribute && e.target.getAttribute('data-n')) closeModal(); });
@@ -895,7 +947,8 @@
     var h = '<h2>' + esc(z.n) + '</h2><p class="sub">' + T('Zona ', 'Zone ') + (i + 1) + ' · ' + (z.r ? T('a aquecer', 'heating') : T('fechada', 'closed')) + '</p>' +
       '<p>' + T('Temperatura: ', 'Temperature: ') + '<b>' + fmt(z.t) + ' °C</b>' + (z.h != null ? ' · ' + fmt(z.h, 0) + '%' : '') + (z.age >= 0 ? ' · ' + T('há ', '') + z.age + ' min' + T('', ' ago') : '') +
       (z.f != null ? ' · ' + T('chão ', 'floor ') + fmt(z.f) + ' °C' : '') + (z.b >= 0 ? ' · 🔋' + z.b + '%' : '') + '</p>' +
-      '<p>' + T('Alvo: ', 'Target: ') + '<b>' + fmt(z.tg) + ' °C</b>' + (z.ovr ? ' (' + T('ajuste manual até à próxima mudança do horário', 'manual change until the next schedule change') + ')' : '') + (z.early ? ' · ' + T('arranque antecipado', 'optimum start') : '') + '</p>';
+      '<p>' + T('Alvo: ', 'Target: ') + '<b>' + fmt(z.tg) + ' °C</b>' + (z.ovr ? ' (' + T('ajuste manual até à próxima mudança do horário', 'manual change until the next schedule change') + ')' : '') + (z.early ? ' · ' + T('arranque antecipado', 'optimum start') : '') + (z.estop ? ' · ' + T('paragem antecipada', 'optimum stop') : '') + '</p>' +
+      (z.lead ? '' : '<p class="hint">' + T('Aprendido: aquece ', 'Learned: heats ') + (z.rate || '–') + ' °C/h · ' + T('arrefece ', 'cools ') + (z.cool || '–') + ' °C/h</p>');
     if (!z.lead && z.fm) {
       h += '<div class="hint">🏠 ' + T('Esta zona segue a geral: a temperatura muda-se no termóstato geral.', 'This zone follows the main thermostat: change the temperature there.') + '</div>' +
         '<div class="row"><div><label>' + T('Modo', 'Mode') + '</label><select id="qm">' + opts([[1, T('Automático', 'Auto')], [2, T('Fixo', 'Fixed')], [0, T('Desligado', 'Off')]], z.m) + '</select></div></div>';

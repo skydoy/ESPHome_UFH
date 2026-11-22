@@ -158,6 +158,7 @@ std::string UFHComponent::web_state_json() {
   root["board"] = board_name_;
   root["relays"] = (int) relays_.size();
   root["zone_count"] = s_.zone_count;
+  root["ext_count"] = this->effective_zone_count_() - this->local_zone_count_();
   root["house"] = s_.house_mode;
   root["pump_mode"] = s_.pump_mode;
   root["pump"] = pump_out_;
@@ -187,7 +188,8 @@ std::string UFHComponent::web_state_json() {
     rs.add(relay_state_[k]);
   }
   JsonArray zs = root["zones"].to<JsonArray>();
-  for (uint8_t i = 0; i < s_.zone_count && i < relays_.size(); i++) {
+  uint8_t lc = this->local_zone_count_();
+  for (uint8_t i = 0; i < this->effective_zone_count_(); i++) {
     const ZoneCfg &z = s_.zones[i];
     const ZoneRt &r = zr_[i];
     JsonObject o = zs.add<JsonObject>();
@@ -202,9 +204,14 @@ std::string UFHComponent::web_state_json() {
     put_num(o, "tg", r.target);
     o["age"] = r.has_temp ? (int) ((now_ms - r.temp_ms) / 60000) : -1;
     o["b"] = r.batt;
-    o["r"] = relay_state_[i];
+    o["r"] = zone_out_[i];
+    if (i >= lc) {
+      o["ext"] = true;
+      o["eok"] = (bool) ext_ok_[i - lc];
+    }
     o["w"] = r.warn;
     o["early"] = r.early_start;
+    o["estop"] = r.early_stop;
     o["ovr"] = r.override_active;
     o["today"] = r.today_s / 60;
     uint32_t sum = 0;
@@ -212,6 +219,7 @@ std::string UFHComponent::web_state_json() {
       sum += h;
     o["duty"] = (int) (sum / 864);
     o["rate"] = roundf(p_.rate_c_per_h[i] * 100) / 100;
+    o["cool"] = roundf(l_.cool_c_per_h[i] * 100) / 100;
     o["bst"] = r.boost_until_ms ? (int) ((r.boost_until_ms - now_ms) / 60000 + 1) : 0;
     JsonArray wk = o["wk"].to<JsonArray>();  // minutes heating, 6 days ago ... yesterday, today
     for (uint8_t k = 1; k <= 6; k++)
@@ -370,7 +378,20 @@ std::string UFHComponent::web_config_json() {
   xo["boost"] = x10(x_.boost_x10);
   xo["boost_min"] = x_.boost_min;
   xo["outdoor"] = (bool) x_.opt_outdoor;
+  xo["stop"] = (bool) x_.opt_stop;
   xo["alt_outdoor"] = x_.alt_outdoor;
+  JsonObject no = root["net"].to<JsonObject>();
+  no["count"] = n_.count;
+  no["max"] = std::min<int>(MAX_EXT, MAX_ZONES - this->local_zone_count_());
+  JsonArray nos = no["out"].to<JsonArray>();
+  for (const auto &e : n_.out) {
+    JsonObject eo = nos.add<JsonObject>();
+    eo["type"] = e.type;
+    eo["ch"] = e.channel;
+    eo["host"] = e.host;
+    eo["on"] = e.url_on;
+    eo["off"] = e.url_off;
+  }
   JsonObject mo = root["main"].to<JsonObject>();
   mo["mode"] = m_.mode;
   mo["fixed_eco"] = (bool) m_.fixed_eco;
@@ -385,7 +406,7 @@ std::string UFHComponent::web_config_json() {
     a.add(d.e2);
   }
   JsonArray zs = root["zones"].to<JsonArray>();
-  for (uint8_t i = 0; i < relays_.size() && i < MAX_ZONES; i++) {
+  for (uint8_t i = 0; i < MAX_ZONES; i++) {
     const ZoneCfg &z = s_.zones[i];
     JsonObject o = zs.add<JsonObject>();
     o["name"] = z.name;
@@ -541,7 +562,7 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
   if (root["zones"].is<JsonArrayConst>()) {
     uint8_t i = 0;
     for (JsonVariantConst zv : root["zones"].as<JsonArrayConst>()) {
-      if (i >= MAX_ZONES || i >= relays_.size())
+      if (i >= MAX_ZONES)
         break;
       ZoneCfg &z = s_.zones[i];
       if (zv["name"].is<const char *>()) {
@@ -611,6 +632,8 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
       x_.boost_min = (uint16_t) std::max(10, std::min(480, xv["boost_min"].as<int>()));
     if (xv["outdoor"].is<bool>())
       x_.opt_outdoor = xv["outdoor"].as<bool>();
+    if (xv["stop"].is<bool>())
+      x_.opt_stop = xv["stop"].as<bool>();
     if (xv["alt_outdoor"].is<const char *>()) {
       char before[sizeof(x_.alt_outdoor)];
       memcpy(before, x_.alt_outdoor, sizeof(before));
@@ -619,6 +642,32 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
         restart = true;
     }
     this->save_extra_();
+  }
+  JsonVariantConst nv = root["net"];
+  if (nv.is<JsonObjectConst>()) {
+    NetCfg before = n_;
+    if (nv["count"].is<int>())
+      n_.count = (uint8_t) std::max(0, std::min((int) MAX_EXT, nv["count"].as<int>()));
+    if (nv["out"].is<JsonArrayConst>()) {
+      uint8_t e = 0;
+      for (JsonVariantConst ev : nv["out"].as<JsonArrayConst>()) {
+        if (e >= MAX_EXT)
+          break;
+        ExtOut &o = n_.out[e];
+        if (ev["type"].is<int>())
+          o.type = ev["type"].as<int>() == EXT_HTTP ? EXT_HTTP : EXT_SHELLY;
+        if (ev["ch"].is<int>())
+          o.channel = (uint8_t) std::max(0, std::min(15, ev["ch"].as<int>()));
+        copy_str(o.host, sizeof(o.host), ev["host"]);
+        copy_str(o.url_on, sizeof(o.url_on), ev["on"]);
+        copy_str(o.url_off, sizeof(o.url_off), ev["off"]);
+        e++;
+      }
+    }
+    if (memcmp(&before, &n_, sizeof(n_)) != 0) {
+      this->save_net_();
+      restart = true;
+    }
   }
   JsonVariantConst mv = root["main"];
   if (mv.is<JsonObjectConst>()) {
@@ -710,6 +759,88 @@ void UFHComponent::altherma_task_start_() {
   alt_task_started_ = true;
   xTaskCreate(&UFHComponent::altherma_task_, "ufh_alt", 6144, this, 1, nullptr);
   ESP_LOGI(TAG, "Altherma link: %s", alt_url_flow_);
+}
+
+// ---------------------------------------------------------------------------------------------
+// External zones: the relay is on another device. Sent from its own task, again every 60 s.
+// Shelly: "on" goes with toggle_after=300, so the Shelly closes the zone by itself if this
+// controller goes away (failsafe).
+// ---------------------------------------------------------------------------------------------
+static bool http_get_ok(const char *url) {
+  esp_http_client_config_t cfg = {};
+  cfg.url = url;
+  cfg.timeout_ms = 4000;
+  esp_http_client_handle_t c = esp_http_client_init(&cfg);
+  if (c == nullptr)
+    return false;
+  bool ok = false;
+  if (esp_http_client_open(c, 0) == ESP_OK) {
+    esp_http_client_fetch_headers(c);
+    int st = esp_http_client_get_status_code(c);
+    char buf[128];
+    esp_http_client_read_response(c, buf, sizeof(buf));
+    ok = st >= 200 && st < 300;
+  }
+  esp_http_client_cleanup(c);
+  return ok;
+}
+
+void UFHComponent::ext_task_(void *arg) {
+  auto *self = static_cast<UFHComponent *>(arg);
+  int8_t sent[MAX_EXT];
+  uint32_t last[MAX_EXT]{};
+  for (auto &v : sent)
+    v = -1;
+  char url[200];
+  for (;;) {
+    uint8_t n = std::min<uint8_t>(self->n_.count, MAX_EXT);
+    for (uint8_t e = 0; e < n; e++) {
+      bool want = self->ext_want_[e];
+      uint32_t now = millis();
+      bool due = sent[e] != (int8_t) want || now - last[e] >= 60000UL ||
+                 (!self->ext_ok_[e] && now - last[e] >= 10000UL);
+      if (!due)
+        continue;
+      const ExtOut &o = self->n_.out[e];
+      url[0] = 0;
+      if (o.type == EXT_SHELLY) {
+        if (o.host[0]) {
+          if (want)
+            snprintf(url, sizeof(url), "http://%s/rpc/Switch.Set?id=%u&on=true&toggle_after=300", o.host, o.channel);
+          else
+            snprintf(url, sizeof(url), "http://%s/rpc/Switch.Set?id=%u&on=false", o.host, o.channel);
+        }
+      } else {
+        const char *u = want ? o.url_on : o.url_off;
+        if (u[0])
+          snprintf(url, sizeof(url), "%s%s", strncmp(u, "http", 4) == 0 ? "" : "http://", u);
+      }
+      bool ok = url[0] && http_get_ok(url);
+      last[e] = millis();
+      if (ok) {
+        if (sent[e] != (int8_t) want)
+          ESP_LOGI(TAG, "External zone %u: %s", e + 1, want ? "on" : "off");
+        sent[e] = want;
+        self->ext_fail_ms_[e] = 0;
+      } else {
+        if (self->ext_ok_[e] || self->ext_fail_ms_[e] == 0)
+          ESP_LOGW(TAG, "External zone %u: no answer (%s)", e + 1, url[0] ? url : "no address");
+        sent[e] = -1;
+        if (self->ext_fail_ms_[e] == 0)
+          self->ext_fail_ms_[e] = last[e] ? last[e] : 1;
+      }
+      self->ext_ok_[e] = ok;
+    }
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+}
+
+void UFHComponent::ext_task_start_() {
+  if (ext_task_started_)
+    return;
+  ext_task_started_ = true;
+  xTaskCreate(&UFHComponent::ext_task_, "ufh_ext", 6144, this, 1, nullptr);
+  ESP_LOGI(TAG, "External zones: %u", n_.count);
 }
 
 }  // namespace ufh

@@ -27,10 +27,29 @@ Battery Shelly H&T only report when the temperature changes: if a room is stable
 | Actuator anti-seize | Same time: opens and closes every zone |
 | Open window | A 1 °C drop within 10 min closes the zone for 30 min |
 | Optimum start | Learns each zone's heating rate and starts up to 4 h earlier |
+| Optimum stop | Learns each room's cooling rate (zone closed) and closes up to 90 min before Comfort ends if the room stays within 0.5 °C until then |
 | Solar surplus | +°C on the chosen zones while there is surplus (action `set_pv_surplus` or an MQTT topic) |
 | Two-rate tariff | +°C in the cheap hours, −°C the rest of the day |
 | ESPHome_Altherma link | Reads flow / return water from the other board for the diagram |
 | Floor limit | Per zone: closes above X °C measured by a floor probe |
+
+## External zones (over the network)
+
+Zones whose relay is on another device. Set them in step 1 of the wizard (**External zones**); they come
+after the board zones (with 11 zones on the board, the first external zone is zone 12). Up to 8, and up
+to 16 zones in total.
+
+| Device | How it is switched |
+|---|---|
+| Shelly (Plus, Pro, Gen3) | `http://<ip>/rpc/Switch.Set?id=<relay>&on=true&toggle_after=300` / `on=false`. The Shelly must not have a password. |
+| HTTP URL (any device) | One URL to switch on, one to switch off. It must answer 200 OK. |
+
+The command is sent on every change and repeated every minute. With a Shelly, "on" is sent with a
+5-minute timer, so the Shelly closes the zone by itself if this controller goes away. If a device stops
+answering for 2 minutes, the zone shows the warning **device offline**.
+
+Each zone also shows its learned **Heating Rate** and **Cooling Rate** (°C/h) in its group on the device
+page and in Home Assistant.
 
 ## House modes
 

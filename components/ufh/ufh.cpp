@@ -191,6 +191,26 @@ void UFHComponent::setup() {
   for (uint8_t i = 0; i < relays_.size(); i++)
     this->write_relay_(i, false);
 
+  this->pref_net_ = global_preferences->make_preference<NetCfg>(fnv1_hash("ufh_net_v1"));
+  if (!this->pref_net_.load(&this->n_) || this->n_.magic != NET_MAGIC) {
+    memset(&this->n_, 0, sizeof(this->n_));
+    this->n_.magic = NET_MAGIC;
+  }
+  for (auto &o : this->n_.out) {
+    o.host[sizeof(o.host) - 1] = 0;
+    o.url_on[sizeof(o.url_on) - 1] = 0;
+    o.url_off[sizeof(o.url_off) - 1] = 0;
+  }
+  if (this->n_.count > MAX_EXT)
+    this->n_.count = MAX_EXT;
+  this->pref_learn_ = global_preferences->make_preference<Learn>(fnv1_hash("ufh_learn_v1"));
+  if (!this->pref_learn_.load(&this->l_) || this->l_.magic != LEARN_MAGIC) {
+    memset(&this->l_, 0, sizeof(this->l_));
+    this->l_.magic = LEARN_MAGIC;
+    for (auto &c : this->l_.cool_c_per_h)
+      c = 0.3f;
+  }
+
   this->pref_persist_ = global_preferences->make_preference<Persist>(fnv1_hash("ufh_persist_v1"));
   if (!this->pref_persist_.load(&this->p_) || this->p_.magic != PERSIST_MAGIC) {
     memset(&this->p_, 0, sizeof(this->p_));
@@ -255,7 +275,14 @@ void UFHComponent::save_settings_() {
   global_preferences->sync();
 }
 
-void UFHComponent::save_persist_() { this->pref_persist_.save(&this->p_); }
+void UFHComponent::save_persist_() {
+  this->pref_persist_.save(&this->p_);
+  this->pref_learn_.save(&this->l_);
+}
+void UFHComponent::save_net_() {
+  this->pref_net_.save(&this->n_);
+  global_preferences->sync();
+}
 
 void UFHComponent::save_extra_() {
   this->pref_extra_.save(&this->x_);
@@ -267,11 +294,38 @@ void UFHComponent::save_main_() {
   global_preferences->sync();
 }
 
-uint8_t UFHComponent::effective_zone_count_() const {
+uint8_t UFHComponent::local_zone_count_() const {
   uint8_t n = s_.zone_count;
   if (n > relays_.size())
     n = relays_.size();
   return n;
+}
+
+uint8_t UFHComponent::effective_zone_count_() const {
+  uint8_t n = this->local_zone_count_();
+  uint8_t e = std::min<uint8_t>(n_.count, MAX_EXT);
+  if (n + e > MAX_ZONES)
+    e = MAX_ZONES - n;
+  return n + e;
+}
+
+// Open / close a zone: board relay, or the device of an external zone (sent by ext_task_).
+void UFHComponent::set_zone_out_(uint8_t i, bool on) {
+  uint8_t lc = this->local_zone_count_();
+  if (i < lc) {
+    this->write_relay_(i, on);
+    zone_out_[i] = relay_state_[i];
+    return;
+  }
+  if (i >= MAX_ZONES)
+    return;
+  uint8_t e = i - lc;
+  if (e >= MAX_EXT)
+    return;
+  if (zone_out_[i] != on && relays_rewritten_ && s_.zones[i].leader == 0)
+    this->log_event_(on ? EV_ZONE_OPEN : EV_ZONE_CLOSE, i + 1, zr_[i].has_temp ? zr_[i].temp : NAN, zr_[i].target);
+  zone_out_[i] = on;
+  ext_want_[e] = on;
 }
 
 void UFHComponent::apply_entities_() {
@@ -288,6 +342,8 @@ void UFHComponent::apply_entities_() {
     r.name_follow = std::string(n) + " Follows Main";
     r.name_last = std::string(n) + " Last Reading";
     r.name_boost = std::string(n) + " Boost";
+    r.name_heat_rate = std::string(n) + " Heating Rate";
+    r.name_cool_rate = std::string(n) + " Cooling Rate";
   }
   for (auto *sw : zone_switches_) {
     uint8_t i = sw->zone() - 1;
@@ -332,7 +388,9 @@ void UFHComponent::apply_entities_() {
     if (i >= MAX_ZONES)
       continue;
     bool hide = i >= zc;
-    if ((s->kind() == ZS_TEMPERATURE || s->kind() == ZS_LAST_READING) && s_.zones[i].leader != 0)
+    if ((s->kind() == ZS_TEMPERATURE || s->kind() == ZS_LAST_READING || s->kind() == ZS_HEAT_RATE ||
+         s->kind() == ZS_COOL_RATE) &&
+        s_.zones[i].leader != 0)
       hide = true;
     if (!hide) {
       switch (s->kind()) {
@@ -347,6 +405,12 @@ void UFHComponent::apply_entities_() {
           break;
         case ZS_LAST_READING:
           s->rename(zr_[i].name_last.c_str());
+          break;
+        case ZS_HEAT_RATE:
+          s->rename(zr_[i].name_heat_rate.c_str());
+          break;
+        case ZS_COOL_RATE:
+          s->rename(zr_[i].name_cool_rate.c_str());
           break;
         default:
           s->rename(zr_[i].name_temp.c_str());
@@ -394,7 +458,7 @@ void UFHComponent::write_relay_(uint8_t idx, bool on) {
   if (idx >= relays_.size())
     return;
   if (relay_state_[idx] != on && relays_rewritten_) {
-    uint8_t zc = this->effective_zone_count_();
+    uint8_t zc = this->local_zone_count_();
     if (idx < zc) {
       if (s_.zones[idx].leader == 0)
         this->log_event_(on ? EV_ZONE_OPEN : EV_ZONE_CLOSE, idx + 1, zr_[idx].has_temp ? zr_[idx].temp : NAN,
@@ -647,6 +711,7 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
   ZoneRt &r = zr_[i];
   r.comfort_now = false;
   r.early_start = false;
+  r.early_stop = false;
   if (s_.house_mode == HOUSE_SUMMER || z.mode == ZONE_OFF)
     return NAN;
   if (s_.house_mode == HOUSE_HOLIDAY)
@@ -682,6 +747,21 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
           if (mins <= need_min) {
             comfort = true;
             r.early_start = true;
+          }
+        }
+      }
+      // optimum stop: the floor keeps giving heat; close before the end of Comfort if the room
+      // (at the learned cooling rate) stays within 0.5 °C of Comfort until then
+      if (comfort && x_.opt_stop && !r.override_active && r.has_temp && !r.early_start) {
+        uint16_t nx = next_switch_slot_(z.sched, sow);
+        if (nx != 0xFFFF) {
+          int mins = ((nx + 7 * 144 - sow) % (7 * 144)) * 10 - now.minute % 10;
+          float margin = r.temp - (x10(z.comfort_x10) - 0.5f);
+          float rate = std::clamp(l_.cool_c_per_h[i], 0.05f, 3.0f);
+          float hold_min = std::min(90.0f, margin / rate * 60.0f);
+          if (mins > 0 && margin > 0 && mins <= hold_min) {
+            comfort = false;
+            r.early_stop = true;
           }
         }
       }
@@ -807,7 +887,7 @@ void UFHComponent::publish_main_(UFHZoneClimate *c, bool force) {
       sum += zr_[i].temp;
       n++;
     }
-    if (relay_state_[i])
+    if (zone_out_[i])
       heating = true;
   }
   float cur = n ? roundf(sum / n * 10) / 10 : NAN;
@@ -922,6 +1002,8 @@ void UFHComponent::loop() {
     web_registered_ = true;
     register_web_handler(this, web_base_);
   }
+  if (!ext_task_started_ && n_.count > 0 && network::is_connected())
+    this->ext_task_start_();
 
   // apply wizard config (from the HTTP task)
   std::string cfg;
@@ -1055,6 +1137,31 @@ void UFHComponent::update_zone_(uint8_t i, uint32_t now_ms, const ESPTime &now) 
   if (r.batt >= 0 && r.batt < 20)
     r.warn |= WARN_BATTERY;
 
+  // learning: cooling rate while closed (from the highest reading after closing, the floor keeps
+  // heating for a while). Learned when the zone opens again, or every 6 h if it stays closed.
+  if (!r.relay && r.has_temp && (now_ms - r.temp_ms) < (uint32_t) s_.stale_min * 60000UL) {
+    if (r.warn & WARN_WINDOW) {
+      r.cool_peak_temp = NAN;  // open window: not a normal cool-down
+    } else if (std::isnan(r.cool_peak_temp) || r.temp > r.cool_peak_temp) {
+      r.cool_peak_temp = r.temp;
+      r.cool_peak_ms = now_ms;
+    } else {
+      float hours = (now_ms - r.cool_peak_ms) / 3600000.0f;
+      float drop = r.cool_peak_temp - r.temp;
+      bool learn = (want && hours >= 1.0f && drop >= 0.2f) || (hours >= 6.0f && drop >= 0.2f);
+      if (learn) {
+        float rate = drop / hours;
+        l_.cool_c_per_h[i] = std::clamp(0.8f * l_.cool_c_per_h[i] + 0.2f * rate, 0.02f, 3.0f);
+        ESP_LOGI(TAG, "Zone %u: learned cooling rate %.2f °C/h", i + 1, l_.cool_c_per_h[i]);
+        r.cool_peak_temp = r.temp;
+        r.cool_peak_ms = now_ms;
+      } else if (hours >= 6.0f) {
+        r.cool_peak_temp = r.temp;  // too little change to learn: start a new window
+        r.cool_peak_ms = now_ms;
+      }
+    }
+  }
+
   r.demand = want;
   if (want != r.relay) {
     bool cycle_ok = (now_ms - r.relay_changed_ms) >= (uint32_t) s_.min_cycle_min * 60000UL || r.relay_changed_ms == 0;
@@ -1075,6 +1182,7 @@ void UFHComponent::update_zone_(uint8_t i, uint32_t now_ms, const ESPTime &now) 
         r.heat_start_ms = now_ms;
         r.heat_start_temp = r.has_temp ? r.temp : NAN;
       }
+      r.cool_peak_temp = NAN;  // a new cool-down starts when it closes
       ESP_LOGI(TAG, "Zone %u (%s): %s", i + 1, z.name, want ? "heating" : "closed");
     }
   }
@@ -1117,6 +1225,13 @@ void UFHComponent::update_outputs_(uint32_t now_ms, const ESPTime &now) {
       zr_[i].relay = false;  // invalid leader
     }
   }
+  // external zones whose device stopped answering (2 min)
+  uint8_t lc = this->local_zone_count_();
+  for (uint8_t i = lc; i < zc; i++) {
+    uint32_t f = ext_fail_ms_[i - lc];
+    if (f != 0 && now_ms - f > 120000UL)
+      zr_[i].warn |= WARN_EXT_FAIL;
+  }
 
   this->exercise_tick_(now_ms, now);
 
@@ -1127,8 +1242,8 @@ void UFHComponent::update_outputs_(uint32_t now_ms, const ESPTime &now) {
       bool open_all = s_.opt_valve_exercise;
       on = open_all ? true : (i == 0);
     }
-    if (relay_state_[i] != on)
-      this->write_relay_(i, on);
+    if (zone_out_[i] != on || (i < this->local_zone_count_() && relay_state_[i] != on))
+      this->set_zone_out_(i, on);
     if (zr_[i].relay)
       any = true;
   }
@@ -1161,7 +1276,7 @@ void UFHComponent::update_outputs_(uint32_t now_ms, const ESPTime &now) {
                 (demand_out_ || (now_ms - any_since_ms_) >= (uint32_t) s_.pump_start_s * 1000UL);
 
   bool has_pump = false, has_demand = false;
-  for (uint8_t k = zc; k < relays_.size(); k++) {
+  for (uint8_t k = this->local_zone_count_(); k < relays_.size(); k++) {
     bool on = false;
     switch (s_.relay_role[k]) {
       case ROLE_PUMP:
@@ -1298,7 +1413,7 @@ void UFHComponent::per_second_(uint32_t now_ms, const ESPTime &now) {
   }
   uint8_t zc = this->effective_zone_count_();
   for (uint8_t i = 0; i < zc; i++) {
-    if (!relay_state_[i])
+    if (!zone_out_[i])
       continue;
     zr_[i].today_s += secs;
     p_.zone_total_s[i] += secs;
@@ -1324,6 +1439,8 @@ void UFHComponent::per_second_(uint32_t now_ms, const ESPTime &now) {
         w += (w.empty() ? "" : "; ") + std::string(s_.zones[i].name) + ": not heating";
       if (bits & WARN_FLOOR)
         w += (w.empty() ? "" : "; ") + std::string(s_.zones[i].name) + ": floor limit";
+      if (bits & WARN_EXT_FAIL)
+        w += (w.empty() ? "" : "; ") + std::string(s_.zones[i].name) + ": device offline";
     }
     if (dt_warn_) {
       char b[48];
@@ -1396,7 +1513,7 @@ void UFHComponent::publish_entities_() {
     uint8_t i = b->zone() - 1;
     if (i >= zc || b->is_internal())
       continue;
-    b->publish_state(relay_state_[i]);
+    b->publish_state(zone_out_[i]);
   }
   if (!slow)
     return;
@@ -1422,6 +1539,12 @@ void UFHComponent::publish_entities_() {
       case ZS_LAST_READING:
         if (p_.last_epoch[i] != 0 && (std::isnan(s->state) || (uint32_t) s->state != p_.last_epoch[i]))
           s->publish_state((float) p_.last_epoch[i]);
+        break;
+      case ZS_HEAT_RATE:
+        s->publish_state(roundf(p_.rate_c_per_h[i] * 100) / 100);
+        break;
+      case ZS_COOL_RATE:
+        s->publish_state(roundf(l_.cool_c_per_h[i] * 100) / 100);
         break;
       default:
         if (r.has_temp)
@@ -1520,7 +1643,7 @@ void UFHComponent::mqtt_subscribe_() {
   if (m == nullptr || s_.mqtt_host[0] == 0)
     return;
   bool needed = s_.opt_pv && s_.pv_topic[0];
-  for (uint8_t i = 0; i < s_.zone_count; i++)
+  for (uint8_t i = 0; i < this->effective_zone_count_(); i++)
     if (s_.zones[i].room.type == SRC_MQTT || s_.zones[i].floor.type == SRC_MQTT)
       needed = true;
   if (!needed)
@@ -1529,7 +1652,7 @@ void UFHComponent::mqtt_subscribe_() {
   m->set_broker_port(s_.mqtt_port ? s_.mqtt_port : 1883);
   m->set_username(s_.mqtt_user);
   m->set_password(s_.mqtt_pass);
-  for (uint8_t i = 0; i < s_.zone_count; i++) {
+  for (uint8_t i = 0; i < this->effective_zone_count_(); i++) {
     for (int f = 0; f < 2; f++) {
       const SourceCfg &src = f ? s_.zones[i].floor : s_.zones[i].room;
       if (src.type != SRC_MQTT || !src.param[0])

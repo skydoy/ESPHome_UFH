@@ -74,3 +74,19 @@ sensor:
     web_server:
       sorting_group_id: group_zone${zone}
       sorting_weight: 9
+  - platform: ufh
+    type: heating_rate
+    zone: ${zone}
+    name: "Zone ${zone} Heating Rate"
+    entity_category: diagnostic
+    web_server:
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 10
+  - platform: ufh
+    type: cooling_rate
+    zone: ${zone}
+    name: "Zone ${zone} Cooling Rate"
+    entity_category: diagnostic
+    web_server:
+      sorting_group_id: group_zone${zone}
+      sorting_weight: 11

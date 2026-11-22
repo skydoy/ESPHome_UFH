@@ -5,6 +5,12 @@ All notable changes to the firmware and installer. Format:
 
 ## [Unreleased]
 ### Added
+- **External zones**: zones whose relay is on another device over the network — Shelly Gen2/Gen3/Pro
+  (with a 5-minute auto-off failsafe) or any HTTP URL (one to switch on, one to switch off). Up to 8,
+  after the board zones (16 zones in total). Warning "device offline" after 2 minutes without answer.
+- **Learned cooling rate** per zone (°C/h lost with the zone closed) and new option **Optimum stop**:
+  closes up to 90 min before Comfort ends when the room stays within 0.5 °C until then.
+- Every zone group shows its learned **Heating Rate** and **Cooling Rate** (also in Home Assistant).
 - Docs: **Replacing a DAEnetIP4** — photo guide for the Denkovi 12-relay board (DAE-PB/Ro12/Di8/Ai8):
   which sockets to use (JP1, JP2), wiring diagram to the Unit PoE-P4, 12 V supply, multimeter checks.
 

@@ -65,6 +65,8 @@ enum ZoneSensorType : uint8_t {
   ZS_DUTY_24H = 2,
   ZS_TEMPERATURE = 3,
   ZS_LAST_READING = 4,
+  ZS_HEAT_RATE = 5,  // learned °C/h while heating
+  ZS_COOL_RATE = 6,  // learned °C/h lost while closed
 };
 
 class UFHZoneSensor : public sensor::Sensor {
@@ -167,15 +169,19 @@ struct ZoneRt {
   bool comfort_now{false};
   bool early_start{false};
   uint32_t boost_until_ms{0};  // 0 = no boost
-  // learning (optimum start)
+  // learning (optimum start / stop)
   uint32_t heat_start_ms{0};
   float heat_start_temp{NAN};
+  float cool_peak_temp{NAN};  // highest reading since the zone closed
+  uint32_t cool_peak_ms{0};
+  bool early_stop{false};
   // counters
   uint32_t today_s{0};
   uint16_t hour_s[24]{};     // seconds on, per hour of the last 24 h (ring indexed by hour)
   uint32_t warn{0};          // WARN_* bits
   // name storage for renamed entities
-  std::string name_climate, name_heating, name_today, name_total, name_duty, name_temp, name_follow, name_last, name_boost;
+  std::string name_climate, name_heating, name_today, name_total, name_duty, name_temp, name_follow, name_last, name_boost,
+      name_heat_rate, name_cool_rate;
 };
 
 enum WarnBits : uint32_t {
@@ -185,6 +191,7 @@ enum WarnBits : uint32_t {
   WARN_FLOOR = 1 << 3,
   WARN_WINDOW = 1 << 4,
   WARN_NO_SENSOR = 1 << 5,
+  WARN_EXT_FAIL = 1 << 6,  // external zone: the device did not answer
 };
 
 struct BleSeen {
@@ -324,7 +331,12 @@ class UFHComponent : public Component
   void accept_reading_(const PendingReading &r, uint32_t now_ms);
   void per_second_(uint32_t now_ms, const ESPTime &now);
   float tariff_offset_(const ESPTime &now) const;
-  uint8_t effective_zone_count_() const;
+  uint8_t effective_zone_count_() const;  // all zones: board relays + external
+  uint8_t local_zone_count_() const;      // zones on the board relays
+  void set_zone_out_(uint8_t i, bool on);
+  void ext_task_start_();
+  static void ext_task_(void *arg);
+  void save_net_();
 #ifdef USE_MQTT
   void mqtt_subscribe_();
   void mqtt_payload_(int zone, bool floor, const std::string &key, const std::string &payload);
@@ -379,6 +391,16 @@ class UFHComponent : public Component
   std::string last_warn_logged_;
   ZoneRt zr_[MAX_ZONES];
   bool relay_state_[MAX_RELAYS]{};
+  bool zone_out_[MAX_ZONES]{};  // zone open (board relay or external device)
+  // external zones (relay on another device, own task)
+  NetCfg n_{};
+  ESPPreferenceObject pref_net_;
+  Learn l_{};
+  ESPPreferenceObject pref_learn_;
+  volatile bool ext_want_[MAX_EXT]{};
+  volatile bool ext_ok_[MAX_EXT]{};
+  volatile uint32_t ext_fail_ms_[MAX_EXT]{};  // first failure of the current streak, 0 = answering
+  bool ext_task_started_{false};
 
   // outputs / pump
   bool any_relay_{false};

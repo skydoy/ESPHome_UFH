@@ -54,4 +54,4 @@ ufh:
            relay_10, relay_11, relay_12, relay_13]
 
 packages:
-  zones: !include ../../ufh/zones-13.yaml
+  zones: !include ../../ufh/zones-16.yaml  # 13 board relays + external zones (network)
