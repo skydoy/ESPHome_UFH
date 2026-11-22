@@ -4,6 +4,8 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.5.0] - 2026-11-22
 ### Added
 - **External zones**: zones whose relay is on another device over the network — Shelly Gen2/Gen3/Pro
   (with a 5-minute auto-off failsafe) or any HTTP URL (one to switch on, one to switch off). Up to 8,
@@ -116,7 +118,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.0
 [0.4.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.4.1
 [0.4.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.4.0
 [0.3.2]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.3.2
