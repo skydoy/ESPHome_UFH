@@ -4,9 +4,12 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.5.2] - 2026-11-23
 ### Changed
 - The Altherma reader is started from the main loop once the network is up (never from setup).
 - The wizard shows the Shelly webhook URL with the device name (.local) and with its IP.
+- Web installer: "Erase device" is now a choice (untick it to keep zones and settings).
 
 ## [0.5.1] - 2026-11-23
 ### Fixed
@@ -128,7 +131,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.2
 [0.5.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.1
 [0.5.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.0
 [0.4.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.4.1
