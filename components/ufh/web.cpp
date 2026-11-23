@@ -16,6 +16,7 @@
 #include "esphome/core/hal.h"
 #include "esphome/core/log.h"
 #include "esphome/components/json/json_util.h"
+#include "esphome/components/network/util.h"
 
 #include "esp_http_client.h"
 #include "freertos/FreeRTOS.h"
@@ -313,6 +314,16 @@ std::string UFHComponent::web_config_json() {
   root["configured"] = (bool) s_.configured;
   root["relays"] = (int) relays_.size();
   root["board"] = board_name_;
+  // addresses for the Shelly webhook URLs shown in the wizard (name and IP)
+  root["mdns"] = App.get_name() + ".local";
+  for (auto &ip : network::get_ip_addresses()) {
+    if (ip.is_ip4() && ip.is_set()) {
+      char b[network::IP_ADDRESS_BUFFER_SIZE];
+      ip.str_to(b);
+      root["ip"] = std::string(b);
+      break;
+    }
+  }
   root["features"]["ble"] =
 #ifdef USE_UFH_BLE
       true;

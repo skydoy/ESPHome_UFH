@@ -1005,6 +1005,8 @@ void UFHComponent::loop() {
   }
   if (!ext_task_started_ && n_.count > 0 && network::is_connected())
     this->ext_task_start_();
+  if (alt_wanted_ && !alt_task_started_ && network::is_connected())
+    this->altherma_task_start_();
 
   // apply wizard config (from the HTTP task)
   std::string cfg;
@@ -1564,7 +1566,7 @@ void UFHComponent::start_sources_() {
     snprintf(alt_url_return_, sizeof(alt_url_return_), "http://%s%s", s_.altherma_host, s_.altherma_return);
     if (x_.alt_outdoor[0])
       snprintf(alt_url_outdoor_, sizeof(alt_url_outdoor_), "http://%s%s", s_.altherma_host, x_.alt_outdoor);
-    this->altherma_task_start_();
+    alt_wanted_ = true;  // the task is started from loop() once the network is up
   }
 }
 

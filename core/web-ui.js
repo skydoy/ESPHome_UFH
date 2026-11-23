@@ -644,7 +644,9 @@
     if (src.type === 1) {
       h += '<div class="hint">' + T('Na app Shelly: sensor → Ações (Webhooks) → nova ação, evento “Temperatura mudou” e este URL:',
         'In the Shelly app: sensor → Actions (Webhooks) → new action, event “Temperature changed” and this URL:') +
-        '<br><code>http://' + esc(host) + '/ufh/temp?zone=' + zone + (which === 'floor' ? '&amp;floor=1' : '') + '&amp;t=${ev.tC}</code></div>';
+        [W.mdns || host, W.ip].filter(function (a, k, arr) { return a && arr.indexOf(a) === k; }).map(function (a) {
+          return '<br><code>http://' + esc(a) + '/ufh/temp?zone=' + zone + (which === 'floor' ? '&amp;floor=1' : '') + '&amp;t=${ev.tC}</code>';
+        }).join('') + '<br>' + T('Usa um dos dois (nome ou IP). Com IP, reserva-o no router.', 'Use either one (name or IP). With the IP, reserve it in the router.') + '</div>';
     } else if (src.type === 2) {
       h += '<div class="hint">' + T('Usa o blueprint “ESPHome UFH: temperatura do Home Assistant” (zona ', 'Use the blueprint “ESPHome UFH: temperature from Home Assistant” (zone ') + zone + ').</div>';
     } else if (src.type === 3) {

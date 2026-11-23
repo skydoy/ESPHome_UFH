@@ -403,6 +403,7 @@ class UFHComponent : public Component
   bool ext_task_started_{false};
   // network up (set in loop): the HTTP tasks wait for it, the IP stack is not ready at setup
   volatile bool net_up_{false};
+  bool alt_wanted_{false};
 
   // outputs / pump
   bool any_relay_{false};

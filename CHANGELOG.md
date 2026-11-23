@@ -4,6 +4,9 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Changed
+- The Altherma reader is started from the main loop once the network is up (never from setup).
+- The wizard shows the Shelly webhook URL with the device name (.local) and with its IP.
 
 ## [0.5.1] - 2026-11-23
 ### Fixed
