@@ -4,6 +4,11 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Boot loop (`assert failed: xQueueSemaphoreTake`) with the Altherma link set: the Altherma reader
+  (and the external zones) made HTTP requests before Ethernet was up. They now wait for the network.
+- The "Heating" and "Outdoor Compensation" switches no longer switch at boot (Heating could put the
+  house in Summer on every restart).
 
 ## [0.5.0] - 2026-11-22
 ### Added

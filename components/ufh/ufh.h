@@ -401,6 +401,8 @@ class UFHComponent : public Component
   volatile bool ext_ok_[MAX_EXT]{};
   volatile uint32_t ext_fail_ms_[MAX_EXT]{};  // first failure of the current streak, 0 = answering
   bool ext_task_started_{false};
+  // network up (set in loop): the HTTP tasks wait for it, the IP stack is not ready at setup
+  volatile bool net_up_{false};
 
   // outputs / pump
   bool any_relay_{false};

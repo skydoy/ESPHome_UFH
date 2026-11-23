@@ -175,6 +175,7 @@ switch:
   - platform: template
     name: "Heating"
     icon: mdi:radiator
+    restore_mode: DISABLED  # state comes from the controller; never switch at boot
     lambda: return id(ufh_ctl).heating_on();
     turn_on_action:
       - lambda: id(ufh_ctl).set_heating(true);
@@ -188,6 +189,7 @@ switch:
   - platform: template
     name: "Outdoor Compensation"
     icon: mdi:snowflake-thermometer
+    restore_mode: DISABLED
     entity_category: config
     lambda: return id(ufh_ctl).outdoor_comp();
     turn_on_action:

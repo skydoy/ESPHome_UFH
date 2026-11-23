@@ -740,6 +740,9 @@ static float http_get_value(const char *url) {
 void UFHComponent::altherma_task_(void *arg) {
   auto *self = static_cast<UFHComponent *>(arg);
   for (;;) {
+    // started from setup(): no HTTP before the network (Ethernet) is up, or lwIP asserts
+    while (!self->net_up_)
+      vTaskDelay(pdMS_TO_TICKS(1000));
     float f = http_get_value(self->alt_url_flow_);
     float r = http_get_value(self->alt_url_return_);
     float o = self->alt_url_outdoor_[0] ? http_get_value(self->alt_url_outdoor_) : NAN;
@@ -793,6 +796,8 @@ void UFHComponent::ext_task_(void *arg) {
     v = -1;
   char url[200];
   for (;;) {
+    while (!self->net_up_)
+      vTaskDelay(pdMS_TO_TICKS(1000));
     uint8_t n = std::min<uint8_t>(self->n_.count, MAX_EXT);
     for (uint8_t e = 0; e < n; e++) {
       bool want = self->ext_want_[e];

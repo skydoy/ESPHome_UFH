@@ -998,6 +998,7 @@ void UFHComponent::loop() {
     for (uint8_t i = 0; i < relays_.size(); i++)
       this->write_relay_(i, relay_state_[i]);
   }
+  net_up_ = network::is_connected();
   if (!web_registered_ && web_base_ != nullptr && network::is_connected()) {
     web_registered_ = true;
     register_web_handler(this, web_base_);
