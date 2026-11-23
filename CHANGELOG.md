@@ -4,6 +4,8 @@ All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.5.1] - 2026-11-23
 ### Fixed
 - Boot loop (`assert failed: xQueueSemaphoreTake`) with the Altherma link set: the Altherma reader
   (and the external zones) made HTTP requests before Ethernet was up. They now wait for the network.
@@ -123,7 +125,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.1
 [0.5.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.0
 [0.4.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.4.1
 [0.4.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.4.0
