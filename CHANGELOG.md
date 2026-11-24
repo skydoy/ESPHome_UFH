@@ -5,7 +5,7 @@ All notable changes to the firmware and installer. Format:
 
 ## [Unreleased]
 
-## [0.6.0] - Unreleased
+## [0.6.0] - 2026-11-24
 
 ### Added
 - Custom UDP `packet_transport` receiver on port 18511: the UFH lists Altherma boards
@@ -191,8 +191,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.3...HEAD
-[0.6.0]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.3...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.6.0
 [0.5.3]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.3
 [0.5.2]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.2
 [0.5.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.1
