@@ -10,7 +10,7 @@
 substitutions:
   name: esphome-ufh
   friendly_name: ESPHome UFH
-  project_version: "0.5.3"
+  project_version: "0.6.0"
   firmware_source: "self-built"
   timezone: Europe/Lisbon
   update_manifest_url: https://skydoy.github.io/ESPHome_UFH/firmware/p4-poe/manifest.json

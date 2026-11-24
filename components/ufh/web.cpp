@@ -247,9 +247,42 @@ std::string UFHComponent::web_state_json() {
   pmp["total"] = p_.pump_total_s / 3600;
   if (s_.opt_altherma) {
     JsonObject a = root["altherma"].to<JsonObject>();
-    put_num(a, "flow", alt_flow_);
-    put_num(a, "ret", alt_return_);
-    a["age"] = alt_ms_ ? (int) ((now_ms - alt_ms_) / 1000) : -1;
+    put_num(a, "flow", this->flow_temp());
+    put_num(a, "ret", this->return_temp());
+    put_num(a, "freq", this->compressor_freq());
+    a["src"] = this->altherma_source();
+    a["age"] = this->altherma_age_s();
+    a["fault"] = this->heat_pump_fault_state();
+    char eo[8]{}, ei[8]{};
+    this->altherma_error_text(true, eo, sizeof(eo));
+    this->altherma_error_text(false, ei, sizeof(ei));
+    a["err_out"] = eo;
+    a["err_in"] = ei;
+    a["provider"] = x_.altherma_provider;
+    a["comp_zero"] = (bool) comp_zero_warn_;
+    JsonArray seen = a["seen"].to<JsonArray>();
+    {
+      std::lock_guard<std::mutex> lock(alt_mtx_);
+      for (uint8_t i = 0; i < alt_seen_n_; i++) {
+        if (alt_seen_[i].name[0] == 0)
+          continue;
+        if (now_ms - alt_seen_[i].ms > 600000UL)
+          continue;
+        JsonObject o = seen.add<JsonObject>();
+        o["name"] = alt_seen_[i].name;
+        o["age"] = (int) ((now_ms - alt_seen_[i].ms) / 1000);
+      }
+    }
+  }
+  if (x_.opt_tank) {
+    JsonObject tnk = root["tank"].to<JsonObject>();
+    put_num(tnk, "t", this->tank_temp());
+    tnk["pump"] = tank_pump_out_;
+    tnk["heater"] = tank_heater_out_;
+    tnk["manual"] = heater_manual_on_;
+    tnk["target"] = this->tank_target();
+    tnk["cut"] = this->tank_cut();
+    tnk["blocked"] = heater_auto_blocked_;
   }
   JsonArray ble = root["ble"].to<JsonArray>();
   for (const auto &b : ble_seen_) {
@@ -387,6 +420,29 @@ std::string UFHComponent::web_config_json() {
   al["host"] = s_.altherma_host;
   al["flow"] = s_.altherma_flow;
   al["ret"] = s_.altherma_return;
+  al["provider"] = x_.altherma_provider;
+  {
+    JsonArray seen = al["seen"].to<JsonArray>();
+    std::lock_guard<std::mutex> lock(alt_mtx_);
+    uint32_t now_ms = millis();
+    for (uint8_t i = 0; i < alt_seen_n_; i++) {
+      if (alt_seen_[i].name[0] == 0)
+        continue;
+      if (now_ms - alt_seen_[i].ms > 600000UL)
+        continue;
+      JsonObject o = seen.add<JsonObject>();
+      o["name"] = alt_seen_[i].name;
+      o["age"] = (int) ((now_ms - alt_seen_[i].ms) / 1000);
+    }
+  }
+  JsonObject tk = root["tank"].to<JsonObject>();
+  tk["enabled"] = (bool) x_.opt_tank;
+  tk["target"] = this->tank_target();
+  tk["cut"] = this->tank_cut();
+  tk["hyst"] = x_.tank_hyst_x10 / 10.0f;
+  tk["comp_zero_min"] = x_.comp_zero_min;
+  tk["probe"] = x_.tank_probe;
+  tk["manual"] = heater_manual_on_;
   JsonObject xo = root["extra"].to<JsonObject>();
   xo["boost"] = x10(x_.boost_x10);
   xo["boost_min"] = x_.boost_min;
@@ -497,7 +553,7 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
       if (k >= MAX_RELAYS)
         break;
       if (v.is<int>())
-        s_.relay_role[k] = (uint8_t) std::max(0, std::min((int) ROLE_PUMP_DEMAND, v.as<int>()));
+        s_.relay_role[k] = (uint8_t) std::max(0, std::min((int) ROLE_MAX, v.as<int>()));
       k++;
     }
   }
@@ -567,12 +623,41 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
   }
   JsonVariantConst al = root["altherma"];
   if (al.is<JsonObjectConst>()) {
+    char before_h[sizeof(s_.altherma_host)], before_f[sizeof(s_.altherma_flow)], before_r[sizeof(s_.altherma_return)];
+    memcpy(before_h, s_.altherma_host, sizeof(before_h));
+    memcpy(before_f, s_.altherma_flow, sizeof(before_f));
+    memcpy(before_r, s_.altherma_return, sizeof(before_r));
     copy_str(s_.altherma_host, sizeof(s_.altherma_host), al["host"]);
     copy_str(s_.altherma_flow, sizeof(s_.altherma_flow), al["flow"]);
     copy_str(s_.altherma_return, sizeof(s_.altherma_return), al["ret"]);
     normalize_altherma_path(s_.altherma_flow, sizeof(s_.altherma_flow));
     normalize_altherma_path(s_.altherma_return, sizeof(s_.altherma_return));
-    restart = restart || s_.opt_altherma;
+    if (memcmp(before_h, s_.altherma_host, sizeof(before_h)) != 0 ||
+        memcmp(before_f, s_.altherma_flow, sizeof(before_f)) != 0 ||
+        memcmp(before_r, s_.altherma_return, sizeof(before_r)) != 0)
+      restart = restart || s_.opt_altherma;
+    if (al["provider"].is<const char *>())
+      this->set_altherma_provider(al["provider"].as<const char *>());
+  }
+  JsonVariantConst tk = root["tank"];
+  if (tk.is<JsonObjectConst>()) {
+    if (tk["enabled"].is<bool>())
+      this->set_tank_enabled(tk["enabled"].as<bool>());
+    if (tk["target"].is<float>() || tk["target"].is<int>())
+      this->set_tank_target(tk["target"].as<float>());
+    if (tk["cut"].is<float>() || tk["cut"].is<int>())
+      this->set_tank_cut(tk["cut"].as<float>());
+    if (tk["comp_zero_min"].is<int>())
+      this->set_comp_zero_min((uint16_t) tk["comp_zero_min"].as<int>());
+    if (tk["manual"].is<bool>())
+      this->set_tank_heater_manual(tk["manual"].as<bool>());
+    if (tk["probe"].is<const char *>()) {
+      copy_str(x_.tank_probe, sizeof(x_.tank_probe), tk["probe"]);
+#ifdef USE_UFH_ONE_WIRE
+      ow_tank_addr_ = x_.tank_probe[0] ? parse_hex64(x_.tank_probe) : 0;
+#endif
+      this->save_extra_();
+    }
   }
   if (root["zones"].is<JsonArrayConst>()) {
     uint8_t i = 0;
@@ -721,6 +806,12 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
     this->write_relay_(k, relay_state_[k]);
   this->save_settings_();
   this->log_event_(EV_SETTINGS);
+  if (!restart) {
+    this->start_sources_();
+#ifdef USE_UFH_ONE_WIRE
+    ow_tank_addr_ = x_.tank_probe[0] ? parse_hex64(x_.tank_probe) : 0;
+#endif
+  }
   ESP_LOGI(TAG, "Settings saved%s", restart ? " (restart needed)" : "");
   if (restart || (root["restart"].is<bool>() && root["restart"].as<bool>()))
     restart_requested_ = true;

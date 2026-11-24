@@ -23,7 +23,10 @@ Optional: the device heats on its own. Home Assistant adds remote control, histo
 | Pump Runtime Today / Total | Statistics |
 | Pump Start / Stop Delay | Pump delay after the thermostats' demand (s) |
 | Heat Pump Min On / Off Time | Heat pump anti short-cycle (min, 0 = off) |
-| Flow / Return Temperature, Flow Return Difference | Heat pump water (ESPHome_Altherma link) |
+| Flow / Return Temperature, Flow Return Difference | Heat pump water (UDP, or HTTP fallback) |
+| Compressor Frequency, Heat Pump Fault, Outdoor / Indoor Error Code, Altherma Link | UDP from the chosen Altherma board |
+| Tank Temperature, Tank Pump, Emergency Heater, Manual Heater | Buffer-tank module ([details](tank.md)) |
+| Tank Target, Tank Cutoff, Compressor Zero Delay, Tank Module | Tank settings |
 
 ## Actions
 

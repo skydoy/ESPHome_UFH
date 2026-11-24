@@ -15,7 +15,7 @@ For relay boards whose inputs work with **3.3 V** logic, such as the Denkovi boa
 | Header · pin | Hat2 · 2 | Hat2 · 4 | Hat2 · 5 | Hat2 · 6 | Hat2 · 7 | Hat2 · 8 | Hat2 · 9 | Hat2 · 10 | Hat2 · 12 | Hat2 · 14 | Hat2 · 16 | SDIO · 1 | SDIO · 2 |
 
 Relays 1–11 go to the **Hat2-Bus** header (16 pins) and 12–13 to the **SDIO** header (9 pins), both 2.54 mm, so female Dupont wires fit. Also connect **GND** (Hat2-Bus pin 1) to GND of the relay board. In the wizard choose **relays switch on with HIGH**.
-A 1-Wire bus for DS18B20 probes is on **GPIO11** (SDIO pin 3, 4.7 kΩ pull-up to 3.3 V on Hat2-Bus pin 13).
+A 1-Wire bus for DS18B20 probes is on **GPIO11** (SDIO pin 3, 4.7 kΩ pull-up to 3.3 V on Hat2-Bus pin 13). The optional buffer-tank probe uses this same bus. On a 16-relay MCP23017 board, typical roles are zones 1–11, heat demand on 12, tank pump on 13, emergency heater on 14. A mechanical thermostat **in series** with the heater is required; there is no mixing valve, so tank water goes to the screed. See [Buffer tank](tank.md).
 
 !!! warning "Before connecting"
     With the ESP disconnected and the relay board powered, measure between one IN input and GND of the relay board: it must read **0 V or at most 3.3 V**. If it reads 5 V or 12 V, do not connect it directly: use option B (MCP23017).

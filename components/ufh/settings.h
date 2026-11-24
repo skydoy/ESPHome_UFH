@@ -27,7 +27,10 @@ enum RelayRole : uint8_t {
   ROLE_PUMP = 1,         // circulation pump
   ROLE_DEMAND = 2,       // heat demand contact (heat pump / boiler)
   ROLE_PUMP_DEMAND = 3,  // one relay does both
+  ROLE_TANK_PUMP = 4,    // buffer-tank recirculation pump
+  ROLE_TANK_HEATER = 5,  // emergency tank heater
 };
+static constexpr uint8_t ROLE_MAX = ROLE_TANK_HEATER;
 
 enum HouseMode : uint8_t { HOUSE_HOME = 0, HOUSE_AWAY = 1, HOUSE_HOLIDAY = 2, HOUSE_SUMMER = 3 };
 enum ZoneMode : uint8_t { ZONE_OFF = 0, ZONE_AUTO = 1, ZONE_HEAT = 2 };
@@ -150,8 +153,17 @@ struct ExtraCfg {
   uint8_t opt_stop;     // optimum stop: end Comfort early using the learned cooling rate (was reserved, 0)
   uint8_t reserved0;
   char alt_outdoor[80];  // ESPHome_Altherma path of the outdoor temperature
-  uint8_t reserved[64];
+  // Was reserved[64]. Layout stays 64 bytes so existing NVS blobs still load.
+  char altherma_provider[32];  // chosen packet_transport hostname; empty = use nothing yet
+  uint8_t opt_tank;            // optional buffer-tank module
+  uint8_t reserved_tank;
+  int16_t tank_target_x10;     // default 40.0 °C
+  int16_t tank_cut_x10;        // default 45.0 °C (software cutoff)
+  int16_t tank_hyst_x10;       // default 3.0 °C
+  uint16_t comp_zero_min;      // minutes of demand+compressor 0 before the warning
+  char tank_probe[22];         // DS18B20 address (hex, colons optional)
 };
+static_assert(sizeof(ExtraCfg) == 156, "ExtraCfg size must stay 156 so NVS blobs still load");
 
 // Minutes of heating per zone for the last days (weekly chart). Own NVS entry, saved once a day.
 static constexpr uint32_t WEEK_MAGIC = 0x55465731;  // "UFW1"

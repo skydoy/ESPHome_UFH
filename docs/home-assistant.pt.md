@@ -23,7 +23,10 @@ Opcional: a placa aquece sozinha. O Home Assistant junta controlo remoto, histó
 | Pump Runtime Today / Total | Estatísticas |
 | Pump Start / Stop Delay | Atraso da bomba depois do pedido dos termóstatos (s) |
 | Heat Pump Min On / Off Time | Proteção contra ciclos curtos da bomba de calor (min, 0 = desligada) |
-| Flow / Return Temperature, Flow Return Difference | Água da bomba de calor (ligação ao ESPHome_Altherma) |
+| Flow / Return Temperature, Flow Return Difference | Água da bomba de calor (UDP, ou reserva HTTP) |
+| Compressor Frequency, Heat Pump Fault, Outdoor / Indoor Error Code, Altherma Link | UDP da placa Altherma escolhida |
+| Tank Temperature, Tank Pump, Emergency Heater, Manual Heater | Módulo do tanque ([detalhes](tank.md)) |
+| Tank Target, Tank Cutoff, Compressor Zero Delay, Tank Module | Definições do tanque |
 
 ## Ações
 

@@ -15,4 +15,4 @@
 - The relays after the zones drive the **circulation pump** and/or ask the **heat pump / boiler** for heat. The pump starts after a delay (actuators take 2-4 min to open) and stops after the last zone closes.
 - **Rooms with several loops:** a zone can follow another zone (same sensor, same thermostat).
 - Everything is set in a **setup wizard** on the device web page. One firmware for every installation.
-- Optional extras: open-window detection, optimum start, solar surplus, two-rate tariff, anti-seize for the pump and the actuators, floor temperature limit, link to ESPHome_Altherma.
+- Optional extras: open-window detection, optimum start, solar surplus, two-rate tariff, anti-seize for the pump and the actuators, floor temperature limit, link to ESPHome_Altherma, optional buffer tank.

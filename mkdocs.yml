@@ -72,6 +72,7 @@ plugins:
             Wiring: Ligações
             Replacing a DAEnetIP4: Trocar uma DAEnetIP4
             Configuration: Configuração
+            Buffer tank: Tanque
             Home Assistant: Home Assistant
             Updates: Atualizações
             Device web page: Página web da placa
@@ -88,6 +89,7 @@ nav:
   - Replacing a DAEnetIP4: denkovi.md
   - Home Assistant: home-assistant.md
   - Configuration: configuration.md
+  - Buffer tank: tank.md
   - Updates: updates.md
   - Device web page: web-page.md
   - Troubleshooting: troubleshooting.md

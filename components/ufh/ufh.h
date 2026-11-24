@@ -273,6 +273,31 @@ class UFHComponent : public Component
   float return_temp() const;
   float flow_delta() const;
   float outdoor_temp() const;
+  // Altherma UDP / HTTP link
+  bool altherma_udp_fresh() const;
+  const char *altherma_source() const;  // "udp" | "http" | "none" | "pick"
+  int altherma_age_s() const;           // seconds since last used reading, -1 if none
+  float compressor_freq() const;
+  bool heat_pump_fault() const;         // true only when UDP-fresh and fault ON
+  int heat_pump_fault_state() const;    // -1 unknown, 0 off, 1 on
+  void altherma_error_text(bool outdoor, char *buf, size_t len) const;
+  const char *altherma_provider() const { return x_.altherma_provider; }
+  void set_altherma_provider(const char *name);
+  // tank module
+  bool tank_enabled() const { return x_.opt_tank != 0; }
+  void set_tank_enabled(bool on);
+  float tank_temp() const;
+  bool tank_pump_on() const { return tank_pump_out_; }
+  bool tank_heater_on() const { return tank_heater_out_; }
+  bool tank_heater_manual() const { return heater_manual_on_; }
+  void set_tank_heater_manual(bool on);
+  bool compressor_zero_warn() const { return comp_zero_warn_; }
+  float tank_target() const { return x_.tank_target_x10 / 10.0f; }
+  float tank_cut() const { return x_.tank_cut_x10 / 10.0f; }
+  uint16_t comp_zero_min() const { return x_.comp_zero_min; }
+  void set_tank_target(float v);
+  void set_tank_cut(float v);
+  void set_comp_zero_min(uint16_t v);
   bool outdoor_comp() const { return x_.opt_outdoor; }
   void set_outdoor_comp(bool on);
   void ha_set_outdoor_temperature(float t);
@@ -349,6 +374,10 @@ class UFHComponent : public Component
 #endif
   void altherma_task_start_();
   static void altherma_task_(void *arg);
+  void udp_task_start_();
+  static void udp_task_(void *arg);
+  void udp_on_packet_(const uint8_t *data, size_t len);
+  void update_tank_(uint32_t now_ms);
 
   std::vector<output::BinaryOutput *> relays_;
   std::vector<UFHZoneClimate *> climates_;
@@ -460,7 +489,7 @@ class UFHComponent : public Component
   bool ow_scan_requested_{false};
 #endif
 
-  // Altherma link (background task)
+  // Altherma link (HTTP fallback, background task)
   volatile float alt_flow_{NAN};
   volatile float alt_return_{NAN};
   volatile uint32_t alt_ms_{0};
@@ -471,6 +500,42 @@ class UFHComponent : public Component
   char alt_url_return_[160]{};
   char alt_url_outdoor_[160]{};
   volatile float alt_outdoor_{NAN};
+  // UDP packet_transport receiver
+  static constexpr uint8_t MAX_ALT_SEEN = 8;
+  static constexpr uint32_t UDP_STALE_MS = 60000UL;
+  struct AltSeen {
+    char name[32];
+    uint32_t ms;
+    float lwt, ret, outdoor, freq, out_err, in_err;
+    int8_t fault;  // -1 unknown, 0 off, 1 on
+  };
+  AltSeen alt_seen_[MAX_ALT_SEEN]{};
+  uint8_t alt_seen_n_{0};
+  std::mutex alt_mtx_;
+  volatile float udp_flow_{NAN};
+  volatile float udp_return_{NAN};
+  volatile float udp_outdoor_{NAN};
+  volatile float udp_freq_{NAN};
+  volatile float udp_out_err_{NAN};
+  volatile float udp_in_err_{NAN};
+  volatile int8_t udp_fault_{-1};
+  volatile uint32_t udp_ms_{0};
+  bool udp_task_started_{false};
+  bool udp_wanted_{false};
+  // tank module
+  volatile float tank_temp_{NAN};
+  volatile uint32_t tank_temp_ms_{0};
+#ifdef USE_UFH_ONE_WIRE
+  uint64_t ow_tank_addr_{0};
+#endif
+  bool tank_pump_out_{false};
+  bool tank_heater_out_{false};
+  bool heater_manual_on_{false};
+  bool heater_auto_blocked_{false};  // user turned heater off during a fault
+  uint32_t heater_since_ms_{0};
+  uint32_t tank_cut_warn_ms_{0};
+  uint32_t comp_zero_since_ms_{0};
+  bool comp_zero_warn_{false};
 };
 
 extern UFHComponent *global_ufh;

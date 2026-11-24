@@ -169,6 +169,53 @@ number:
       sorting_group_id: group_main
       sorting_weight: 3
 
+
+  - platform: template
+    name: "Tank Target"
+    icon: mdi:thermometer
+    unit_of_measurement: "°C"
+    mode: box
+    min_value: 30
+    max_value: 44
+    step: 0.5
+    update_interval: 5s
+    lambda: return id(ufh_ctl).tank_target();
+    set_action:
+      - lambda: id(ufh_ctl).set_tank_target(x);
+    web_server:
+      sorting_group_id: group_tank
+      sorting_weight: 6
+  - platform: template
+    name: "Tank Cutoff"
+    icon: mdi:thermometer-alert
+    unit_of_measurement: "°C"
+    mode: box
+    min_value: 35
+    max_value: 45
+    step: 0.5
+    update_interval: 5s
+    lambda: return id(ufh_ctl).tank_cut();
+    set_action:
+      - lambda: id(ufh_ctl).set_tank_cut(x);
+    web_server:
+      sorting_group_id: group_tank
+      sorting_weight: 7
+  - platform: template
+    name: "Compressor Zero Delay"
+    icon: mdi:timer-alert-outline
+    unit_of_measurement: min
+    mode: box
+    min_value: 5
+    max_value: 120
+    step: 1
+    update_interval: 5s
+    lambda: return id(ufh_ctl).comp_zero_min();
+    set_action:
+      - lambda: id(ufh_ctl).set_comp_zero_min((uint16_t) x);
+    web_server:
+      sorting_group_id: group_tank
+      sorting_weight: 8
+
 switch:
   # everything on / off (summer): off = house mode Summer (zones and pump stopped, the weekly pump
   # anti-seize still runs); on = back to the house mode from before
@@ -200,6 +247,33 @@ switch:
       sorting_group_id: group_main
       sorting_weight: 4
 
+
+  - platform: template
+    name: "Tank Module"
+    icon: mdi:storage-tank
+    restore_mode: DISABLED
+    entity_category: config
+    lambda: return id(ufh_ctl).tank_enabled();
+    turn_on_action:
+      - lambda: id(ufh_ctl).set_tank_enabled(true);
+    turn_off_action:
+      - lambda: id(ufh_ctl).set_tank_enabled(false);
+    web_server:
+      sorting_group_id: group_tank
+      sorting_weight: 9
+  - platform: template
+    name: "Manual Heater"
+    icon: mdi:radiator
+    restore_mode: DISABLED
+    lambda: return id(ufh_ctl).tank_heater_manual();
+    turn_on_action:
+      - lambda: id(ufh_ctl).set_tank_heater_manual(true);
+    turn_off_action:
+      - lambda: id(ufh_ctl).set_tank_heater_manual(false);
+    web_server:
+      sorting_group_id: group_tank
+      sorting_weight: 5
+
 binary_sensor:
   - platform: template
     name: "Pump"
@@ -224,6 +298,43 @@ binary_sensor:
     web_server:
       sorting_group_id: group_house
 
+
+  - platform: template
+    name: "Heat Pump Fault"
+    device_class: problem
+    icon: mdi:alert
+    lambda: |-
+      int s = id(ufh_ctl).heat_pump_fault_state();
+      if (s < 0) return {};
+      return s == 1;
+    web_server:
+      sorting_group_id: group_altherma
+      sorting_weight: 1
+  - platform: template
+    name: "Compressor Stopped Warning"
+    device_class: problem
+    icon: mdi:engine-off
+    lambda: return id(ufh_ctl).compressor_zero_warn();
+    web_server:
+      sorting_group_id: group_altherma
+      sorting_weight: 2
+  - platform: template
+    name: "Tank Pump"
+    device_class: running
+    icon: mdi:pump
+    lambda: return id(ufh_ctl).tank_pump_on();
+    web_server:
+      sorting_group_id: group_tank
+      sorting_weight: 2
+  - platform: template
+    name: "Emergency Heater"
+    device_class: heat
+    icon: mdi:radiator
+    lambda: return id(ufh_ctl).tank_heater_on();
+    web_server:
+      sorting_group_id: group_tank
+      sorting_weight: 3
+
 text_sensor:
   - platform: template
     name: "Warnings"
@@ -241,6 +352,40 @@ text_sensor:
     lambda: return id(ufh_ctl).active_zones_text();
     web_server:
       sorting_group_id: group_house
+
+
+  - platform: template
+    name: "Altherma Link"
+    icon: mdi:lan
+    update_interval: 5s
+    lambda: |-
+      const char *s = id(ufh_ctl).altherma_source();
+      return std::string(s);
+    web_server:
+      sorting_group_id: group_altherma
+      sorting_weight: 5
+  - platform: template
+    name: "Outdoor Error Code"
+    icon: mdi:alert-circle-outline
+    update_interval: 15s
+    lambda: |-
+      char b[8]{};
+      id(ufh_ctl).altherma_error_text(true, b, sizeof(b));
+      return std::string(b[0] ? b : "-");
+    web_server:
+      sorting_group_id: group_altherma
+      sorting_weight: 6
+  - platform: template
+    name: "Indoor Error Code"
+    icon: mdi:alert-circle-outline
+    update_interval: 15s
+    lambda: |-
+      char b[8]{};
+      id(ufh_ctl).altherma_error_text(false, b, sizeof(b));
+      return std::string(b[0] ? b : "-");
+    web_server:
+      sorting_group_id: group_altherma
+      sorting_weight: 7
 
 sensor:
   # heat pump water (ESPHome_Altherma link) and outdoor temperature
@@ -315,6 +460,31 @@ sensor:
     web_server:
       sorting_group_id: group_pump
       sorting_weight: 9
+
+
+  - platform: template
+    name: "Compressor Frequency"
+    unit_of_measurement: Hz
+    state_class: measurement
+    accuracy_decimals: 0
+    icon: mdi:sine-wave
+    update_interval: 15s
+    lambda: return id(ufh_ctl).compressor_freq();
+    web_server:
+      sorting_group_id: group_altherma
+      sorting_weight: 4
+  - platform: template
+    name: "Tank Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    icon: mdi:thermometer-water
+    update_interval: 15s
+    lambda: return id(ufh_ctl).tank_temp();
+    web_server:
+      sorting_group_id: group_tank
+      sorting_weight: 1
 
 button:
   - platform: template

@@ -67,6 +67,12 @@ web_server:
     - id: group_house
       name: "House"
       sorting_weight: 5
+    - id: group_tank
+      name: "Tank"
+      sorting_weight: 6
+    - id: group_altherma
+      name: "Altherma"
+      sorting_weight: 7
     - id: group_stats
       name: "Statistics"
       sorting_weight: 40

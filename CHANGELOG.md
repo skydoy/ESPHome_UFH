@@ -5,6 +5,30 @@ All notable changes to the firmware and installer. Format:
 
 ## [Unreleased]
 
+## [0.6.0] - Unreleased
+
+### Added
+- Custom UDP `packet_transport` receiver on port 18511: the UFH lists Altherma boards
+  heard on the LAN and you pick one (name stored in NVS). No encryption, no recompile,
+  works from the web installer. Values older than 60 s are treated as unknown.
+- HTTP fallback from 0.5.3: if UDP is quiet for 60 s and an HTTP address is set, flow,
+  return and outdoor temperatures come from the Altherma web_server as before. The
+  emergency heater never uses HTTP or stale UDP to switch on by itself.
+- Heat-pump fault and error codes (E7, U3, …) decoded from the raw Altherma bytes;
+  compressor frequency; “Altherma Link” text (UDP / HTTP / none).
+- Optional buffer-tank module: new tank pump (relay 13) and emergency heater (relay 14),
+  DS18B20 on the existing GPIO11 bus. Auto heater only when `altherma_fault` is on;
+  target 40 °C, 3 °C hysteresis, software cutoff 45 °C, no time limit. A mechanical
+  thermostat in series is required (no mixing valve). The tank pump starts whenever a
+  zone calls for heat, even with a cold tank. If the compressor sits at 0 with heat
+  demand, the UFH warns after a configurable 15 min and you turn the heater on by hand.
+- Configurator and web panel (PT/EN) for the board list, tank options, source/age/fault
+  and the manual heater switch. Home Assistant entities in the Tank and Altherma groups.
+
+### Changed
+- Firmware version 0.6.0. Existing behaviour is unchanged when the tank module is off
+  and until an Altherma board is chosen.
+
 ## [0.5.3] - 2026-11-24
 ### Fixed
 - Holiday frost protection (default 7 °C) also applies to zones left Off. Summer still has
@@ -168,6 +192,7 @@ All notable changes to the firmware and installer. Format:
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
 [Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.3...HEAD
+[0.6.0]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.3...HEAD
 [0.5.3]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.3
 [0.5.2]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.2
 [0.5.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.1

@@ -39,8 +39,8 @@
 })();
 
 (function () {
-  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16", "Main Thermostat": "Termóstato geral", "Pump Start Delay": "Atraso a ligar", "Pump Stop Delay": "Atraso a desligar", "Heat Pump Min On Time": "Bomba de calor: mínimo ligada", "Heat Pump Min Off Time": "Bomba de calor: mínimo desligada", "Boost Temperature": "Boost: graus a mais", "Boost Duration": "Boost: duração", "Outdoor Compensation": "Compensação exterior", "Flow Temperature": "Água de ida", "Return Temperature": "Água de retorno", "Flow Return Difference": "Diferença ida/retorno", "Outdoor Temperature": "Temperatura exterior", "Heating": "Aquecimento"};
-  var GROUP_PT = {"Pump": "Bomba", "Main": "Geral", "Zones": "Zonas", "House": "Casa", "Statistics": "Estatísticas", "Maintenance": "Manutenção", "Configuration": "Configuração", "Diagnostic": "Diagnóstico", "Undefined": "Outros"};
+  var ENT_PT = {"House Mode": "Modo da casa", "Home": "Casa", "Away": "Ausente", "Holiday": "Férias", "Summer": "Verão", "Pump Mode": "Modo da bomba", "Auto": "Automático", "On": "Ligada", "Off": "Desligada", "Pump": "Bomba", "Heat Demand": "Pedido de calor", "Problem": "Problema", "Warnings": "Avisos", "Active Zones": "Zonas ativas", "All Zones Off": "Desligar todas as zonas", "Pump Runtime Today": "Bomba: horas hoje", "Pump Runtime Total": "Bomba: horas total", "Status LED": "LED de estado", "Firmware Update": "Atualização do firmware", "Auto Update": "Atualização automática", "Update Status": "Estado da atualização", "Check for Update": "Verificar atualizações", "Install Update": "Instalar atualização", "Latest Version": "Última versão", "Update Available": "Atualização disponível", "Firmware Version": "Versão do firmware", "ESPHome Version": "Versão do ESPHome", "Board": "Placa", "Uptime": "Tempo ligado", "Reset Reason": "Motivo do reinício", "IP Address": "Endereço IP", "MAC Address": "Endereço MAC", "Restart": "Reiniciar", "Restart (Safe Mode)": "Reiniciar (modo seguro)", "Zone 1": "Zona 1", "Zone 2": "Zona 2", "Zone 3": "Zona 3", "Zone 4": "Zona 4", "Zone 5": "Zona 5", "Zone 6": "Zona 6", "Zone 7": "Zona 7", "Zone 8": "Zona 8", "Zone 9": "Zona 9", "Zone 10": "Zona 10", "Zone 11": "Zona 11", "Zone 12": "Zona 12", "Zone 13": "Zona 13", "Zone 14": "Zona 14", "Zone 15": "Zona 15", "Zone 16": "Zona 16", "Main Thermostat": "Termóstato geral", "Pump Start Delay": "Atraso a ligar", "Pump Stop Delay": "Atraso a desligar", "Heat Pump Min On Time": "Bomba de calor: mínimo ligada", "Heat Pump Min Off Time": "Bomba de calor: mínimo desligada", "Boost Temperature": "Boost: graus a mais", "Boost Duration": "Boost: duração", "Outdoor Compensation": "Compensação exterior", "Flow Temperature": "Água de ida", "Return Temperature": "Água de retorno", "Flow Return Difference": "Diferença ida/retorno", "Outdoor Temperature": "Temperatura exterior", "Heating": "Aquecimento", "Tank Temperature": "Temperatura do tanque", "Tank Pump": "Bomba do tanque", "Emergency Heater": "Resistência de emergência", "Manual Heater": "Resistência manual", "Heat Pump Fault": "Avaria da bomba de calor", "Outdoor Error Code": "Erro exterior", "Indoor Error Code": "Erro interior", "Compressor Frequency": "Frequência do compressor", "Altherma Link": "Ligação Altherma", "Compressor Stopped Warning": "Aviso: compressor parado", "Tank Target": "Alvo do tanque", "Tank Cutoff": "Corte do tanque", "Compressor Zero Delay": "Atraso aviso compressor 0", "Tank Module": "Módulo do tanque"};
+  var GROUP_PT = {"Pump": "Bomba", "Main": "Geral", "Zones": "Zonas", "House": "Casa", "Statistics": "Estatísticas", "Maintenance": "Manutenção", "Tank": "Tanque", "Altherma": "Altherma", "Configuration": "Configuração", "Diagnostic": "Diagnóstico", "Undefined": "Outros"};
   var KEY = 'esphome_ufh_lang', lang;
   try { lang = localStorage.getItem(KEY); } catch (e) {}
   if (lang !== 'pt' && lang !== 'en') lang = /^pt/i.test(navigator.language || '') ? 'pt' : 'en';
@@ -378,7 +378,8 @@
       // BTHome needs Bluetooth: hidden on boards without a radio (ESP32-P4)
       return s[0] !== 4 || !cfg || !cfg.features || cfg.features.ble !== false; }); };
   var ROLES = function () { return [[0, T('Livre', 'Unused')], [1, T('Bomba circuladora', 'Circulation pump')],
-    [2, T('Pedido de calor (bomba de calor / caldeira)', 'Heat demand (heat pump / boiler)')], [3, T('Bomba + pedido de calor', 'Pump + heat demand')]]; };
+    [2, T('Pedido de calor (bomba de calor / caldeira)', 'Heat demand (heat pump / boiler)')], [3, T('Bomba + pedido de calor', 'Pump + heat demand')],
+    [4, T('Bomba do tanque', 'Tank pump')], [5, T('Resistência de emergência', 'Emergency heater')]]; };
   var DAYS = function () { return L() === 'pt' ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; };
   var HOUSE = function () { return [T('Casa', 'Home'), T('Ausente', 'Away'), T('Férias', 'Holiday'), T('Verão', 'Summer')]; };
 
@@ -430,7 +431,11 @@
   function warnPT(w) {
     if (L() !== 'pt') return w;
     return w.replace(/^setup(; )?/, 'por configurar$1').replace(/: sensor/g, ': sensor sem dados').replace(/: battery/g, ': pilha fraca')
-      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace(/: floor probe/g, ': sonda do chão').replace(/: device offline/g, ': aparelho sem resposta').replace('pump on, no zone open', 'bomba ligada sem zonas abertas').replace(/flow\/return dT ([\d.-]+) C/, 'diferença ida/retorno $1 °C (caudal?)').replace(/Altherma link: HTTP (\d+)/, 'Ligação Altherma: HTTP $1').replace('Altherma link: no response', 'Ligação Altherma: sem resposta').replace('Altherma link: bad response', 'Ligação Altherma: resposta inválida');
+      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace(/: floor probe/g, ': sonda do chão').replace(/: device offline/g, ': aparelho sem resposta').replace('pump on, no zone open', 'bomba ligada sem zonas abertas').replace(/flow\/return dT ([\d.-]+) C/, 'diferença ida/retorno $1 °C (caudal?)').replace(/Altherma link: HTTP (\d+)/, 'Ligação Altherma: HTTP $1').replace('Altherma link: no response', 'Ligação Altherma: sem resposta').replace('Altherma link: bad response', 'Ligação Altherma: resposta inválida')
+        .replace('Altherma: pick a board', 'Altherma: escolhe uma placa').replace(/heat pump fault(?: ([A-Z0-9]{2}))?/g, function (_, c) { return 'avaria da bomba de calor' + (c ? ' ' + c : ''); })
+        .replace('compressor 0 with heat demand: turn the heater on by hand', 'compressor a 0 com pedido de calor: liga a resistência à mão')
+        .replace('tank over 45 C: heater cut off', 'tanque acima de 45 °C: resistência cortada')
+        .replace('tank probe', 'sonda do tanque');
   }
 
   // ---------- live diagram ----------
@@ -459,8 +464,9 @@
     o.push('<g transform="translate(6,6)"><rect width="30" height="52" rx="6" fill="' + (hp ? '#fff1e6' : '#f1f3f5') + '" stroke="' + (hp ? '#ff7a1a' : '#9aa3ad') + '" stroke-width="2"/>' +
       (hp ? '<path d="M15 14c4 5 7 8 7 13a7 7 0 0 1-14 0c0-3 2-5 3-7 0 3 1 4 3 4-1-4 0-7 1-10z" fill="#ff7a1a"/>' : '<circle cx="15" cy="26" r="7" fill="none" stroke="#9aa3ad" stroke-width="2"/>') +
       '<text x="15" y="47" text-anchor="middle" font-size="8" fill="#666">' + (hasDemand ? T('BC', 'HP') : '–') + '</text></g>');
-    if (st.altherma && (st.altherma.flow != null || st.altherma.ret != null))
+    if (st.altherma) {
       o.push('<text x="95" y="84" text-anchor="middle" font-size="11" class="lbl">' + fmt(st.altherma.flow) + '° / ' + fmt(st.altherma.ret) + '°</text>');
+    }
     // zones: pipes first (behind), then the boxes
     var pos = zs.map(function (z, i) { var c = i % cols, r = Math.floor(i / cols); return [left + c * (zw + gap), 64 + r * (zh + 34)]; });
     zs.forEach(function (z, i) {
@@ -512,11 +518,31 @@
       (st.warnings && st.warnings !== 'setup' ? ' <span class="chip warn">⚠ ' + esc(warnPT(st.warnings)) + '</span>' : '') + '</h3>';
     var setup = !st.configured ? '<p><b>' + T('Primeira utilização: configura a instalação.', 'First run: set up your installation.') +
       '</b> ' + T('As zonas ficam desligadas até terminares o assistente.', 'Zones stay off until you finish the wizard.') + '</p>' : '';
-    panel.innerHTML = head + setup + diagram(st) +
+    var meta = '';
+    if (st.altherma) {
+      var srcMap = {udp: 'UDP', http: 'HTTP', pick: T('escolhe a placa', 'pick a board'), none: '—'};
+      var src = srcMap[st.altherma.src] || st.altherma.src || '—';
+      var age = (st.altherma.age != null && st.altherma.age >= 0) ? (st.altherma.age + ' s') : '—';
+      var err = st.altherma.err_out || st.altherma.err_in || '';
+      var fault = st.altherma.fault === 1 ? ('⚠ ' + (err || T('avaria', 'fault'))) : (st.altherma.fault === 0 ? T('sem avaria', 'no fault') : '—');
+      var pr = st.altherma.provider ? esc(st.altherma.provider) : T('nenhuma placa escolhida', 'no board chosen');
+      meta += '<span class="chip">Altherma · ' + pr + ' · ' + src + ' · ' + age + ' · ' + fault +
+        ' · ' + fmt(st.altherma.flow) + '° / ' + fmt(st.altherma.ret) + '°</span>';
+    }
+    if (st.tank) {
+      meta += '<span class="chip">' + T('Tanque', 'Tank') + ' · ' + fmt(st.tank.t) + ' °C · ' +
+        T('alvo', 'target') + ' ' + fmt(st.tank.target, 0) + ' · ' +
+        (st.tank.pump ? T('bomba ligada', 'pump on') : T('bomba parada', 'pump off')) + ' · ' +
+        (st.tank.heater ? T('resistência ligada', 'heater on') : T('resistência desligada', 'heater off')) + '</span>';
+    }
+    if (st.altherma && st.altherma.comp_zero)
+      meta += '<span class="chip warn">⚠ ' + T('compressor a 0: liga a resistência à mão', 'compressor at 0: turn the heater on by hand') + '</span>';
+    panel.innerHTML = head + setup + (meta ? '<div class="bar">' + meta + '</div>' : '') + diagram(st) +
       '<div class="bar"><button class="pri" data-a="wizard">' + (st.configured ? T('⚙️ Definições', '⚙️ Settings') : T('▶ Começar a configuração', '▶ Start setup')) + '</button>' +
       (st.configured ? '<button data-a="sched">🗓️ ' + T('Horários e temperaturas', 'Schedules & temperatures') + '</button>' : '') +
       '<button data-a="balance">📊 ' + T('Equilíbrio', 'Balance') + '</button>' +
       '<button data-a="log">📜 ' + T('Registo', 'Log') + '</button>' +
+      (st.tank ? '<button data-a="heater">' + (st.tank.manual ? T('Resistência manual: ligada', 'Manual heater: on') : T('Resistência manual: desligada', 'Manual heater: off')) + '</button>' : '') +
       (st.configured ? '<button data-a="heat" style="margin-left:auto">' + (st.house === 3 ? '▶ ' + T('Ligar aquecimento', 'Turn heating on') : '⏻ ' + T('Desligar tudo (verão)', 'Turn all off (summer)')) + '</button>' : '') + '</div>';
   }
 
@@ -600,6 +626,10 @@
       W.opt = W.opt || {};
       ['pump_exercise', 'valve_exercise', 'window', 'optimum_start', 'pv', 'tariff', 'altherma'].forEach(function (k) { W.opt[k] = chk(m, '#o_' + k); });
       W.extra = W.extra || {}; W.extra.stop = chk(m, '#o_stop');
+      W.tank = W.tank || {};
+      W.tank.enabled = chk(m, '#o_tank');
+      W.tank.target = +val(m, '#ttgt'); W.tank.cut = +val(m, '#tcut');
+      W.tank.comp_zero_min = +val(m, '#tcz'); W.tank.probe = val(m, '#tprobe') || '';
       W.pump_start_s = +val(m, '#ps'); W.pump_stop_s = +val(m, '#pe');
       W.stale_min = Math.round(+val(m, '#stale') * 60);
       W.holiday = +val(m, '#hol');
@@ -609,6 +639,8 @@
       W.tariff.s2 = timeToSlot(val(m, '#ts2')); W.tariff.e2 = endSlot(val(m, '#ts2'), val(m, '#te2'));
       W.tariff.boost = +val(m, '#tb'); W.tariff.cut = +val(m, '#tc');
       W.altherma.host = val(m, '#ah').trim(); W.altherma.flow = val(m, '#af').trim(); W.altherma.ret = val(m, '#ar').trim();
+      var typed = val(m, '#ap_typed'); var sel = val(m, '#ap');
+      W.altherma.provider = (typed && typed.trim()) ? typed.trim() : (sel ? sel.trim() : (W.altherma.provider || ''));
       W.extra = W.extra || {}; var ao = m.querySelector('#ao'); if (ao) W.extra.alt_outdoor = ao.value.trim();
       W.mqtt.host = val(m, '#mh').trim(); W.mqtt.port = +val(m, '#mp') || 1883; W.mqtt.user = val(m, '#mu').trim(); W.mqtt.pass = val(m, '#mw');
     }
@@ -758,10 +790,36 @@
         '<div class="row"><div><label>' + T('Vazio 1', 'Cheap 1') + '</label><input type="time" step="600" id="ts1" value="' + slotToTime(W.tariff.s1) + '"> – <input type="time" step="600" id="te1" value="' + slotToTime(W.tariff.e1) + '"></div>' +
         '<div><label>' + T('Vazio 2', 'Cheap 2') + '</label><input type="time" step="600" id="ts2" value="' + slotToTime(W.tariff.s2) + '"> – <input type="time" step="600" id="te2" value="' + slotToTime(W.tariff.e2) + '"></div>' +
         '<div><label>+°C</label><input type="number" step="0.5" id="tb" value="' + W.tariff.boost + '"></div><div><label>−°C</label><input type="number" step="0.5" id="tc" value="' + W.tariff.cut + '"></div></div>');
-      h += box('altherma', T('Ligação ao ESPHome_Altherma', 'ESPHome_Altherma link'), T('Mostra a ida e o retorno da bomba de calor no diagrama (lido da página web da outra placa). Os caminhos por omissão são os nomes exactos dos sensores da ESPHome_Altherma 2.6.3 numa ERLA D.', 'Shows the heat pump flow and return in the diagram (read from the other board\'s web page). The default paths are the exact ESPHome_Altherma 2.6.3 entity names on an ERLA D unit.'),
-        '<div class="row"><div style="flex:1"><label>' + T('Endereço (IP ou nome)', 'Address (IP or name)') + '</label><input type="text" id="ah" value="' + esc(W.altherma.host) + '" placeholder="192.168.1.60"></div></div>' +
+      var seen = (W.altherma && W.altherma.seen) || [];
+      var curP = (W.altherma && W.altherma.provider) || '';
+      var names = seen.map(function (s) { return s.name || s; }).filter(Boolean);
+      if (curP && names.indexOf(curP) < 0) names.unshift(curP);
+      var optP = '<option value="">' + T('— escolhe uma placa —', '— pick a board —') + '</option>' +
+        names.map(function (n) { return '<option value="' + esc(n) + '"' + (n === curP ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('');
+      h += box('altherma', T('Ligação ao ESPHome_Altherma', 'ESPHome_Altherma link'), T('A UFH escuta na porta UDP 18511 as placas Altherma na rede (sem encriptação) e mostra-as na lista. Escolhe uma. Se o UDP ficar 60 s sem dados, as temperaturas vêm por HTTP (põe o IP só para essa reserva).', 'The UFH listens on UDP port 18511 for Altherma boards on the network (no encryption) and lists them. Pick one. If UDP is quiet for 60 s, temperatures fall back to HTTP (set the IP only for that fallback).'),
+        '<div class="row"><div style="flex:1"><label>' + T('Placa Altherma', 'Altherma board') + '</label><select id="ap" class="w">' + optP + '</select></div>' +
+        '<div><label>&nbsp;</label><button type="button" data-refresh-alt="1">' + T('Atualizar lista', 'Refresh list') + '</button></div></div>' +
+        (names.length ? '' : '<div class="hint">' + T('Ainda não apareceu nenhuma placa. Confirma que o pacote UDP está no YAML da Altherma e que ambas estão no mesmo switch. Podes escrever o nome (ex.: esphome-altherma-83545c) no campo seguinte.', 'No board has shown up yet. Check that the UDP package is in the Altherma YAML and that both boards are on the same switch. You can type the name (e.g. esphome-altherma-83545c) below.') + '</div>') +
+        '<div class="row"><div style="flex:1"><label>' + T('Nome (se não estiver na lista)', 'Name (if it is not in the list)') + '</label><input type="text" id="ap_typed" data-alt-typed="1" value="' + (curP && names.indexOf(curP) < 0 ? esc(curP) : '') + '" placeholder="esphome-altherma-83545c"></div></div>' +
+        '<div class="hint">' + T('Reserva HTTP (opcional): se o UDP falhar, a UFH lê a página web da outra placa. Os caminhos por omissão são os nomes exactos da ESPHome_Altherma 2.6.3 numa ERLA D.', 'HTTP fallback (optional): if UDP fails, the UFH reads the other board\'s web page. Defaults are the exact ESPHome_Altherma 2.6.3 entity names on an ERLA D unit.') + '</div>' +
+        '<div class="row"><div style="flex:1"><label>' + T('Endereço HTTP (IP ou nome)', 'HTTP address (IP or name)') + '</label><input type="text" id="ah" value="' + esc(W.altherma.host) + '" placeholder="192.168.1.60"></div></div>' +
         '<div class="row"><div style="flex:1"><label>' + T('Ida', 'Flow') + '</label><input type="text" id="af" value="' + esc(W.altherma.flow) + '"></div><div style="flex:1"><label>' + T('Retorno', 'Return') + '</label><input type="text" id="ar" value="' + esc(W.altherma.ret) + '"></div></div>' +
         '<div class="row"><div style="flex:1"><label>' + T('Exterior (para a compensação exterior)', 'Outdoor (for outdoor compensation)') + '</label><input type="text" id="ao" value="' + esc((W.extra || {}).alt_outdoor || '') + '"></div></div>');
+      var tk = W.tank || {}; o.tank = !!tk.enabled;
+      var probes = (cfg && cfg.ow) ? cfg.ow : ((typeof state === 'object' && state && state.ow) ? state.ow : []);
+      var probeOpts = '<option value="">' + T('— sonda do tanque —', '— tank probe —') + '</option>' +
+        (probes || []).map(function (o) {
+          var a = o.a || o;
+          return '<option value="' + esc(a) + '"' + (a === (tk.probe || '') ? ' selected' : '') + '>' + esc(a) + (o.t != null ? ' (' + fmt(o.t) + ' °C)' : '') + '</option>';
+        }).join('');
+      if (tk.probe && !(probes || []).some(function (o) { return (o.a || o) === tk.probe; }))
+        probeOpts += '<option value="' + esc(tk.probe) + '" selected>' + esc(tk.probe) + '</option>';
+      h += box('tank', T('Módulo do tanque (opcional)', 'Buffer-tank module (optional)'), T('Bomba nova no relé 13, resistência no 14, sonda DS18B20 no meio do tanque (mesmo barramento GPIO11). Sem válvula misturadora: alvo 40 °C, corte 45 °C. A resistência só entra sozinha com avaria da bomba de calor (altherma_fault). Tem de haver um termóstato mecânico em série. A bomba arranca sempre que uma zona pede calor, mesmo com o tanque frio.', 'New pump on relay 13, heater on relay 14, DS18B20 in the middle of the tank (same GPIO11 bus). No mixing valve: target 40 °C, cutoff 45 °C. The heater only comes on by itself when the heat pump reports a fault (altherma_fault). A mechanical thermostat in series is required. The pump starts whenever a zone calls for heat, even with a cold tank.'),
+        '<div class="row"><div style="flex:1"><label>' + T('Sonda do tanque', 'Tank probe') + '</label><select id="tprobe" class="w">' + probeOpts + '</select></div></div>' +
+        '<div class="row"><div><label>' + T('Alvo °C', 'Target °C') + '</label><input type="number" step="0.5" min="30" max="44" id="ttgt" value="' + (tk.target != null ? tk.target : 40) + '"></div>' +
+        '<div><label>' + T('Corte °C', 'Cutoff °C') + '</label><input type="number" step="0.5" min="35" max="45" id="tcut" value="' + (tk.cut != null ? tk.cut : 45) + '"></div>' +
+        '<div><label>' + T('Aviso compressor a 0 (min)', 'Compressor-0 warning (min)') + '</label><input type="number" min="5" max="120" id="tcz" value="' + (tk.comp_zero_min != null ? tk.comp_zero_min : 15) + '"></div></div>' +
+        '<div class="hint">' + T('Se o compressor estiver a 0 com pedido de calor, a UFH avisa e és tu que ligas a resistência à mão (botão no painel). Sem limite de tempo; o corte a 45 °C vale sempre.', 'If the compressor sits at 0 with heat demand, the UFH warns you and you turn the heater on by hand (button on the panel). No time limit; the 45 °C cutoff always applies.') + '</div>');
       h += '<div class="opt"><b>' + T('Broker MQTT (só se usares MQTT)', 'MQTT broker (only if you use MQTT)') + '</b><div class="row">' +
         '<div style="flex:2"><label>' + T('Endereço', 'Host') + '</label><input type="text" id="mh" value="' + esc(W.mqtt.host) + '" placeholder="192.168.1.10"></div>' +
         '<div><label>' + T('Porta', 'Port') + '</label><input type="number" id="mp" value="' + (W.mqtt.port || 1883) + '"></div>' +
@@ -794,6 +852,18 @@
     m.addEventListener('click', function (e) {
       var t = e.target;
       if (!t || !t.getAttribute) return;
+      if (t.getAttribute('data-refresh-alt')) {
+        collect(m);
+        getJSON('/ufh/config').then(function (c) {
+          W.altherma = W.altherma || {};
+          if (c.altherma) {
+            W.altherma.seen = c.altherma.seen || [];
+            if (c.altherma.provider && !W.altherma.provider) W.altherma.provider = c.altherma.provider;
+          }
+          showStep();
+        }).catch(function (er) { alert(er.message); });
+        return;
+      }
       var cp = t.getAttribute('data-copy');
       if (cp) {
         ['a', 'b', 'c', 'd'].forEach(function (s) { var v = m.querySelector('#' + cp + '0' + s).value; for (var k = 1; k < 5; k++) m.querySelector('#' + cp + k + s).value = v; });
@@ -1010,6 +1080,9 @@
           if (w === 'sched') openSched();
           if (w === 'balance') openBalance();
           if (w === 'log') openLog();
+          if (w === 'heater' && state) {
+            postJSON('/ufh/config', {tank: {manual: !(state.tank && state.tank.manual)}}).then(function () { setTimeout(poll, 400); }).catch(function (er) { alert(er.message); });
+          }
           if (w === 'heat' && state) {
             var off = state.house !== 3;
             if (off && !confirm(T('Desligar o aquecimento? Zonas e bomba param (modo Verão). O anti-bloqueio semanal da bomba continua.',
