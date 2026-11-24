@@ -128,3 +128,33 @@
   height: 14px !important;
   flex: none;
 }
+
+/* Narrow screens: hide the truncated page title; logo, pills and search stay */
+@media (max-width: 44.8em) {
+  .md-header__title {
+    display: none;
+  }
+  .md-header__lang .lang-pill {
+    padding: .25rem .5rem;
+  }
+}
+
+/* House modes / YAML: scroll horizontally instead of clipping */
+.md-content__inner,
+.md-typeset {
+  min-width: 0;
+}
+.md-typeset pre,
+.md-typeset .highlight,
+.md-typeset .highlight pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Long HTTP paths in inline <code> (tables, troubleshooting) wrap cleanly */
+.md-typeset :not(pre) > code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+}

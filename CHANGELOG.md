@@ -27,6 +27,8 @@ All notable changes to the firmware and installer. Format:
 - Portuguese docs footer is localised (“Projeto comunitário independente”). The floor
   probe is called “sonda do chão” throughout the Portuguese docs and the web panel
   (Home Assistant entity object_ids are unchanged).
+- Docs on a narrow screen no longer truncate the header title; the House modes YAML
+  example scrolls horizontally; long HTTP paths in `code` wrap instead of overflowing.
 
 ### Changed
 - Documentation can be published on its own (`publish-docs.yml`) without rebuilding or
