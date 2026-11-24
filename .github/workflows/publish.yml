@@ -12,9 +12,10 @@ concurrency:
   cancel-in-progress: true
 jobs:
   meta:
-    # Decides whether this run is a RELEASE. Automatic: a push to main whose project_version
-    # (devices/ufh-p4-poe.yaml) has no v<version> tag yet is released by this same run (tag,
-    # GitHub Release, Pages, stable). Pushing a v* tag by hand still works too.
+    # Decides whether this run is a RELEASE. Only a push of a v* tag (or a GitHub
+    # Release published event) sets release=true. A push to main or a manual
+    # workflow_dispatch only builds artifacts; it never creates a tag or a
+    # GitHub Release, and never deploys firmware or manifests to Pages.
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.v.outputs.version }}
@@ -26,14 +27,8 @@ jobs:
         run: |
           ver=$(grep -oP '^\s*project_version: "\K[^"]+' devices/ufh-p4-poe.yaml)
           rel=false
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          if [[ "$GITHUB_REF" == refs/tags/v* || "$GITHUB_EVENT_NAME" == release ]]; then
             rel=true
-          elif [[ "$GITHUB_EVENT_NAME" == push && "$GITHUB_REF" == refs/heads/main ]]; then
-            if git ls-remote --exit-code --tags origin "refs/tags/v$ver" >/dev/null; then
-              echo "v$ver already released: build only"
-            else
-              rel=true; echo "New version v$ver: releasing"
-            fi
           fi
           echo "version=$ver" >> "$GITHUB_OUTPUT"
           echo "release=$rel" >> "$GITHUB_OUTPUT"
@@ -124,8 +119,8 @@ jobs:
         with:
           path: site
   deploy:
-    # Publish the installer, OTA manifests and checksums only for a release (a v* tag, or
-    # an automatic release when project_version has no tag yet). A manual workflow_dispatch
+    # Publish the installer, OTA manifests and checksums only for a release (a v* tag,
+    # or a GitHub Release published event). A push to main or a manual workflow_dispatch
     # still builds the images as artifacts, but must not publish them to Pages: use
     # publish-docs.yml to update documentation without touching live firmware.
     if: needs.meta.outputs.release == 'true'
@@ -191,7 +186,8 @@ jobs:
             gh release edit "$TAG" --title "$TAG" --notes-file notes.md
             gh release upload "$TAG" assets/* --clobber
           else
-            # Creates the tag on this commit when it does not exist yet (automatic release).
+            # The v* tag already exists (it is what started this run). This only creates
+            # the GitHub Release with notes and firmware images.
             gh release create "$TAG" assets/* --title "$TAG" --notes-file notes.md --target "$GITHUB_SHA"
           fi
   stable:

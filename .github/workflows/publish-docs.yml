@@ -2,8 +2,8 @@ name: Publish documentation
 
 # Docs only. Keeps the firmware binaries, OTA manifests, and installer HTML
 # that are already on GitHub Pages, then adds the MkDocs site at /docs/.
-# A firmware release still goes through publish.yml on a v* tag (or an automatic
-# release). This workflow does not build firmware, create a tag, or move stable.
+# A firmware release still goes through publish.yml only when a v* tag is pushed.
+# This workflow does not build firmware, create a tag, or move stable.
 
 on:
   push:
@@ -29,9 +29,10 @@ concurrency:
 jobs:
   check:
     # GitHub Pages keeps serving the FIRST deployment of a commit: a second deployment of the
-    # same commit reports success but is not served. When this commit is (or is about to be)
-    # a release, publish.yml deploys it with the new firmware and the docs, so skip here;
-    # otherwise this docs-only deployment would hide the release installer.
+    # same commit reports success but is not served. If this commit is later tagged as a
+    # release, publish.yml must be the first (and served) deployment, with the new firmware
+    # and the docs. Skip here when the current project_version is untagged, or when this
+    # SHA is already the release, so a docs-only deployment cannot hide the installer.
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     outputs:
@@ -43,7 +44,7 @@ jobs:
           v=$(grep -oP '^\s*project_version: "\K[^"]+' devices/ufh-p4-poe.yaml)
           tag_sha=$(git ls-remote --tags origin "refs/tags/v$v^{}" "refs/tags/v$v" | head -n 1 | cut -f1)
           if [ -z "$tag_sha" ]; then
-            echo "v$v is not tagged yet: Auto release will publish this commit."; echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "v$v is not tagged yet: skip so a later tag of this commit can deploy firmware."; echo "deploy=false" >> "$GITHUB_OUTPUT"
           elif git ls-remote --tags origin "refs/tags/v$v^{}" "refs/tags/v$v" | cut -f1 | grep -qx "$GITHUB_SHA"; then
             echo "This commit is release v$v: publish.yml deploys it."; echo "deploy=false" >> "$GITHUB_OUTPUT"
           else

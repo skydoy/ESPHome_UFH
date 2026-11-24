@@ -24,8 +24,12 @@ Thanks for helping!
 
 ## Releasing
 1. Move the **Unreleased** notes to `## [x.y.z] - YYYY-MM-DD` and set `project_version: "x.y.z"`
-   in `devices/ufh-p4-poe.yaml`.
-2. Push to `main`. When `vx.y.z` does not exist yet, CI releases automatically: builds the
-   firmware, creates the tag and the GitHub Release, publishes the installer and OTA manifest to
-   GitHub Pages and moves the `stable` branch. Pushes that keep the same version only build.
-   (Pushing a `vx.y.z` tag by hand still works.)
+   in `devices/ufh-p4-poe.yaml` and `devices/ufh-p4-poe-direct.yaml`.
+2. Merge into `main`. A push to `main` only validates and builds artifacts; it does not
+   create a tag, a GitHub Release, or publish firmware to GitHub Pages.
+3. When you are ready, create and push the tag `vx.y.z` on that commit (it must match
+   `project_version`). CI then builds the firmware, creates the GitHub Release, publishes
+   the installer and OTA manifests to GitHub Pages, and moves the `stable` branch.
+   Docs-only updates use `publish-docs.yml` and leave the live firmware as it is.
+
+Portuguese version: [CONTRIBUTING.pt.md](CONTRIBUTING.pt.md).

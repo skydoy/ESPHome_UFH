@@ -18,9 +18,9 @@ All notable changes to the firmware and installer. Format:
 ### Changed
 - Documentation can be published on its own (`publish-docs.yml`) without rebuilding or
   replacing the live installer, OTA manifests or firmware images.
-- `publish.yml` deploys firmware, manifests and checksums only for a release (tag `v*`,
-  or an automatic release when `project_version` is new). A manual `workflow_dispatch`
-  still builds the images as artifacts, but does not publish them to GitHub Pages.
+- `publish.yml` deploys firmware, manifests and checksums only when a `v*` tag is
+  pushed. A push to `main` or a manual `workflow_dispatch` still builds the images as
+  artifacts, but does not create a release or publish them to GitHub Pages.
 
 ## [0.5.2] - 2026-11-23
 ### Changed
