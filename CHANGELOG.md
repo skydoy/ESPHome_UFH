@@ -24,6 +24,9 @@ All notable changes to the firmware and installer. Format:
   are updated on boot. User-entered paths are URL-encoded. The reader accepts a numeric
   or string `value`, treats `NA`/null as no reading, and raises a warning (and a log
   line) when the response is not HTTP 2xx.
+- Portuguese docs footer is localised (“Projeto comunitário independente”). The floor
+  probe is called “sonda do chão” throughout the Portuguese docs and the web panel
+  (Home Assistant entity object_ids are unchanged).
 
 ### Changed
 - Documentation can be published on its own (`publish-docs.yml`) without rebuilding or

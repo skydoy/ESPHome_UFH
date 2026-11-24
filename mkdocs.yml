@@ -64,6 +64,7 @@ plugins:
         - locale: pt
           name: Português
           build: true
+          copyright: PolyForm Noncommercial 1.0.0 · Projeto comunitário independente
           nav_translations:
             Home: Início
             Getting started: Primeiros passos

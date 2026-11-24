@@ -31,7 +31,7 @@ Os Shelly H&T a pilhas só enviam quando a temperatura muda: se uma divisão fic
 | Excedente solar | +°C nas zonas escolhidas enquanto houver excedente (ação `set_pv_surplus` ou tópico MQTT) |
 | Tarifa bi-horária | +°C nas horas de vazio, −°C no resto do dia |
 | Ligação ao ESPHome_Altherma | Lê a ida e o retorno (e a temperatura exterior, se a compensação exterior estiver ligada) na página web da outra placa. Os caminhos por omissão são os nomes exactos dos sensores da ESPHome_Altherma 2.6.3 numa ERLA D: `/sensor/Leaving%20Water%20Temp%20after%20BUH%20(R2T)`, `/sensor/Inlet%20Water%20Temp%20(R4T)` e `/sensor/Outdoor%20Air%20Temp%20(R1T)`. Os caminhos que escreves são codificados no URL. Uma resposta HTTP que não seja 2xx gera um aviso. Ao atualizar, os caminhos antigos em snake_case são substituídos automaticamente. |
-| Limite do pavimento | Por zona: fecha acima de X °C medidos por uma sonda no chão. Se a sonda deixar de responder enquanto a zona está a aquecer, a zona mantém-se aberta até à hora prevista pela taxa de aquecimento aprendida; depois fecha e só volta a abrir quando houver uma leitura válida do chão. As entidades *Avisos* e *Problema* no Home Assistant mostram “sonda do chão”. |
+| Limite do pavimento | Por zona: fecha acima de X °C medidos por uma sonda do chão. Se a sonda deixar de responder enquanto a zona está a aquecer, a zona mantém-se aberta até à hora prevista pela taxa de aquecimento aprendida; depois fecha e só volta a abrir quando houver uma leitura válida da sonda do chão. As entidades *Avisos* e *Problema* no Home Assistant mostram “sonda do chão”. |
 
 ## Zonas externas (pela rede)
 
