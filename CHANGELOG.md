@@ -14,6 +14,11 @@ All notable changes to the firmware and installer. Format:
   it stays open until the learned heating rate says the room will reach the target, then
   closes and does not reopen until a fresh floor reading arrives. The *Warnings* and
   *Problem* entities in Home Assistant report this as “floor probe”.
+- A zone with no room sensor now stays off in Holiday (it cannot do frost protection);
+  only valve anti-seize still runs.
+- Compiler warning in `set_heating` (enumerated and non-enumerated type in a conditional).
+- Web installer: Portuguese links open the Portuguese docs; PT/EN and theme pills set
+  `aria-pressed` in the static HTML.
 
 ### Changed
 - Documentation can be published on its own (`publish-docs.yml`) without rebuilding or
@@ -21,6 +26,9 @@ All notable changes to the firmware and installer. Format:
 - `publish.yml` deploys firmware, manifests and checksums only when a `v*` tag is
   pushed. A push to `main` or a manual `workflow_dispatch` still builds the images as
   artifacts, but does not create a release or publish them to GitHub Pages.
+- `SECURITY.md` lists the latest `0.5.x` release as supported. `CONTRIBUTING.md` (and
+  `CONTRIBUTING.pt.md`) describe the current layout, the required commit author, and
+  tag-only releases.
 
 ## [0.5.2] - 2026-11-23
 ### Changed

@@ -556,7 +556,7 @@ void UFHComponent::set_heating(bool on) {
     if (s_.house_mode != HOUSE_SUMMER)
       return;
     uint8_t p = x_.prev_house;
-    this->set_house_mode(p < HOUSE_SUMMER ? p : HOUSE_HOME);
+    this->set_house_mode(p < static_cast<uint8_t>(HOUSE_SUMMER) ? p : static_cast<uint8_t>(HOUSE_HOME));
   }
 }
 
@@ -716,8 +716,12 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
   if (s_.house_mode == HOUSE_SUMMER)
     return NAN;
   // Holiday frost applies even to zones left Off, so an unused room cannot freeze.
-  if (s_.house_mode == HOUSE_HOLIDAY)
+  // Zones with no room sensor stay off: there is no temperature to follow.
+  if (s_.house_mode == HOUSE_HOLIDAY) {
+    if (z.room.type == SRC_NONE)
+      return NAN;
     return x10(s_.holiday_x10);
+  }
   if (z.mode == ZONE_OFF)
     return NAN;
   float t;
@@ -1102,12 +1106,15 @@ void UFHComponent::update_zone_(uint8_t i, uint32_t now_ms, const ESPTime &now) 
 
   bool want = false;
   bool forced = false;  // switch off immediately (ignores the minimum cycle)
+  if (z.room.type == SRC_NONE)
+    r.warn |= WARN_NO_SENSOR;
   if (!s_.configured || std::isnan(target)) {
+    // Includes Holiday (and Summer) on a zone with no room sensor: stay off;
+    // valve anti-seize still runs in update_outputs_.
     forced = true;
   } else if (z.room.type == SRC_NONE) {
-    // no sensor: Heat = always on; Auto = on in Comfort periods
+    // no sensor: Heat = always on; Auto = on in Comfort when the house is Home
     want = z.mode == ZONE_HEAT || (z.mode == ZONE_AUTO && r.comfort_now && s_.house_mode == HOUSE_HOME);
-    r.warn |= WARN_NO_SENSOR;
   } else {
     bool fresh = r.has_temp && (now_ms - r.temp_ms) < (uint32_t) s_.stale_min * 60000UL;
     if (!fresh) {

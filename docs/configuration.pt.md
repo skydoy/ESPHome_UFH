@@ -53,7 +53,7 @@ e de **arrefecimento** aprendidas (°C/h).
 
 ## Modos da casa
 
-**Casa** (normal), **Ausente** (Eco em todas as zonas), **Férias** (anti-gelo, 7 °C por omissão, inclusive nas zonas em Off), **Verão** (sem anti-gelo; aquecimento e bomba desligados; o anti-bloqueio da bomba e dos atuadores continua).
+**Casa** (normal), **Ausente** (Eco em todas as zonas), **Férias** (anti-gelo, 7 °C por omissão, inclusive nas zonas em Off), **Verão** (sem anti-gelo; aquecimento e bomba desligados; o anti-bloqueio da bomba e dos atuadores continua). Uma zona sem sonda de ambiente não pode fazer anti-gelo (não há temperatura): em Férias fica desligada, e só o anti-bloqueio da válvula continua.
 
 ## No teu YAML (placa adotada)
 

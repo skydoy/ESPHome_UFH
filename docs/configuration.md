@@ -53,7 +53,7 @@ page and in Home Assistant.
 
 ## House modes
 
-**Home** (normal), **Away** (Eco everywhere), **Holiday** (frost protection, default 7 °C, including zones left Off), **Summer** (no frost protection; heating and pump off; actuator and pump anti-seize still run).
+**Home** (normal), **Away** (Eco everywhere), **Holiday** (frost protection, default 7 °C, including zones left Off), **Summer** (no frost protection; heating and pump off; actuator and pump anti-seize still run). A zone with no room sensor cannot do frost protection (there is no temperature to follow): in Holiday it stays off, and only valve anti-seize still runs.
 
 ## In your own YAML (adopted device)
 
