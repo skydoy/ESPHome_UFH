@@ -193,6 +193,24 @@ int TankComponent::heat_pump_fault_state() const {
     return -1;
   return alt_fault_;
 }
+
+void TankComponent::altherma_error_text(bool outdoor, char *buf, size_t len) const {
+  if (buf == nullptr || len < 3)
+    return;
+  buf[0] = 0;
+  if (!this->altherma_fresh())
+    return;
+  float v = outdoor ? (float) alt_out_err_ : (float) alt_in_err_;
+  if (std::isnan(v))
+    return;
+  uint8_t b = (uint8_t) lroundf(v);
+  if (b == 0)
+    return;
+  char tmp[4]{};
+  esphome::ufh::packet_rx::decode_error_code(b, tmp);
+  std::strncpy(buf, tmp, len - 1);
+  buf[len - 1] = 0;
+}
 bool TankComponent::heat_pump_fault() const { return this->heat_pump_fault_state() == 1; }
 
 void TankComponent::set_ufh_provider(const char *name) {
@@ -218,7 +236,7 @@ void TankComponent::set_altherma_provider(const char *name) {
   if (memcmp(prev, cfg_.altherma_provider, sizeof(prev)) != 0) {
     alt_ms_ = 0;
     alt_fault_ = -1;
-    alt_freq_ = alt_outdoor_ = NAN;
+    alt_freq_ = alt_outdoor_ = alt_out_err_ = alt_in_err_ = NAN;
     this->save_settings_();
   }
 }
@@ -507,6 +525,10 @@ void TankComponent::udp_on_packet_(const uint8_t *data, size_t len) {
       alt_freq_ = s->value;
     if (const auto *b = find_binary(pkt, "altherma_fault"))
       alt_fault_ = b->value ? 1 : 0;
+    if (const auto *s = find_sensor(pkt, "altherma_outdoor_error"))
+      alt_out_err_ = s->value;
+    if (const auto *s = find_sensor(pkt, "altherma_indoor_error"))
+      alt_in_err_ = s->value;
     alt_ms_ = now;
   }
 }

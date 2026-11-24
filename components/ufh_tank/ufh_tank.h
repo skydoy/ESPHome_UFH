@@ -57,6 +57,7 @@ class TankComponent : public Component {
   int heat_pump_fault_state() const;
   float compressor_freq() const;
   float outdoor_temp() const;
+  void altherma_error_text(bool outdoor, char *buf, size_t len) const;
   bool ufh_fresh() const;
   bool altherma_fresh() const;
   int ufh_age_s() const;
@@ -151,6 +152,8 @@ class TankComponent : public Component {
   volatile float alt_outdoor_{NAN};
   volatile float alt_freq_{NAN};
   volatile int8_t alt_fault_{-1};
+  volatile float alt_out_err_{NAN};
+  volatile float alt_in_err_{NAN};
   volatile uint32_t alt_ms_{0};
 
   bool udp_task_started_{false};

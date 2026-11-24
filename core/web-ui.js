@@ -399,7 +399,9 @@
     '.ufh .flow{stroke-dasharray:8 4;animation:ufhflow .8s linear infinite}',
     '.ufh .lbl{fill:#555}',
     '.ufh .warn{color:#b55a00}',
-    '@media (prefers-color-scheme: dark){.ufh .lbl{fill:#c3ccd6}.ufh .chip{background:rgba(79,179,255,.18)}.ufh .warn{background:rgba(255,150,40,.18);color:#ffb35c}.ufh button{background:#2a2d33;color:#eee;border-color:#444}}'
+    '.ufh .stale{opacity:.55}',
+    '@media (prefers-color-scheme: dark){.ufh .lbl{fill:#c3ccd6}.ufh .chip{background:rgba(79,179,255,.18)}.ufh .warn{background:rgba(255,150,40,.18);color:#ffb35c}.ufh button{background:#2a2d33;color:#eee;border-color:#444}}',
+    'html[data-theme=dark] .ufh .lbl{fill:#c3ccd6}html[data-theme=dark] .ufh .chip{background:rgba(79,179,255,.18)}html[data-theme=dark] .ufh .warn{background:rgba(255,150,40,.18);color:#ffb35c}html[data-theme=dark] .ufh button{background:#2a2d33;color:#eee;border-color:#444}'
   ].join('\n');
   var MCSS = [
     '.ufhm{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 8px}',
@@ -511,6 +513,201 @@
     return o.join('');
   }
 
+  function isDarkUi() {
+    try {
+      var th = document.documentElement.dataset.theme;
+      if (th === 'dark') return true;
+      if (th === 'light') return false;
+    } catch (e) {}
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+
+  function tankDiagram(st) {
+    var tk = st.tank || {}, u = st.ufh || {}, a = st.altherma || {};
+    var dark = isDarkUi();
+    var pal = dark ? {
+      box: '#132445', boxHot: '#3a2416', boxOn: '#163056', boxOff: '#1a2438',
+      ink: '#e6edf3', muted: '#9aa9bd', water: '#4a2e18', waterEmpty: '#1a2438'
+    } : {
+      box: '#f7f9fb', boxHot: '#fff4ec', boxOn: '#e8f7ff', boxOff: '#f1f3f5',
+      ink: '#222', muted: '#555', water: '#ffe0c2', waterEmpty: '#e6eaee'
+    };
+    var orange = '#ff7a1a', blue = '#1784F7', grey = '#9aa3ad', grey2 = '#b9c1ca';
+    var pumpOn = !!tk.pump;
+    var heatOn = !!tk.heater;
+    var ufhOk = !!u.fresh;
+    var altOk = !!a.fresh;
+    var tempOk = tk.t != null && !isNaN(tk.t);
+    var over = tempOk && tk.cut != null && tk.t >= tk.cut;
+    var heaterLabel = over ? T('corte', 'cut-off')
+      : (heatOn && tk.manual ? T('manual', 'manual')
+        : (heatOn ? T('auto', 'auto') : T('desligada', 'off')));
+    var speed = (tk.speed != null && !isNaN(tk.speed)) ? tk.speed
+      : ((tk.pwm != null && !isNaN(tk.pwm)) ? tk.pwm : null);
+    var err = a.err_out || a.err_in || '';
+    var faultTxt = !altOk ? '—'
+      : (a.fault === 1 ? ('⚠ ' + (err || T('avaria', 'fault')))
+        : (a.fault === 0 ? T('sem avaria', 'no fault') : '—'));
+    var compTxt = !altOk || a.freq == null || isNaN(a.freq) ? '—'
+      : (fmt(a.freq, 0) + ' Hz');
+    var zonesTxt = !ufhOk ? T('sem dados', 'offline')
+      : (u.demand
+        ? ((u.zones != null ? u.zones : '–') + ' ' + T('zonas', 'zones'))
+        : T('sem pedido', 'no demand'));
+
+    var narrow = (window.innerWidth || 900) < 620;
+    var W = narrow ? 400 : 680, H = narrow ? 400 : 270;
+    var o = ['<svg class="tank-d" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,Segoe UI,Roboto,sans-serif">'];
+
+    function pipe(x1, y1, x2, y2, col, on) {
+      o.push('<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 +
+        '" stroke="' + col + '" stroke-width="6" stroke-linecap="round"' +
+        (on ? ' class="flow"' : '') + '/>');
+    }
+    function elbow(x1, y1, x2, y2, x3, y3, col, on) {
+      o.push('<path d="M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2 + ' L' + x3 + ' ' + y3 +
+        '" fill="none" stroke="' + col + '" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"' +
+        (on ? ' class="flow"' : '') + '/>');
+    }
+    function pumpIcon(cx, cy, side) {
+      var bg = pumpOn ? pal.boxOn : pal.boxOff;
+      var stc = pumpOn ? blue : grey;
+      o.push('<g transform="translate(' + cx + ',' + cy + ')">');
+      o.push('<circle r="20" fill="' + bg + '" stroke="' + stc + '" stroke-width="3"/>');
+      o.push('<g' + (pumpOn ? ' class="spin"' : '') + '><path d="M0-12 L4-2 L-4-2Z M12 0 L2 4 L2-4Z M0 12 L-4 2 L4 2Z M-12 0 L-2-4 L-2 4Z" fill="' + stc + '"/></g>');
+      o.push('</g>');
+      var pumpTxt = pumpOn ? T('Bomba a trabalhar', 'Pump running') : T('Bomba parada', 'Pump stopped');
+      var speedTxt = (pumpOn && speed != null) ? (T('Velocidade ', 'Speed ') + fmt(speed, 0) + '%') : '';
+      if (side === 'left') {
+        o.push('<text x="' + (cx - 28) + '" y="' + (cy - 2) + '" text-anchor="end" font-size="11" fill="' + pal.muted + '">' + esc(pumpTxt) + '</text>');
+        if (speedTxt)
+          o.push('<text x="' + (cx - 28) + '" y="' + (cy + 14) + '" text-anchor="end" font-size="11" font-weight="700" fill="' + pal.ink + '">' + esc(speedTxt) + '</text>');
+      } else {
+        o.push('<text x="' + cx + '" y="' + (cy + 58) + '" text-anchor="middle" font-size="11" fill="' + pal.muted + '">' + esc(pumpTxt) + '</text>');
+        if (speedTxt)
+          o.push('<text x="' + cx + '" y="' + (cy + 72) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + pal.ink + '">' + esc(speedTxt) + '</text>');
+      }
+    }
+    function althermaBox(x, y, w, h) {
+      var cls = altOk ? '' : ' stale';
+      var fill = !altOk ? pal.boxOff : (a.fault === 1 ? pal.boxHot : pal.boxOn);
+      var stroke = !altOk ? grey : (a.fault === 1 ? orange : blue);
+      o.push('<g class="alt' + cls + '">');
+      o.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2"/>');
+      o.push('<text x="' + (x + w / 2) + '" y="' + (y + 18) + '" text-anchor="middle" font-size="12" font-weight="700" fill="' + pal.ink + '">Altherma</text>');
+      // flame / idle / offline
+      var ix = x + w / 2, iy = y + 48;
+      if (!altOk) {
+        o.push('<circle cx="' + ix + '" cy="' + iy + '" r="11" fill="none" stroke="' + grey + '" stroke-width="2"/>');
+        o.push('<text x="' + ix + '" y="' + (y + 78) + '" text-anchor="middle" font-size="11" fill="' + pal.muted + '">' + T('sem dados', 'offline') + '</text>');
+      } else if (a.fault === 1) {
+        o.push('<path d="M' + ix + ' ' + (iy - 16) + 'c6 7 10 11 10 18a10 10 0 0 1-20 0c0-4 3-7 4-10 0 4 2 6 4 6-1-6 0-10 2-14z" fill="' + orange + '"/>');
+        o.push('<text x="' + ix + '" y="' + (y + 80) + '" text-anchor="middle" font-size="12" font-weight="700" fill="#b55a00">' + esc(faultTxt) + '</text>');
+      } else {
+        o.push('<path d="M' + ix + ' ' + (iy - 16) + 'c6 7 10 11 10 18a10 10 0 0 1-20 0c0-4 3-7 4-10 0 4 2 6 4 6-1-6 0-10 2-14z" fill="' + (u.demand && altOk ? orange : grey) + '"/>');
+        o.push('<text x="' + ix + '" y="' + (y + 80) + '" text-anchor="middle" font-size="11" fill="' + pal.muted + '">' + esc(faultTxt) + '</text>');
+      }
+      o.push('<text x="' + ix + '" y="' + (y + 98) + '" text-anchor="middle" font-size="11" fill="' + (a.comp_zero ? '#b55a00' : pal.ink) + '">' +
+        T('compressor ', 'compressor ') + esc(compTxt) + '</text>');
+      if (altOk && a.out != null && !isNaN(a.out))
+        o.push('<text x="' + ix + '" y="' + (y + 114) + '" text-anchor="middle" font-size="10" fill="' + pal.muted + '">' +
+          T('exterior ', 'outdoor ') + fmt(a.out) + '°</text>');
+      o.push('</g>');
+    }
+    function tankBox(x, y, w, h) {
+      var fillBody = tempOk ? pal.boxHot : pal.boxOff;
+      var stroke = tempOk ? (heatOn || over ? orange : blue) : grey;
+      var water = tempOk ? pal.water : pal.waterEmpty;
+      o.push('<g class="tank">');
+      o.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="28" fill="' + fillBody + '" stroke="' + stroke + '" stroke-width="2.5"/>');
+      // water from the bottom, clipped to the cylinder
+      var wid = 'tw' + Math.round(x) + Math.round(y);
+      o.push('<defs><clipPath id="' + wid + '"><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="28"/></clipPath></defs>');
+      var waterTop = y + Math.round(h * 0.18);
+      o.push('<rect x="' + x + '" y="' + waterTop + '" width="' + w + '" height="' + (y + h - waterTop) + '" fill="' + water + '" clip-path="url(#' + wid + ')" opacity="0.95"/>');
+      // mid-tank probe
+      var mx = x + w / 2, my = y + h * 0.48;
+      o.push('<line x1="' + (x - 8) + '" y1="' + my + '" x2="' + (mx - 8) + '" y2="' + my + '" stroke="' + (tempOk ? blue : grey) + '" stroke-width="2"/>');
+      o.push('<circle cx="' + mx + '" cy="' + my + '" r="7" fill="' + (tempOk ? '#fff' : pal.boxOff) + '" stroke="' + (tempOk ? orange : grey) + '" stroke-width="2.5"/>');
+      o.push('<circle cx="' + mx + '" cy="' + my + '" r="3" fill="' + (tempOk ? orange : grey) + '"/>');
+      o.push('<text x="' + (x - 10) + '" y="' + (my - 8) + '" text-anchor="end" font-size="10" fill="' + pal.muted + '">' + T('sonda', 'probe') + '</text>');
+      o.push('<text x="' + mx + '" y="' + (y + 28) + '" text-anchor="middle" font-size="12" font-weight="700" fill="' + pal.ink + '">' + T('Tanque', 'Tank') + '</text>');
+      o.push('<text x="' + mx + '" y="' + (my + 28) + '" text-anchor="middle" font-size="20" font-weight="700" fill="' + pal.ink + '">' + (tempOk ? fmt(tk.t) + ' °C' : '– °C') + '</text>');
+      if (tk.target != null)
+        o.push('<text x="' + mx + '" y="' + (my + 44) + '" text-anchor="middle" font-size="10" fill="' + pal.muted + '">' +
+          T('alvo ', 'target ') + fmt(tk.target, 0) + '° · ' + T('corte ', 'cut ') + fmt(tk.cut, 0) + '°</text>');
+      // heater coil at the bottom
+      var hy = y + h - 28, hx = x + 22, ex = x + w - 22;
+      var zig = 'M' + hx + ' ' + hy, onx = hx, up = true;
+      while (onx < ex) {
+        onx += 9;
+        zig += ' L' + Math.min(onx, ex) + ' ' + (hy + (up ? -7 : 7));
+        up = !up;
+      }
+      o.push('<path d="' + zig + '" fill="none" stroke="' + (heatOn ? orange : grey) + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>');
+      o.push('<text x="' + mx + '" y="' + (y + h - 8) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + (heatOn || over ? '#b55a00' : pal.muted) + '">' +
+        T('Resistência', 'Heater') + ' · ' + esc(heaterLabel) + '</text>');
+      o.push('</g>');
+    }
+    function floorBox(x, y, w, h) {
+      var cls = ufhOk ? '' : ' stale';
+      var on = pumpOn && ufhOk;
+      var fill = !ufhOk ? pal.boxOff : (on ? pal.boxHot : pal.box);
+      var stroke = !ufhOk ? grey : (on ? orange : blue);
+      o.push('<g class="floor' + cls + '">');
+      o.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2"/>');
+      o.push('<text x="' + (x + w / 2) + '" y="' + (y + 18) + '" text-anchor="middle" font-size="12" font-weight="700" fill="' + pal.ink + '">' + T('Piso', 'Floor') + '</text>');
+      var sx = x + 16, ex = x + w - 16, sy = y + 36;
+      var p = 'M' + sx + ' ' + sy + ' H' + ex + ' v8 H' + sx + ' v8 H' + ex + ' v8 H' + sx;
+      o.push('<path d="' + p + '" fill="none" stroke="' + stroke + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"' + (on ? ' class="flow"' : '') + '/>');
+      o.push('<text x="' + (x + w / 2) + '" y="' + (y + h - 12) + '" text-anchor="middle" font-size="11" fill="' + pal.muted + '">' + esc(zonesTxt) + '</text>');
+      o.push('</g>');
+    }
+
+    var hot = pumpOn ? orange : grey, cold = pumpOn ? blue : grey2;
+
+    if (!narrow) {
+      // Altherma | pipes | Tank | pipes+pump | Floor
+      var ax = 12, ay = 56, aw = 132, ah = 150;
+      var tx = 230, ty = 24, tw = 150, th = 210;
+      var yHot = 88, yCold = 168;
+      var px = 460, py = (yHot + yCold) / 2;
+      var fx = 540, fy = 70, fw = 128, fh = 120;
+      althermaBox(ax, ay, aw, ah);
+      tankBox(tx, ty, tw, th);
+      floorBox(fx, fy, fw, fh);
+      // Altherma <-> tank
+      pipe(ax + aw, yHot, tx, yHot, hot, pumpOn);
+      pipe(tx, yCold, ax + aw, yCold, cold, pumpOn);
+      // tank -> pump -> floor
+      pipe(tx + tw, yHot, px - 22, yHot, hot, pumpOn);
+      pipe(px + 22, yHot, fx, yHot, hot, pumpOn);
+      pipe(fx, yCold, px + 22, yCold, cold, pumpOn);
+      pipe(px - 22, yCold, tx + tw, yCold, cold, pumpOn);
+      pumpIcon(px, py);
+      o.push('<text x="' + (fx + fw / 2) + '" y="28" text-anchor="middle" font-size="11" fill="' + pal.muted + '">' + T('ida', 'flow') + ' / ' + T('retorno', 'return') + '</text>');
+    } else {
+      // Top: Altherma + Tank. Below the tank: pump on the drop, then the floor.
+      var ax = 12, ay = 36, aw = 176, ah = 150;
+      var tx = 214, ty = 16, tw = 174, th = 190;
+      var fx = 214, fy = 270, fw = 174, fh = 110;
+      var yHot = 72, yCold = 148;
+      var px = tx + tw / 2, py = (ty + th + fy) / 2;
+      althermaBox(ax, ay, aw, ah);
+      tankBox(tx, ty, tw, th);
+      floorBox(fx, fy, fw, fh);
+      pipe(ax + aw, yHot, tx, yHot, hot, pumpOn);
+      pipe(tx, yCold, ax + aw, yCold, cold, pumpOn);
+      var idaX = tx + 58, retX = tx + 116;
+      pipe(idaX, ty + th, idaX, fy, hot, pumpOn);
+      pipe(retX, fy, retX, ty + th, cold, pumpOn);
+      pumpIcon(px, py, 'left');
+    }
+
+    o.push('</svg>');
+    return o.join('');
+  }
+
   function renderPanel() {
     if (!panel || !state) return;
     if (state.role === 'tank') { renderTankPanel(); return; }
@@ -561,7 +758,7 @@
     var meta = '<span class="chip">' + T('Tanque', 'Tank') + ' · ' + fmt(tk.t) + ' °C · ' + T('alvo', 'target') + ' ' + fmt(tk.target, 0) +
       ' · ' + T('corte', 'cutoff') + ' ' + fmt(tk.cut, 0) + ' · ' +
       (tk.pump ? T('bomba ligada', 'pump on') : T('bomba parada', 'pump off')) +
-      (tk.pwm != null ? ' · PWM ' + fmt(tk.pwm, 0) + '%' : '') + ' · ' +
+      (tk.pump && tk.speed != null && !isNaN(tk.speed) ? ' · ' + T('vel. ', 'speed ') + fmt(tk.speed, 0) + '%' : '') + ' · ' +
       (tk.heater ? T('resistência ligada', 'heater on') : T('resistência desligada', 'heater off')) + '</span>';
     meta += '<span class="chip">UFH · ' + (u.provider ? esc(u.provider) : T('nenhuma placa escolhida', 'no board chosen')) +
       ' · ' + (u.fresh ? (u.age + ' s') : '—') + ' · ' + (u.demand ? T('pedido de calor', 'heat demand') : T('sem pedido', 'no demand')) +
@@ -572,7 +769,7 @@
       (a.freq != null ? ' · ' + fmt(a.freq, 0) + ' Hz' : '') + '</span>';
     if (a.comp_zero)
       meta += '<span class="chip warn">⚠ ' + T('compressor a 0: liga a resistência à mão', 'compressor at 0: turn the heater on by hand') + '</span>';
-    panel.innerHTML = head + setup + '<div class="bar">' + meta + '</div>' +
+    panel.innerHTML = head + setup + '<div class="bar">' + meta + '</div>' + tankDiagram(st) +
       '<div class="bar"><button class="pri" data-a="wizard">' + (st.configured ? T('⚙️ Definições', '⚙️ Settings') : T('▶ Começar a configuração', '▶ Start setup')) + '</button>' +
       '<button data-a="heater">' + (tk.manual ? T('Resistência manual: ligada', 'Manual heater: on') : T('Resistência manual: desligada', 'Manual heater: off')) + '</button></div>';
   }

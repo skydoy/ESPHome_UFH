@@ -144,6 +144,11 @@ std::string TankComponent::web_state_json() {
   put_num(a, "freq", this->compressor_freq());
   put_num(a, "out", this->outdoor_temp());
   a["comp_zero"] = (bool) comp_zero_warn_;
+  char eo[8]{}, ei[8]{};
+  this->altherma_error_text(true, eo, sizeof(eo));
+  this->altherma_error_text(false, ei, sizeof(ei));
+  a["err_out"] = eo;
+  a["err_in"] = ei;
   {
     std::lock_guard<std::mutex> lock(udp_mtx_);
     JsonArray su = u["seen"].to<JsonArray>();
