@@ -11,6 +11,8 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
+#include <strings.h>
 
 #include "esphome/core/application.h"
 #include "esphome/core/hal.h"
@@ -568,6 +570,8 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
     copy_str(s_.altherma_host, sizeof(s_.altherma_host), al["host"]);
     copy_str(s_.altherma_flow, sizeof(s_.altherma_flow), al["flow"]);
     copy_str(s_.altherma_return, sizeof(s_.altherma_return), al["ret"]);
+    normalize_altherma_path(s_.altherma_flow, sizeof(s_.altherma_flow));
+    normalize_altherma_path(s_.altherma_return, sizeof(s_.altherma_return));
     restart = restart || s_.opt_altherma;
   }
   if (root["zones"].is<JsonArrayConst>()) {
@@ -649,6 +653,7 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
       char before[sizeof(x_.alt_outdoor)];
       memcpy(before, x_.alt_outdoor, sizeof(before));
       copy_str(x_.alt_outdoor, sizeof(x_.alt_outdoor), xv["alt_outdoor"]);
+      normalize_altherma_path(x_.alt_outdoor, sizeof(x_.alt_outdoor));
       if (memcmp(before, x_.alt_outdoor, sizeof(before)) != 0 && s_.opt_altherma)
         restart = true;
     }
@@ -725,27 +730,80 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
 // ---------------------------------------------------------------------------------------------
 // Altherma (or any ESPHome device): leaving / return water, every 30 s, in its own task
 // ---------------------------------------------------------------------------------------------
-static float http_get_value(const char *url) {
+// result.err: -1 ok (or a valid NA reading), 0 no response, -2 unreadable body, else HTTP status.
+struct AltHttpResult {
+  float value;
+  int err;
+};
+
+static bool alt_is_na_token(const char *s) {
+  if (s == nullptr || !s[0])
+    return true;
+  return strcasecmp(s, "NA") == 0 || strcasecmp(s, "nan") == 0 || strcasecmp(s, "null") == 0 ||
+         strcasecmp(s, "unavailable") == 0 || strcasecmp(s, "unknown") == 0;
+}
+
+static AltHttpResult http_get_value(const char *url) {
+  AltHttpResult r{NAN, 0};
+  if (url == nullptr || !url[0])
+    return r;
   esp_http_client_config_t cfg = {};
   cfg.url = url;
   cfg.timeout_ms = 4000;
   esp_http_client_handle_t c = esp_http_client_init(&cfg);
   if (c == nullptr)
-    return NAN;
-  float v = NAN;
+    return r;
   if (esp_http_client_open(c, 0) == ESP_OK) {
     esp_http_client_fetch_headers(c);
+    int st = esp_http_client_get_status_code(c);
     char buf[512];
     int n = esp_http_client_read_response(c, buf, sizeof(buf) - 1);
-    if (n > 0) {
+    if (st < 200 || st >= 300) {
+      r.err = st > 0 ? st : 0;
+      ESP_LOGW(TAG, "Altherma HTTP %d from %s", r.err, url);
+    } else if (n <= 0) {
+      r.err = -2;
+      ESP_LOGW(TAG, "Altherma empty body from %s", url);
+    } else {
       buf[n] = 0;
       JsonDocument doc;
-      if (!deserializeJson(doc, buf) && (doc["value"].is<float>() || doc["value"].is<int>()))
-        v = doc["value"].as<float>();
+      if (deserializeJson(doc, buf)) {
+        r.err = -2;
+        ESP_LOGW(TAG, "Altherma bad JSON from %s", url);
+      } else if (doc["value"].isNull()) {
+        r.err = -1;
+        r.value = NAN;
+      } else if (doc["value"].is<float>() || doc["value"].is<int>()) {
+        r.value = doc["value"].as<float>();
+        r.err = -1;
+      } else if (doc["value"].is<const char *>()) {
+        const char *s = doc["value"].as<const char *>();
+        if (alt_is_na_token(s)) {
+          r.err = -1;
+          r.value = NAN;
+        } else {
+          char *end = nullptr;
+          float v = strtof(s, &end);
+          if (end != s && !std::isnan(v)) {
+            r.value = v;
+            r.err = -1;
+          } else {
+            r.err = -1;
+            r.value = NAN;
+            ESP_LOGW(TAG, "Altherma value '%s' is not a number (%s)", s, url);
+          }
+        }
+      } else {
+        r.err = -2;
+        ESP_LOGW(TAG, "Altherma unexpected 'value' type from %s", url);
+      }
     }
+  } else {
+    r.err = 0;
+    ESP_LOGW(TAG, "Altherma no response from %s", url);
   }
   esp_http_client_cleanup(c);
-  return v;
+  return r;
 }
 
 void UFHComponent::altherma_task_(void *arg) {
@@ -754,13 +812,21 @@ void UFHComponent::altherma_task_(void *arg) {
     // started from setup(): no HTTP before the network (Ethernet) is up, or lwIP asserts
     while (!self->net_up_)
       vTaskDelay(pdMS_TO_TICKS(1000));
-    float f = http_get_value(self->alt_url_flow_);
-    float r = http_get_value(self->alt_url_return_);
-    float o = self->alt_url_outdoor_[0] ? http_get_value(self->alt_url_outdoor_) : NAN;
-    if (!std::isnan(f) || !std::isnan(r)) {
-      self->alt_flow_ = f;
-      self->alt_return_ = r;
-      self->alt_outdoor_ = o;
+    AltHttpResult f = http_get_value(self->alt_url_flow_);
+    AltHttpResult ret = http_get_value(self->alt_url_return_);
+    AltHttpResult o = self->alt_url_outdoor_[0] ? http_get_value(self->alt_url_outdoor_) : AltHttpResult{NAN, -1};
+    int err = -1;
+    if (f.err > 0 || ret.err > 0 || o.err > 0)
+      err = f.err > 0 ? f.err : (ret.err > 0 ? ret.err : o.err);
+    else if (f.err == 0 || ret.err == 0)
+      err = 0;
+    else if (f.err == -2 || ret.err == -2 || o.err == -2)
+      err = -2;
+    self->alt_err_status_ = err;
+    if (!std::isnan(f.value) || !std::isnan(ret.value)) {
+      self->alt_flow_ = f.value;
+      self->alt_return_ = ret.value;
+      self->alt_outdoor_ = o.value;
       self->alt_ms_ = millis();
     }
     vTaskDelay(pdMS_TO_TICKS(30000));

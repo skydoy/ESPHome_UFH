@@ -19,6 +19,11 @@ All notable changes to the firmware and installer. Format:
 - Compiler warning in `set_heating` (enumerated and non-enumerated type in a conditional).
 - Web installer: Portuguese links open the Portuguese docs; PT/EN and theme pills set
   `aria-pressed` in the static HTML.
+- ESPHome_Altherma link: default HTTP paths now use the 2.6.3 entity names of an ERLA D
+  unit (spaces encoded as `%20`). Saved paths that still had the old snake_case defaults
+  are updated on boot. User-entered paths are URL-encoded. The reader accepts a numeric
+  or string `value`, treats `NA`/null as no reading, and raises a warning (and a log
+  line) when the response is not HTTP 2xx.
 
 ### Changed
 - Documentation can be published on its own (`publish-docs.yml`) without rebuilding or

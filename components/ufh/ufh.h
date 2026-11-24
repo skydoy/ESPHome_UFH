@@ -464,6 +464,8 @@ class UFHComponent : public Component
   volatile float alt_flow_{NAN};
   volatile float alt_return_{NAN};
   volatile uint32_t alt_ms_{0};
+  // -1 = ok, 0 = no HTTP response, -2 = bad body, else the HTTP status (non-2xx).
+  volatile int alt_err_status_{-1};
   bool alt_task_started_{false};
   char alt_url_flow_[160]{};
   char alt_url_return_[160]{};
@@ -478,6 +480,12 @@ void register_web_handler(UFHComponent *p, web_server_base::WebServerBase *base)
 uint64_t parse_mac(const char *s);
 uint64_t parse_hex64(const char *s);
 std::string mac_to_str(uint64_t mac);
+// Encode an ESPHome web_server entity path: leaves '/', already-encoded %XX, and
+// parentheses (as used by Altherma entity URLs); encodes spaces and other characters.
+void url_encode_path(char *dst, size_t dst_len, const char *src);
+void make_altherma_url(char *dst, size_t dst_len, const char *host, const char *path);
+// Encode a stored path in place (leading slash, no double-encoding).
+void normalize_altherma_path(char *buf, size_t buf_len);
 std::string hex64_to_str(uint64_t v);
 bool bthome_parse(const uint8_t *data, size_t len, float &temp, float &hum, int8_t &batt);
 

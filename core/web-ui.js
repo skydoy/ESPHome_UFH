@@ -430,7 +430,7 @@
   function warnPT(w) {
     if (L() !== 'pt') return w;
     return w.replace(/^setup(; )?/, 'por configurar$1').replace(/: sensor/g, ': sensor sem dados').replace(/: battery/g, ': pilha fraca')
-      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace(/: floor probe/g, ': sonda do chão').replace(/: device offline/g, ': aparelho sem resposta').replace('pump on, no zone open', 'bomba ligada sem zonas abertas').replace(/flow\/return dT ([\d.-]+) C/, 'diferença ida/retorno $1 °C (caudal?)');
+      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace(/: floor probe/g, ': sonda do chão').replace(/: device offline/g, ': aparelho sem resposta').replace('pump on, no zone open', 'bomba ligada sem zonas abertas').replace(/flow\/return dT ([\d.-]+) C/, 'diferença ida/retorno $1 °C (caudal?)').replace(/Altherma link: HTTP (\d+)/, 'Ligação Altherma: HTTP $1').replace('Altherma link: no response', 'Ligação Altherma: sem resposta').replace('Altherma link: bad response', 'Ligação Altherma: resposta inválida');
   }
 
   // ---------- live diagram ----------
@@ -758,7 +758,7 @@
         '<div class="row"><div><label>' + T('Vazio 1', 'Cheap 1') + '</label><input type="time" step="600" id="ts1" value="' + slotToTime(W.tariff.s1) + '"> – <input type="time" step="600" id="te1" value="' + slotToTime(W.tariff.e1) + '"></div>' +
         '<div><label>' + T('Vazio 2', 'Cheap 2') + '</label><input type="time" step="600" id="ts2" value="' + slotToTime(W.tariff.s2) + '"> – <input type="time" step="600" id="te2" value="' + slotToTime(W.tariff.e2) + '"></div>' +
         '<div><label>+°C</label><input type="number" step="0.5" id="tb" value="' + W.tariff.boost + '"></div><div><label>−°C</label><input type="number" step="0.5" id="tc" value="' + W.tariff.cut + '"></div></div>');
-      h += box('altherma', T('Ligação ao ESPHome_Altherma', 'ESPHome_Altherma link'), T('Mostra a ida e o retorno da bomba de calor no diagrama (lido diretamente da outra placa).', 'Shows the heat pump flow and return in the diagram (read straight from the other board).'),
+      h += box('altherma', T('Ligação ao ESPHome_Altherma', 'ESPHome_Altherma link'), T('Mostra a ida e o retorno da bomba de calor no diagrama (lido da página web da outra placa). Os caminhos por omissão são os nomes exactos dos sensores da ESPHome_Altherma 2.6.3 numa ERLA D.', 'Shows the heat pump flow and return in the diagram (read from the other board\'s web page). The default paths are the exact ESPHome_Altherma 2.6.3 entity names on an ERLA D unit.'),
         '<div class="row"><div style="flex:1"><label>' + T('Endereço (IP ou nome)', 'Address (IP or name)') + '</label><input type="text" id="ah" value="' + esc(W.altherma.host) + '" placeholder="192.168.1.60"></div></div>' +
         '<div class="row"><div style="flex:1"><label>' + T('Ida', 'Flow') + '</label><input type="text" id="af" value="' + esc(W.altherma.flow) + '"></div><div style="flex:1"><label>' + T('Retorno', 'Return') + '</label><input type="text" id="ar" value="' + esc(W.altherma.ret) + '"></div></div>' +
         '<div class="row"><div style="flex:1"><label>' + T('Exterior (para a compensação exterior)', 'Outdoor (for outdoor compensation)') + '</label><input type="text" id="ao" value="' + esc((W.extra || {}).alt_outdoor || '') + '"></div></div>');

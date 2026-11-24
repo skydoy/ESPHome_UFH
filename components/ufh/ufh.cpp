@@ -4,6 +4,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <cinttypes>
+#include <cctype>
+#include <cstring>
 
 #include "esphome/core/application.h"
 #include "esphome/core/hal.h"
@@ -60,8 +62,8 @@ void default_settings(Settings &s, uint8_t relay_count, bool active_low) {
   s.tariff_boost_x10 = 5;
   s.tariff_cut_x10 = 5;
   s.mqtt_port = 1883;
-  strncpy(s.altherma_flow, "/sensor/leaving_water_temp__after_buh__r2t_", sizeof(s.altherma_flow) - 1);
-  strncpy(s.altherma_return, "/sensor/inlet_water_temp__r4t_", sizeof(s.altherma_return) - 1);
+  strncpy(s.altherma_flow, "/sensor/Leaving%20Water%20Temp%20after%20BUH%20(R2T)", sizeof(s.altherma_flow) - 1);
+  strncpy(s.altherma_return, "/sensor/Inlet%20Water%20Temp%20(R4T)", sizeof(s.altherma_return) - 1);
   for (uint8_t i = 0; i < MAX_ZONES; i++) {
     ZoneCfg &z = s.zones[i];
     snprintf(z.name, sizeof(z.name), "Zone %u", i + 1);
@@ -87,7 +89,7 @@ void default_extra(ExtraCfg &x) {
   x.boost_x10 = 10;
   x.boost_min = 60;
   x.opt_outdoor = 0;
-  strncpy(x.alt_outdoor, "/sensor/outdoor_air_temp__r1t_", sizeof(x.alt_outdoor) - 1);
+  strncpy(x.alt_outdoor, "/sensor/Outdoor%20Air%20Temp%20(R1T)", sizeof(x.alt_outdoor) - 1);
 }
 
 void default_main(MainCfg &m) {
@@ -99,6 +101,79 @@ void default_main(MainCfg &m) {
   m.eco_x10 = 180;
   for (uint8_t d = 0; d < 7; d++)
     m.sched[d] = d < 5 ? DaySchedule{39, 51, 102, 135} : DaySchedule{48, 138, 0, 0};
+}
+
+static const char *const ALT_OLD_FLOW = "/sensor/leaving_water_temp__after_buh__r2t_";
+static const char *const ALT_NEW_FLOW = "/sensor/Leaving%20Water%20Temp%20after%20BUH%20(R2T)";
+static const char *const ALT_OLD_RETURN = "/sensor/inlet_water_temp__r4t_";
+static const char *const ALT_NEW_RETURN = "/sensor/Inlet%20Water%20Temp%20(R4T)";
+static const char *const ALT_OLD_OUTDOOR = "/sensor/outdoor_air_temp__r1t_";
+static const char *const ALT_NEW_OUTDOOR = "/sensor/Outdoor%20Air%20Temp%20(R1T)";
+
+void url_encode_path(char *dst, size_t dst_len, const char *src) {
+  static const char *const hex = "0123456789ABCDEF";
+  if (dst_len == 0)
+    return;
+  size_t o = 0;
+  auto push = [&](char c) {
+    if (o + 1 < dst_len)
+      dst[o++] = c;
+  };
+  for (const char *p = src; *p && o + 1 < dst_len; p++) {
+    unsigned char c = (unsigned char) *p;
+    bool unreserved = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
+                      c == '-' || c == '_' || c == '.' || c == '~' || c == '/' || c == '(' || c == ')';
+    if (unreserved) {
+      push((char) c);
+    } else if (c == '%' && std::isxdigit((unsigned char) p[1]) && std::isxdigit((unsigned char) p[2])) {
+      push('%');
+      push(p[1]);
+      push(p[2]);
+      p += 2;
+    } else {
+      if (o + 3 < dst_len) {
+        dst[o++] = '%';
+        dst[o++] = hex[c >> 4];
+        dst[o++] = hex[c & 0xF];
+      }
+    }
+  }
+  dst[o] = 0;
+}
+
+void normalize_altherma_path(char *buf, size_t buf_len) {
+  if (buf == nullptr || buf_len == 0)
+    return;
+  char tmp[96];
+  const char *p = buf;
+  while (*p == ' ')
+    p++;
+  if (!*p) {
+    buf[0] = 0;
+    return;
+  }
+  if (*p != '/') {
+    tmp[0] = '/';
+    url_encode_path(tmp + 1, sizeof(tmp) - 1, p);
+  } else {
+    url_encode_path(tmp, sizeof(tmp), p);
+  }
+  strncpy(buf, tmp, buf_len - 1);
+  buf[buf_len - 1] = 0;
+}
+
+void make_altherma_url(char *dst, size_t dst_len, const char *host, const char *path) {
+  if (dst_len == 0)
+    return;
+  char enc[96];
+  if (path == nullptr || !path[0] || host == nullptr || !host[0]) {
+    dst[0] = 0;
+    return;
+  }
+  strncpy(enc, path, sizeof(enc) - 1);
+  enc[sizeof(enc) - 1] = 0;
+  normalize_altherma_path(enc, sizeof(enc));
+  snprintf(dst, dst_len, "http://%s%s", host, enc);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -180,9 +255,16 @@ void UFHComponent::setup() {
   if (this->m_.mode > ZONE_HEAT)
     this->m_.mode = ZONE_AUTO;
   this->pref_extra_ = global_preferences->make_preference<ExtraCfg>(fnv1_hash("ufh_extra_v1"));
-  if (!this->pref_extra_.load(&this->x_) || this->x_.magic != EXTRA_MAGIC)
+  bool extra_ok = this->pref_extra_.load(&this->x_) && this->x_.magic == EXTRA_MAGIC;
+  if (!extra_ok)
     default_extra(this->x_);
   this->x_.alt_outdoor[sizeof(this->x_.alt_outdoor) - 1] = 0;
+  if (extra_ok && strcmp(this->x_.alt_outdoor, ALT_OLD_OUTDOOR) == 0) {
+    strncpy(this->x_.alt_outdoor, ALT_NEW_OUTDOOR, sizeof(this->x_.alt_outdoor) - 1);
+    this->x_.alt_outdoor[sizeof(this->x_.alt_outdoor) - 1] = 0;
+    this->save_extra_();
+    ESP_LOGI(TAG, "Altherma outdoor path updated to the ESPHome_Altherma 2.6.3 entity name");
+  }
   this->pref_week_ = global_preferences->make_preference<WeekLog>(fnv1_hash("ufh_week_v1"));
   if (!this->pref_week_.load(&this->wk_) || this->wk_.magic != WEEK_MAGIC || this->wk_.idx > 6) {
     memset(&this->wk_, 0, sizeof(this->wk_));
@@ -268,6 +350,23 @@ void UFHComponent::load_settings_() {
   s_.altherma_host[sizeof(s_.altherma_host) - 1] = 0;
   s_.altherma_flow[sizeof(s_.altherma_flow) - 1] = 0;
   s_.altherma_return[sizeof(s_.altherma_return) - 1] = 0;
+  if (ok && s_.magic == SETTINGS_MAGIC && s_.version == SETTINGS_VERSION) {
+    bool migrated = false;
+    if (strcmp(s_.altherma_flow, ALT_OLD_FLOW) == 0) {
+      strncpy(s_.altherma_flow, ALT_NEW_FLOW, sizeof(s_.altherma_flow) - 1);
+      s_.altherma_flow[sizeof(s_.altherma_flow) - 1] = 0;
+      migrated = true;
+    }
+    if (strcmp(s_.altherma_return, ALT_OLD_RETURN) == 0) {
+      strncpy(s_.altherma_return, ALT_NEW_RETURN, sizeof(s_.altherma_return) - 1);
+      s_.altherma_return[sizeof(s_.altherma_return) - 1] = 0;
+      migrated = true;
+    }
+    if (migrated) {
+      ESP_LOGI(TAG, "Altherma paths updated to ESPHome_Altherma 2.6.3 entity names");
+      this->save_settings_();
+    }
+  }
 }
 
 void UFHComponent::save_settings_() {
@@ -1503,6 +1602,16 @@ void UFHComponent::per_second_(uint32_t now_ms, const ESPTime &now) {
     }
     if (pump_out_ && !any_relay_ && ex_state_ == 0 && s_.pump_mode == PUMP_ON)
       w += (w.empty() ? "" : "; ") + std::string("pump on, no zone open");
+    if (s_.opt_altherma && alt_err_status_ != -1) {
+      char b[48];
+      if (alt_err_status_ == 0)
+        snprintf(b, sizeof(b), "Altherma link: no response");
+      else if (alt_err_status_ == -2)
+        snprintf(b, sizeof(b), "Altherma link: bad response");
+      else
+        snprintf(b, sizeof(b), "Altherma link: HTTP %d", (int) alt_err_status_);
+      w += (w.empty() ? "" : "; ") + std::string(b);
+    }
     if (w != last_warn_logged_) {
       if (w.empty())
         this->log_event_(EV_WARNING_CLEAR);
@@ -1613,10 +1722,12 @@ void UFHComponent::publish_entities_() {
 // ---------------------------------------------------------------------------------------------
 void UFHComponent::start_sources_() {
   if (s_.opt_altherma && s_.altherma_host[0]) {
-    snprintf(alt_url_flow_, sizeof(alt_url_flow_), "http://%s%s", s_.altherma_host, s_.altherma_flow);
-    snprintf(alt_url_return_, sizeof(alt_url_return_), "http://%s%s", s_.altherma_host, s_.altherma_return);
+    make_altherma_url(alt_url_flow_, sizeof(alt_url_flow_), s_.altherma_host, s_.altherma_flow);
+    make_altherma_url(alt_url_return_, sizeof(alt_url_return_), s_.altherma_host, s_.altherma_return);
     if (x_.alt_outdoor[0])
-      snprintf(alt_url_outdoor_, sizeof(alt_url_outdoor_), "http://%s%s", s_.altherma_host, x_.alt_outdoor);
+      make_altherma_url(alt_url_outdoor_, sizeof(alt_url_outdoor_), s_.altherma_host, x_.alt_outdoor);
+    else
+      alt_url_outdoor_[0] = 0;
     alt_wanted_ = true;  // the task is started from loop() once the network is up
   }
 }
