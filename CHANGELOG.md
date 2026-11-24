@@ -3,7 +3,7 @@
 All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
-## [0.6.0] - Unreleased
+## [0.6.0] - 2026-11-24
 
 ### Added
 - Second board **UFH tanque** (M5Stack Unit PoE-P4) in the same repo and installer:
