@@ -280,9 +280,24 @@ std::string UFHComponent::web_state_json() {
     tnk["pump"] = tank_pump_out_;
     tnk["heater"] = tank_heater_out_;
     tnk["manual"] = heater_manual_on_;
-    tnk["target"] = this->tank_target();
-    tnk["cut"] = this->tank_cut();
-    tnk["blocked"] = heater_auto_blocked_;
+    tnk["provider"] = tank_link_.tank_provider;
+    tnk["fresh"] = this->tank_udp_fresh();
+    tnk["age"] = this->tank_age_s();
+    put_num(tnk, "pwm", (float) tank_pwm_);
+    tnk["remote"] = true;
+    JsonArray seen = tnk["seen"].to<JsonArray>();
+    {
+      std::lock_guard<std::mutex> lock(alt_mtx_);
+      for (uint8_t i = 0; i < tank_seen_n_; i++) {
+        if (tank_seen_[i].name[0] == 0)
+          continue;
+        if (now_ms - tank_seen_[i].ms > 600000UL)
+          continue;
+        JsonObject o = seen.add<JsonObject>();
+        o["name"] = tank_seen_[i].name;
+        o["age"] = (int) ((now_ms - tank_seen_[i].ms) / 1000);
+      }
+    }
   }
   JsonArray ble = root["ble"].to<JsonArray>();
   for (const auto &b : ble_seen_) {
@@ -437,12 +452,22 @@ std::string UFHComponent::web_config_json() {
   }
   JsonObject tk = root["tank"].to<JsonObject>();
   tk["enabled"] = (bool) x_.opt_tank;
-  tk["target"] = this->tank_target();
-  tk["cut"] = this->tank_cut();
-  tk["hyst"] = x_.tank_hyst_x10 / 10.0f;
-  tk["comp_zero_min"] = x_.comp_zero_min;
-  tk["probe"] = x_.tank_probe;
-  tk["manual"] = heater_manual_on_;
+  tk["provider"] = tank_link_.tank_provider;
+  tk["remote"] = true;
+  {
+    JsonArray seen = tk["seen"].to<JsonArray>();
+    std::lock_guard<std::mutex> lock(alt_mtx_);
+    uint32_t now_ms2 = millis();
+    for (uint8_t i = 0; i < tank_seen_n_; i++) {
+      if (tank_seen_[i].name[0] == 0)
+        continue;
+      if (now_ms2 - tank_seen_[i].ms > 600000UL)
+        continue;
+      JsonObject o = seen.add<JsonObject>();
+      o["name"] = tank_seen_[i].name;
+      o["age"] = (int) ((now_ms2 - tank_seen_[i].ms) / 1000);
+    }
+  }
   JsonObject xo = root["extra"].to<JsonObject>();
   xo["boost"] = x10(x_.boost_x10);
   xo["boost_min"] = x_.boost_min;
@@ -643,21 +668,8 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
   if (tk.is<JsonObjectConst>()) {
     if (tk["enabled"].is<bool>())
       this->set_tank_enabled(tk["enabled"].as<bool>());
-    if (tk["target"].is<float>() || tk["target"].is<int>())
-      this->set_tank_target(tk["target"].as<float>());
-    if (tk["cut"].is<float>() || tk["cut"].is<int>())
-      this->set_tank_cut(tk["cut"].as<float>());
-    if (tk["comp_zero_min"].is<int>())
-      this->set_comp_zero_min((uint16_t) tk["comp_zero_min"].as<int>());
-    if (tk["manual"].is<bool>())
-      this->set_tank_heater_manual(tk["manual"].as<bool>());
-    if (tk["probe"].is<const char *>()) {
-      copy_str(x_.tank_probe, sizeof(x_.tank_probe), tk["probe"]);
-#ifdef USE_UFH_ONE_WIRE
-      ow_tank_addr_ = x_.tank_probe[0] ? parse_hex64(x_.tank_probe) : 0;
-#endif
-      this->save_extra_();
-    }
+    if (tk["provider"].is<const char *>())
+      this->set_tank_provider(tk["provider"].as<const char *>());
   }
   if (root["zones"].is<JsonArrayConst>()) {
     uint8_t i = 0;
@@ -808,9 +820,6 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
   this->log_event_(EV_SETTINGS);
   if (!restart) {
     this->start_sources_();
-#ifdef USE_UFH_ONE_WIRE
-    ow_tank_addr_ = x_.tank_probe[0] ? parse_hex64(x_.tank_probe) : 0;
-#endif
   }
   ESP_LOGI(TAG, "Settings saved%s", restart ? " (restart needed)" : "");
   if (restart || (root["restart"].is<bool>() && root["restart"].as<bool>()))

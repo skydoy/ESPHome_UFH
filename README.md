@@ -35,7 +35,7 @@ Details: [what you need](docs/getting-started.md) · [wiring](docs/wiring.md)
 
 ## Install in 3 steps
 
-1. **Flash** — Open the **[web installer](https://skydoy.github.io/ESPHome_UFH/)**, pick the board, plug it in by USB-C → **Install**.
+1. **Flash** — Open the **[web installer](https://skydoy.github.io/ESPHome_UFH/)**, pick **UFH zonas** or **UFH tanque**, plug it in by USB-C → **Install**.
 2. **Connect** — network cable (PoE, or 5 V on USB-C) and the relays ([wiring](docs/wiring.md)).
 3. **Set up** — open `http://<device-ip>/` and follow the **wizard** (zones, sensors, schedules). Home Assistant is optional.
 
@@ -45,7 +45,7 @@ Details: [what you need](docs/getting-started.md) · [wiring](docs/wiring.md)
 - Sensors per zone: **Shelly H&T** (Wi-Fi), **MQTT**, **Home Assistant** or **DS18B20**
 - **Pump** with delays and **heat demand** for the heat pump / boiler
 - **Live diagram** on the web page, setup wizard, schedule editor, zone balance
-- Optional: open window, optimum start, solar surplus, two-rate tariff, anti-seize, floor limit, ESPHome_Altherma link
+- Optional: open window, optimum start, solar surplus, two-rate tariff, anti-seize, floor limit, ESPHome_Altherma link, second board for a [buffer tank](docs/tank.md)
 - One-click firmware updates (or automatic at night)
 
 ## Docs & more

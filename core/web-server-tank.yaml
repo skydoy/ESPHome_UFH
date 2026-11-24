@@ -1,0 +1,19 @@
+# Local web page at http://<device-ip>/ for the UFH tanque board (same web-ui.js, role=tank).
+web_server:
+  port: 80
+  version: 3
+  log: true
+  js_include: web-ui.js
+  sorting_groups:
+    - id: group_tank
+      name: "Tank"
+      sorting_weight: 6
+    - id: group_altherma
+      name: "Altherma"
+      sorting_weight: 7
+    - id: group_house
+      name: "House"
+      sorting_weight: 5
+    - id: group_maintenance
+      name: "Maintenance"
+      sorting_weight: 90

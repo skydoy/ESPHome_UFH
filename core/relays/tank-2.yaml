@@ -1,0 +1,46 @@
+# UFH tanque: two relays (pump power and emergency heater) plus a PWM output for pump speed.
+# M5Stack Unit PoE-P4 defaults:
+#   Hat2-Bus pin 2 = GPIO44  pump relay
+#   Hat2-Bus pin 4 = GPIO43  heater relay
+#   SDIO pin 2     = GPIO10  PWM (Grundfos signal cable; 1000 Hz, profile A)
+#   SDIO pin 3     = GPIO11  1-Wire (DS18B20 in the tank)
+# Whether a relay switches on with HIGH or LOW is chosen in the setup wizard (default HIGH).
+# PWM only works if the pump nameplate says PWM. The UPML 25-95 130 is listed as AUTO.
+substitutions:
+  board_label: "M5Stack Unit PoE-P4 · UFH tanque (2 relés + PWM)"
+  pump_relay_pin: GPIO44
+  heater_relay_pin: GPIO43
+  pwm_pin: GPIO10
+  pwm_pin_number: "10"
+  onewire_pin: GPIO11
+  relays_active_low: "false"
+
+output:
+  - platform: gpio
+    id: relay_pump
+    pin:
+      number: ${pump_relay_pin}
+  - platform: gpio
+    id: relay_heater
+    pin:
+      number: ${heater_relay_pin}
+  - platform: ledc
+    id: pwm_pump
+    pin: ${pwm_pin}
+    frequency: 1000Hz
+
+one_wire:
+  - platform: gpio
+    id: ow_bus
+    pin: ${onewire_pin}
+
+ufh_tank:
+  id: tank_ctl
+  board_name: ${board_label}
+  time_id: sntp_time
+  relays_active_low: ${relays_active_low}
+  one_wire_id: ow_bus
+  pump: relay_pump
+  heater: relay_heater
+  pwm: pwm_pump
+  pwm_pin: ${pwm_pin_number}

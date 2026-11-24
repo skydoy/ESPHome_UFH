@@ -12,4 +12,4 @@
 
 ## Can I add a buffer tank to this firmware?
 
-Yes, as an optional module from 0.6.0. See [Buffer tank](tank.md). It stays off until you enable it. The existing heat-demand relay does not become the tank pump.
+Yes, from 0.6.0, as a **second board** «UFH tanque» flashed from the same installer. See [Buffer tank](tank.md). The zones board only talks to it over UDP; the existing heat-demand relay stays as it is.

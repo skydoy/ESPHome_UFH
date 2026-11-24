@@ -1,0 +1,5 @@
+# FACTORY firmware: ESPHome UFH tanque, M5Stack Unit PoE-P4.
+# Built by GitHub Actions for the web installer. Do not adopt this file.
+packages:
+  device: !include ufh-tank-p4-poe.yaml
+  auto_update: !include ../core/auto-update.yaml

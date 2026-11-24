@@ -51,6 +51,10 @@ jobs:
             base: devices/ufh-p4-poe-direct.yaml
             factory: devices/ufh-p4-poe-direct.factory.yaml
             site_dir: firmware/p4-poe-direct
+          - key: p4-poe-tank
+            base: devices/ufh-tank-p4-poe.yaml
+            factory: devices/ufh-tank-p4-poe.factory.yaml
+            site_dir: firmware/p4-poe-tank
     env:
       BASE_YAML: ${{ matrix.base }}
       DEVICE_YAML: ${{ matrix.factory }}
@@ -106,6 +110,7 @@ jobs:
           ls -R site
           test -f site/firmware/p4-poe/manifest.json
           test -f site/firmware/p4-poe-direct/manifest.json
+          test -f site/firmware/p4-poe-tank/manifest.json
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.13"
@@ -172,12 +177,12 @@ jobs:
       - name: Prepare assets
         run: |
           mkdir assets
-          for d in p4-poe p4-poe-direct; do
+          for d in p4-poe p4-poe-direct p4-poe-tank; do
             for f in $(find "fw/firmware/$d" -name '*.factory.bin' -o -name '*.ota.bin' | sort); do
               b=$(basename "$f"); cp "$f" "assets/esphome-ufh-$d-${TAG}.${b#*.}"
             done
           done
-          test "$(ls assets | wc -l)" -ge 4
+          test "$(ls assets | wc -l)" -ge 6
           (cd assets && sha256sum * > SHA256SUMS.txt)
           ls -l assets && cat assets/SHA256SUMS.txt
       - name: Create or update the release

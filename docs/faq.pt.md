@@ -10,6 +10,6 @@
 
 **É grátis?** Para uso pessoal e não comercial ([licença](licence.md)).
 
-## Posso acrescentar um tanque pulmão a este firmware?
+## Posso acrescentar um tanque de inércia a este firmware?
 
-Sim, como módulo opcional a partir da 0.6.0. Vê [Tanque](tank.md). Fica desligado até o ligares. O relé de pedido de calor que já tens não passa a ser a bomba do tanque.
+Sim, a partir da 0.6.0, como **segunda placa** «UFH tanque», gravada no mesmo instalador. Vê [Tanque](tank.md). A placa das zonas só fala com ela por UDP; o relé de pedido de calor continua como está.

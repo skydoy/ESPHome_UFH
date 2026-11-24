@@ -19,6 +19,7 @@
 #endif
 
 #include "packet_rx.h"
+#include "packet_tx.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -291,6 +292,12 @@ void UFHComponent::setup() {
     this->save_extra_();
     ESP_LOGI(TAG, "Altherma outdoor path updated to the ESPHome_Altherma 2.6.3 entity name");
   }
+  this->pref_tank_link_ = global_preferences->make_preference<TankLinkCfg>(fnv1_hash("ufh_tank_link_v1"));
+  if (!this->pref_tank_link_.load(&this->tank_link_) || this->tank_link_.magic != TANK_LINK_MAGIC) {
+    memset(&this->tank_link_, 0, sizeof(this->tank_link_));
+    this->tank_link_.magic = TANK_LINK_MAGIC;
+  }
+  this->tank_link_.tank_provider[sizeof(this->tank_link_.tank_provider) - 1] = 0;
   this->pref_week_ = global_preferences->make_preference<WeekLog>(fnv1_hash("ufh_week_v1"));
   if (!this->pref_week_.load(&this->wk_) || this->wk_.magic != WEEK_MAGIC || this->wk_.idx > 6) {
     memset(&this->wk_, 0, sizeof(this->wk_));
@@ -336,10 +343,6 @@ void UFHComponent::setup() {
     ow_addr_[i][1] = z.floor.type == SRC_DS18B20 ? parse_hex64(z.floor.param) : 0;
 #endif
   }
-#ifdef USE_UFH_ONE_WIRE
-  ow_tank_addr_ = x_.tank_probe[0] ? parse_hex64(x_.tank_probe) : 0;
-#endif
-
   this->apply_entities_();
   this->start_sources_();
   this->log_event_(EV_BOOT);
@@ -358,6 +361,19 @@ void UFHComponent::load_settings_() {
     s_.zone_count = 1;
   if (s_.zone_count > n)
     s_.zone_count = n;
+  // Unreleased 0.6.0-in-UFH assigned ROLE_TANK_PUMP/HEATER on this board. Those
+  // relays are gone: the tank lives on the second board. Clear the roles once.
+  bool role_migrated = false;
+  for (uint8_t k = 0; k < MAX_RELAYS; k++) {
+    if (s_.relay_role[k] == ROLE_TANK_PUMP || s_.relay_role[k] == ROLE_TANK_HEATER) {
+      s_.relay_role[k] = ROLE_NONE;
+      role_migrated = true;
+    }
+  }
+  if (role_migrated) {
+    ESP_LOGI(TAG, "Migrated local tank pump/heater roles: the tank is now a second board");
+    this->save_settings_();
+  }
   // make strings safe
   for (auto &z : s_.zones) {
     z.name[sizeof(z.name) - 1] = 0;
@@ -414,6 +430,10 @@ void UFHComponent::save_net_() {
 
 void UFHComponent::save_extra_() {
   this->pref_extra_.save(&this->x_);
+  global_preferences->sync();
+}
+void UFHComponent::save_tank_link_() {
+  this->pref_tank_link_.save(&this->tank_link_);
   global_preferences->sync();
 }
 
@@ -1172,9 +1192,15 @@ void UFHComponent::altherma_error_text(bool outdoor, char *buf, size_t len) cons
   buf[len - 1] = 0;
 }
 float UFHComponent::tank_temp() const {
-  if (!x_.opt_tank)
+  if (!x_.opt_tank || !tank_link_.tank_provider[0])
     return NAN;
-  return tank_temp_ms_ != 0 && millis() - tank_temp_ms_ < 300000UL ? (float) tank_temp_ : NAN;
+  return tank_udp_fresh() ? (float) tank_temp_ : NAN;
+}
+bool UFHComponent::tank_udp_fresh() const {
+  return tank_temp_ms_ != 0 && millis() - tank_temp_ms_ < kUdpStaleMs;
+}
+int UFHComponent::tank_age_s() const {
+  return this->tank_udp_fresh() ? (int) ((millis() - tank_temp_ms_) / 1000) : -1;
 }
 
 void UFHZoneButton::press_action() {
@@ -1540,22 +1566,6 @@ void UFHComponent::update_outputs_(uint32_t now_ms, const ESPTime &now) {
   bool demand = any && s_.house_mode != HOUSE_SUMMER && ex_state_ == 0 &&
                 (demand_out_ || (now_ms - any_since_ms_) >= (uint32_t) s_.pump_start_s * 1000UL);
 
-  this->update_tank_(now_ms);
-
-  bool tank_pump = false;
-  if (x_.opt_tank) {
-    if (ex_state_ == 2)
-      tank_pump = true;
-    else if (ex_state_ != 0)
-      tank_pump = false;
-    else if (s_.house_mode == HOUSE_SUMMER)
-      tank_pump = false;
-    else if (any)
-      tank_pump = true;
-    else
-      tank_pump = tank_pump_out_ && (now_ms - none_since_ms_) < (uint32_t) s_.pump_stop_s * 1000UL;
-  }
-
   bool has_pump = false, has_demand = false;
   for (uint8_t k = this->local_zone_count_(); k < relays_.size(); k++) {
     bool on = false;
@@ -1571,12 +1581,6 @@ void UFHComponent::update_outputs_(uint32_t now_ms, const ESPTime &now) {
       case ROLE_PUMP_DEMAND:
         on = pump || demand;
         has_pump = has_demand = true;
-        break;
-      case ROLE_TANK_PUMP:
-        on = tank_pump;
-        break;
-      case ROLE_TANK_HEATER:
-        on = tank_heater_out_;
         break;
       default:
         on = false;
@@ -1599,7 +1603,27 @@ void UFHComponent::update_outputs_(uint32_t now_ms, const ESPTime &now) {
   }
   pump_out_ = has_pump && pump;
   demand_out_ = has_demand ? demand : (any && s_.house_mode != HOUSE_SUMMER);
-  tank_pump_out_ = tank_pump;
+
+  // Values we broadcast to the tank board (includes circulator overrun after the last zone closes).
+  uint8_t oz = 0;
+  for (uint8_t i = 0; i < zc; i++)
+    if (zr_[i].relay)
+      oz++;
+  bool demand_tx = false;
+  if (ex_state_ == 2)
+    demand_tx = true;
+  else if (ex_state_ != 0)
+    demand_tx = false;
+  else if (s_.house_mode == HOUSE_SUMMER)
+    demand_tx = false;
+  else if (any)
+    demand_tx = true;
+  else
+    demand_tx = heat_demand_tx_ && (now_ms - none_since_ms_) < (uint32_t) s_.pump_stop_s * 1000UL;
+  if (oz != open_zones_ || demand_tx != heat_demand_tx_)
+    tx_dirty_ = true;
+  open_zones_ = oz;
+  heat_demand_tx_ = demand_tx;
 
   // text: active zones
   std::string t;
@@ -1775,10 +1799,10 @@ void UFHComponent::per_second_(uint32_t now_ms, const ESPTime &now) {
     }
     if (comp_zero_warn_)
       w += (w.empty() ? "" : "; ") + std::string("compressor 0 with heat demand: turn the heater on by hand");
-    if (x_.opt_tank && tank_cut_warn_ms_ != 0 && now_ms - tank_cut_warn_ms_ < 600000UL)
-      w += (w.empty() ? "" : "; ") + std::string("tank over 45 C: heater cut off");
-    if (x_.opt_tank && (x_.tank_probe[0] == 0 || std::isnan(this->tank_temp())))
-      w += (w.empty() ? "" : "; ") + std::string("tank probe");
+    if (x_.opt_tank && !tank_link_.tank_provider[0])
+      w += (w.empty() ? "" : "; ") + std::string("Tank: pick a board");
+    if (x_.opt_tank && tank_link_.tank_provider[0] && !this->tank_udp_fresh() && s_.configured)
+      w += (w.empty() ? "" : "; ") + std::string("Tank link: no response");
     if (w != last_warn_logged_) {
       if (w.empty())
         this->log_event_(EV_WARNING_CLEAR);
@@ -1888,7 +1912,8 @@ void UFHComponent::publish_entities_() {
 // sources
 // ---------------------------------------------------------------------------------------------
 void UFHComponent::start_sources_() {
-  udp_wanted_ = s_.opt_altherma;
+  // Always listen/send on 18511: Altherma discovery, tank discovery and heat-demand TX.
+  udp_wanted_ = true;
   if (s_.opt_altherma && x_.altherma_provider[0] && s_.altherma_host[0]) {
     make_altherma_url(alt_url_flow_, sizeof(alt_url_flow_), s_.altherma_host, s_.altherma_flow);
     make_altherma_url(alt_url_return_, sizeof(alt_url_return_), s_.altherma_host, s_.altherma_return);
@@ -2119,10 +2144,6 @@ void UFHComponent::ow_tick_(uint32_t now_ms) {
           PendingReading r{(uint8_t) (i + 1), f == 1, t, NAN, -1};
           this->web_reading(r);
         }
-    if (ow_tank_addr_ != 0 && ow_tank_addr_ == addr) {
-      tank_temp_ = t;
-      tank_temp_ms_ = now_ms ? now_ms : 1;
-    }
   }
 }
 #endif
@@ -2227,122 +2248,29 @@ void UFHComponent::set_tank_enabled(bool on) {
     return;
   x_.opt_tank = on ? 1 : 0;
   if (!on) {
-    heater_manual_on_ = false;
-    heater_auto_blocked_ = false;
     tank_heater_out_ = false;
     tank_pump_out_ = false;
-  }
-  this->save_extra_();
-}
-
-void UFHComponent::set_tank_target(float v) {
-  v = std::clamp(v, 30.0f, 44.0f);
-  int16_t x = to_x10(v);
-  if (x_.tank_target_x10 == x)
-    return;
-  x_.tank_target_x10 = x;
-  if (x_.tank_cut_x10 <= x_.tank_target_x10)
-    x_.tank_cut_x10 = std::min<int16_t>(450, (int16_t) (x_.tank_target_x10 + 10));
-  this->save_extra_();
-}
-
-void UFHComponent::set_tank_cut(float v) {
-  v = std::clamp(v, 35.0f, 45.0f);
-  int16_t x = to_x10(v);
-  if (x < x_.tank_target_x10 + 5)
-    x = (int16_t) (x_.tank_target_x10 + 5);
-  if (x > 450)
-    x = 450;
-  if (x_.tank_cut_x10 == x)
-    return;
-  x_.tank_cut_x10 = x;
-  this->save_extra_();
-}
-
-void UFHComponent::set_comp_zero_min(uint16_t v) {
-  if (v < 5)
-    v = 5;
-  if (v > 120)
-    v = 120;
-  if (x_.comp_zero_min == v)
-    return;
-  x_.comp_zero_min = v;
-  this->save_extra_();
-}
-
-void UFHComponent::set_tank_heater_manual(bool on) {
-  if (!x_.opt_tank)
-    on = false;
-  if (on) {
-    heater_manual_on_ = true;
-    heater_auto_blocked_ = false;
-  } else {
     heater_manual_on_ = false;
-    if (this->heat_pump_fault())
-      heater_auto_blocked_ = true;
-  }
-}
-
-void UFHComponent::update_tank_(uint32_t now_ms) {
-  // compressor-zero warning (never auto-starts the heater)
-  bool demand = any_relay_ && s_.house_mode != HOUSE_SUMMER;
-  float freq = this->compressor_freq();
-  if (demand && !std::isnan(freq) && freq <= 0.0f && this->heat_pump_fault_state() == 0) {
-    if (comp_zero_since_ms_ == 0)
-      comp_zero_since_ms_ = now_ms ? now_ms : 1;
-    uint32_t need = (uint32_t) x_.comp_zero_min * 60000UL;
-    if (need < 60000UL)
-      need = 60000UL;
-    comp_zero_warn_ = (now_ms - comp_zero_since_ms_) >= need;
-  } else {
-    comp_zero_since_ms_ = 0;
     comp_zero_warn_ = false;
   }
+  this->save_extra_();
+}
 
-  if (!x_.opt_tank) {
+void UFHComponent::set_tank_provider(const char *name) {
+  char prev[sizeof(tank_link_.tank_provider)];
+  memcpy(prev, tank_link_.tank_provider, sizeof(prev));
+  memset(tank_link_.tank_provider, 0, sizeof(tank_link_.tank_provider));
+  if (name != nullptr)
+    strncpy(tank_link_.tank_provider, name, sizeof(tank_link_.tank_provider) - 1);
+  if (memcmp(prev, tank_link_.tank_provider, sizeof(prev)) != 0) {
+    tank_temp_ms_ = 0;
+    tank_temp_ = NAN;
+    tank_pwm_ = NAN;
+    tank_pump_out_ = false;
     tank_heater_out_ = false;
-    return;
-  }
-
-  float t = this->tank_temp();
-  bool probe_ok = !std::isnan(t);
-  const float cut = x10(x_.tank_cut_x10);
-  const float target = x10(x_.tank_target_x10);
-  const float hyst = x10(x_.tank_hyst_x10 > 0 ? x_.tank_hyst_x10 : 30);
-  bool over = probe_ok && t >= cut;
-  if (over)
-    tank_cut_warn_ms_ = now_ms ? now_ms : 1;
-
-  bool fault = this->heat_pump_fault();
-  if (!fault)
-    heater_auto_blocked_ = false;
-
-  bool want = false;
-  if (probe_ok && !over && s_.house_mode != HOUSE_SUMMER && demand) {
-    if (fault && !heater_auto_blocked_) {
-      if (!tank_heater_out_)
-        want = t <= target - hyst;
-      else
-        want = t < target;
-    }
-    if (heater_manual_on_)
-      want = true;  // still subject to cutoff above
-  }
-  if (over || !probe_ok)
-    want = false;
-
-  // min on 2 min, min off 5 min
-  const uint32_t min_on = 120000UL, min_off = 300000UL;
-  if (want != tank_heater_out_ && heater_since_ms_ != 0) {
-    uint32_t held = now_ms - heater_since_ms_;
-    if (tank_heater_out_ && held < min_on && !over)
-      want = true;
-    else if (!tank_heater_out_ && held < min_off)
-      want = false;
-  }
-  if (want != tank_heater_out_) {
-    tank_heater_out_ = want;
-    heater_since_ms_ = now_ms ? now_ms : 1;
+    heater_manual_on_ = false;
+    comp_zero_warn_ = false;
+    this->save_tank_link_();
   }
 }
 
@@ -2356,13 +2284,66 @@ void UFHComponent::udp_task_start_() {
 
 void UFHComponent::udp_on_packet_(const uint8_t *data, size_t len) {
   packet_rx::Packet pkt{};
-  if (!packet_rx::parse(data, len, pkt) || pkt.is_ping || !packet_rx::looks_like_altherma(pkt))
+  if (!packet_rx::parse(data, len, pkt) || pkt.is_ping || !pkt.hostname[0])
     return;
-  if (!pkt.hostname[0])
+  std::string me = App.get_name().str();
+  if (!me.empty() && me == pkt.hostname)
     return;
   uint32_t now = millis();
   if (now == 0)
     now = 1;
+
+  if (packet_rx::looks_like_tank(pkt)) {
+    std::lock_guard<std::mutex> lock(alt_mtx_);
+    int slot = -1;
+    for (uint8_t i = 0; i < tank_seen_n_; i++) {
+      if (strcmp(tank_seen_[i].name, pkt.hostname) == 0) {
+        slot = i;
+        break;
+      }
+    }
+    if (slot < 0) {
+      if (tank_seen_n_ < MAX_TANK_SEEN) {
+        slot = tank_seen_n_++;
+      } else {
+        slot = 0;
+        for (uint8_t i = 1; i < tank_seen_n_; i++)
+          if (tank_seen_[i].ms < tank_seen_[slot].ms)
+            slot = i;
+      }
+      tank_seen_[slot] = TankSeen{};
+      tank_seen_[slot].temp = tank_seen_[slot].pwm = NAN;
+      tank_seen_[slot].pump = tank_seen_[slot].heater = tank_seen_[slot].manual =
+          tank_seen_[slot].comp_zero = -1;
+    }
+    strncpy(tank_seen_[slot].name, pkt.hostname, sizeof(tank_seen_[slot].name) - 1);
+    tank_seen_[slot].name[sizeof(tank_seen_[slot].name) - 1] = 0;
+    tank_seen_[slot].ms = now;
+    if (const auto *s = packet_rx::find_sensor(pkt, "tank_temp"))
+      tank_seen_[slot].temp = s->value;
+    if (const auto *s = packet_rx::find_sensor(pkt, "tank_pwm"))
+      tank_seen_[slot].pwm = s->value;
+    if (const auto *b = packet_rx::find_binary(pkt, "tank_pump"))
+      tank_seen_[slot].pump = b->value ? 1 : 0;
+    if (const auto *b = packet_rx::find_binary(pkt, "tank_heater"))
+      tank_seen_[slot].heater = b->value ? 1 : 0;
+    if (const auto *b = packet_rx::find_binary(pkt, "tank_heater_manual"))
+      tank_seen_[slot].manual = b->value ? 1 : 0;
+    if (const auto *b = packet_rx::find_binary(pkt, "tank_comp_zero"))
+      tank_seen_[slot].comp_zero = b->value ? 1 : 0;
+    if (tank_link_.tank_provider[0] && strcmp(tank_link_.tank_provider, pkt.hostname) == 0) {
+      tank_temp_ = tank_seen_[slot].temp;
+      tank_temp_ms_ = now;
+      tank_pwm_ = tank_seen_[slot].pwm;
+      tank_pump_out_ = tank_seen_[slot].pump == 1;
+      tank_heater_out_ = tank_seen_[slot].heater == 1;
+      heater_manual_on_ = tank_seen_[slot].manual == 1;
+      comp_zero_warn_ = tank_seen_[slot].comp_zero == 1;
+    }
+  }
+
+  if (!packet_rx::looks_like_altherma(pkt))
+    return;
 
   auto apply_vals = [&](AltSeen &s) {
     strncpy(s.name, pkt.hostname, sizeof(s.name) - 1);
@@ -2399,7 +2380,6 @@ void UFHComponent::udp_on_packet_(const uint8_t *data, size_t len) {
             alt_seen_[slot].out_err = alt_seen_[slot].in_err = NAN;
         alt_seen_[slot].fault = -1;
       } else {
-        // replace the stalest
         slot = 0;
         for (uint8_t i = 1; i < alt_seen_n_; i++)
           if (alt_seen_[i].ms < alt_seen_[slot].ms)
@@ -2424,6 +2404,25 @@ void UFHComponent::udp_on_packet_(const uint8_t *data, size_t len) {
   }
 }
 
+void UFHComponent::udp_send_(int sock) {
+  std::string name = App.get_name().str();
+  if (name.empty())
+    return;
+  packet_rx::TxSensor sensors[1] = {{"ufh_open_zones", (float) open_zones_}};
+  packet_rx::TxBinary binary[1] = {{"ufh_heat_demand", heat_demand_tx_ ? (uint8_t) 1 : (uint8_t) 0}};
+  uint8_t buf[256];
+  size_t n = 0;
+  if (!packet_rx::build(buf, sizeof(buf), n, name.c_str(), sensors, 1, binary, 1))
+    return;
+  sockaddr_in dst{};
+  dst.sin_family = AF_INET;
+  dst.sin_port = htons(18511);
+  dst.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+  ::sendto(sock, buf, n, 0, reinterpret_cast<sockaddr *>(&dst), sizeof(dst));
+  last_tx_ms_ = millis();
+  tx_dirty_ = false;
+}
+
 void UFHComponent::udp_task_(void *arg) {
   auto *self = static_cast<UFHComponent *>(arg);
   for (;;) {
@@ -2440,6 +2439,7 @@ void UFHComponent::udp_task_(void *arg) {
 #ifdef SO_REUSEPORT
     setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes));
 #endif
+    setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &yes, sizeof(yes));
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(18511);
@@ -2450,20 +2450,23 @@ void UFHComponent::udp_task_(void *arg) {
       vTaskDelay(pdMS_TO_TICKS(2000));
       continue;
     }
-    // recv timeout so we notice a lost interface
     timeval tv{};
-    tv.tv_sec = 2;
+    tv.tv_sec = 1;
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-    ESP_LOGI(TAG, "Listening for Altherma packet_transport on UDP 18511");
+    ESP_LOGI(TAG, "Listening for packet_transport on UDP 18511");
     uint8_t buf[512];
     while (self->net_up_) {
       int n = ::recvfrom(sock, buf, sizeof(buf), 0, nullptr, nullptr);
       if (n > 0)
         self->udp_on_packet_(buf, (size_t) n);
+      uint32_t now = millis();
+      if (self->tx_dirty_ || self->last_tx_ms_ == 0 || now - self->last_tx_ms_ >= 15000UL)
+        self->udp_send_(sock);
     }
     close(sock);
   }
 }
+
 
 }  // namespace ufh
 }  // namespace esphome

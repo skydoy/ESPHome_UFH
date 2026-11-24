@@ -119,6 +119,16 @@ def main() -> int:
     bad[0] = 0
     check(parse(bytes(bad)) is None, "reject bad magic")
     check(parse(b"") is None, "reject empty")
+
+    def speed_to_duty(speed: float, invert: bool) -> float:
+        speed = max(0.0, min(100.0, speed))
+        if not invert:
+            return speed
+        return 91.0 - speed * (91.0 - 10.0) / 100.0
+
+    check(abs(speed_to_duty(100, True) - 10) < 0.01, "profile A max speed -> 10% duty")
+    check(abs(speed_to_duty(0, True) - 91) < 0.01, "profile A min speed -> 91% duty")
+    check(abs(speed_to_duty(50, False) - 50) < 0.01, "direct duty equals speed")
     if fails:
         print(f"{fails} check(s) failed", file=sys.stderr)
         return 1

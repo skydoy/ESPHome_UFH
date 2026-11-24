@@ -128,7 +128,15 @@
   <nav class="wiz-steps" id="wiz-steps"></nav>
   <section class="card">
     <h2><span class="num">1</span><span class="pt">A placa</span><span class="en">The board</span></h2>
-    <form id="board-form" class="boards">
+    <form id="kind-form" class="boards">
+      <label><input type="radio" name="kind" value="zones" checked>
+        <span class="t"><span class="pt">UFH zonas</span><span class="en">UFH zones</span></span>
+        <div class="d"><span class="pt">A placa das zonas, junto ao coletor: válvulas, circuladora e pedido de calor.</span><span class="en">The zones board, next to the manifold: valves, circulator and heat demand.</span></div></label>
+      <label><input type="radio" name="kind" value="tank">
+        <span class="t"><span class="pt">UFH tanque</span><span class="en">UFH tank</span></span>
+        <div class="d"><span class="pt">A placa ao lado do tanque: bomba, resistência de emergência e sonda. Fala com a UFH e a Altherma por UDP.</span><span class="en">The board next to the tank: pump, emergency heater and probe. It talks to the UFH and the Altherma over UDP.</span></div></label>
+    </form>
+    <form id="board-form" class="boards" data-for="zones">
       <label><input type="radio" name="board" value="firmware/p4-poe-direct/manifest.json" data-board="p4-poe-direct" checked>
         <span class="t"><span class="pt">Relés nos pinos do ESP</span><span class="en">Relays on the ESP pins</span></span>
         <div class="d"><span class="pt">Até 13 relés ligados diretamente (placas com entradas de 3,3 V, ex.: Denkovi do DAEnetIP4).</span><span class="en">Up to 13 relays wired directly (3.3 V input boards, e.g. the Denkovi board of a DAEnetIP4).</span></div></label>
@@ -136,6 +144,10 @@
         <span class="t">MCP23017</span>
         <div class="d"><span class="pt">Até 16 relés através de um MCP23017 na porta Grove (qualquer placa de 16 relés).</span><span class="en">Up to 16 relays through an MCP23017 on the Grove port (any 16-channel relay board).</span></div></label>
     </form>
+    <p class="note ok" data-for="tank" hidden>
+      <span class="pt">A placa do tanque usa um módulo de 2 relés (GPIO44 bomba, GPIO43 resistência), PWM no GPIO10 e a sonda no GPIO11. Um termóstato mecânico em série com a resistência é obrigatório.</span>
+      <span class="en">The tank board uses a 2-relay module (GPIO44 pump, GPIO43 heater), PWM on GPIO10 and the probe on GPIO11. A mechanical thermostat in series with the heater is required.</span>
+    </p>
     <p class="brandline">
       <span class="pt">M5Stack Unit PoE-P4 (Ethernet com PoE, já vem em caixa). Substitui controladores como o Denkovi DAEnetIP4.</span>
       <span class="en">M5Stack Unit PoE-P4 (Ethernet with PoE, comes in its own case). Replaces controllers such as the Denkovi DAEnetIP4.</span>
@@ -231,11 +243,21 @@
     showVersion();
   }
   function selectBoard() {
-    const board = document.querySelector('input[name="board"]:checked');
-    button.setAttribute('manifest', board.value);
+    const kind = document.querySelector('input[name="kind"]:checked');
+    const isTank = kind && kind.value === 'tank';
+    document.querySelectorAll('[data-for]').forEach(el => {
+      el.hidden = el.dataset.for !== (isTank ? 'tank' : 'zones');
+    });
+    if (isTank) {
+      button.setAttribute('manifest', 'firmware/p4-poe-tank/manifest.json');
+    } else {
+      const board = document.querySelector('input[name="board"]:checked');
+      button.setAttribute('manifest', board.value);
+    }
     document.querySelectorAll('[data-board]').forEach(el => {
       if (el.tagName === 'INPUT') return;
-      el.hidden = el.dataset.board !== board.dataset.board;
+      const board = document.querySelector('input[name="board"]:checked');
+      el.hidden = isTank || el.dataset.board !== board.dataset.board;
     });
     showVersion();
   }
@@ -260,6 +282,7 @@
   themeLabel();
   if (!('serial' in navigator)) document.getElementById('nosupport').style.display = 'block';
   document.getElementById('board-form').addEventListener('change', selectBoard);
+  document.getElementById('kind-form').addEventListener('change', selectBoard);
   let saved = null; try { saved = localStorage.getItem('lang'); } catch (e) {}
   selectBoard();
   setLang(saved || ((navigator.language || 'en').toLowerCase().startsWith('pt') ? 'pt' : 'en'));

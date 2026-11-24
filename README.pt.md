@@ -35,7 +35,7 @@ Detalhes: [o que precisas](docs/getting-started.pt.md) · [ligações](docs/wiri
 
 ## Instalar em 3 passos
 
-1. **Instalar o firmware** — Abre o **[instalador web](https://skydoy.github.io/ESPHome_UFH/)**, escolhe a placa, liga-a por USB-C → **Instalar**.
+1. **Instalar o firmware** — Abre o **[instalador web](https://skydoy.github.io/ESPHome_UFH/)**, escolhe **UFH zonas** ou **UFH tanque**, liga-a por USB-C → **Instalar**.
 2. **Ligar** — cabo de rede (PoE, ou 5 V no USB-C) e os relés ([ligações](docs/wiring.pt.md)).
 3. **Configurar** — abre `http://<ip-da-placa>/` e segue o **assistente** (zonas, sensores, horários). O Home Assistant é opcional.
 
@@ -45,7 +45,7 @@ Detalhes: [o que precisas](docs/getting-started.pt.md) · [ligações](docs/wiri
 - Sensores à escolha por zona: **Shelly H&T** (Wi-Fi), **MQTT**, **Home Assistant** ou **DS18B20**
 - **Bomba** com atrasos e **pedido de calor** à bomba de calor / caldeira
 - **Diagrama em tempo real** na página web, assistente, editor de horários, equilíbrio das zonas
-- Opcionais: janela aberta, arranque antecipado, excedente solar, tarifa bi-horária, anti-bloqueio, limite do pavimento, ligação ao ESPHome_Altherma
+- Opcionais: janela aberta, arranque antecipado, excedente solar, tarifa bi-horária, anti-bloqueio, limite do pavimento, ligação ao ESPHome_Altherma, segunda placa para o [tanque de inércia](docs/tank.pt.md)
 - Atualizações com um clique (ou automáticas à noite)
 
 ## Documentação e mais

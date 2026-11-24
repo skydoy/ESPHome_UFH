@@ -25,8 +25,8 @@ Opcional: a placa aquece sozinha. O Home Assistant junta controlo remoto, histó
 | Heat Pump Min On / Off Time | Proteção contra ciclos curtos da bomba de calor (min, 0 = desligada) |
 | Flow / Return Temperature, Flow Return Difference | Água da bomba de calor (UDP, ou reserva HTTP) |
 | Compressor Frequency, Heat Pump Fault, Outdoor / Indoor Error Code, Altherma Link | UDP da placa Altherma escolhida |
-| Tank Temperature, Tank Pump, Emergency Heater, Manual Heater | Módulo do tanque ([detalhes](tank.md)) |
-| Tank Target, Tank Cutoff, Compressor Zero Delay, Tank Module | Definições do tanque |
+| Tank Temperature, Tank Pump, Emergency Heater, Tank Link, Tank Module | Placa das zonas: estado remoto do tanque por UDP ([detalhes](tank.md)) |
+| Tank Target, Tank Cutoff, Compressor Zero Delay, Manual Heater, Pump PWM, Open Zones | Placa do tanque: alvos e a resistência manual |
 
 ## Ações
 

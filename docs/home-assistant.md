@@ -25,8 +25,8 @@ Optional: the device heats on its own. Home Assistant adds remote control, histo
 | Heat Pump Min On / Off Time | Heat pump anti short-cycle (min, 0 = off) |
 | Flow / Return Temperature, Flow Return Difference | Heat pump water (UDP, or HTTP fallback) |
 | Compressor Frequency, Heat Pump Fault, Outdoor / Indoor Error Code, Altherma Link | UDP from the chosen Altherma board |
-| Tank Temperature, Tank Pump, Emergency Heater, Manual Heater | Buffer-tank module ([details](tank.md)) |
-| Tank Target, Tank Cutoff, Compressor Zero Delay, Tank Module | Tank settings |
+| Tank Temperature, Tank Pump, Emergency Heater, Tank Link, Tank Module | Zones board: remote tank status over UDP ([details](tank.md)) |
+| Tank Target, Tank Cutoff, Compressor Zero Delay, Manual Heater, Pump PWM, Open Zones | Tank board: setpoints and the manual heater |
 
 ## Actions
 

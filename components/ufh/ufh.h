@@ -283,21 +283,20 @@ class UFHComponent : public Component
   void altherma_error_text(bool outdoor, char *buf, size_t len) const;
   const char *altherma_provider() const { return x_.altherma_provider; }
   void set_altherma_provider(const char *name);
-  // tank module
+  // tank board link (UDP). Local relays 13/14 no longer drive a tank.
   bool tank_enabled() const { return x_.opt_tank != 0; }
   void set_tank_enabled(bool on);
+  const char *tank_provider() const { return tank_link_.tank_provider; }
+  void set_tank_provider(const char *name);
+  bool tank_udp_fresh() const;
+  int tank_age_s() const;
   float tank_temp() const;
   bool tank_pump_on() const { return tank_pump_out_; }
   bool tank_heater_on() const { return tank_heater_out_; }
   bool tank_heater_manual() const { return heater_manual_on_; }
-  void set_tank_heater_manual(bool on);
   bool compressor_zero_warn() const { return comp_zero_warn_; }
-  float tank_target() const { return x_.tank_target_x10 / 10.0f; }
-  float tank_cut() const { return x_.tank_cut_x10 / 10.0f; }
-  uint16_t comp_zero_min() const { return x_.comp_zero_min; }
-  void set_tank_target(float v);
-  void set_tank_cut(float v);
-  void set_comp_zero_min(uint16_t v);
+  uint8_t open_zones() const { return open_zones_; }
+  bool heat_demand_tx() const { return heat_demand_tx_; }
   bool outdoor_comp() const { return x_.opt_outdoor; }
   void set_outdoor_comp(bool on);
   void ha_set_outdoor_temperature(float t);
@@ -377,7 +376,8 @@ class UFHComponent : public Component
   void udp_task_start_();
   static void udp_task_(void *arg);
   void udp_on_packet_(const uint8_t *data, size_t len);
-  void update_tank_(uint32_t now_ms);
+  void udp_send_(int sock);
+  void save_tank_link_();
 
   std::vector<output::BinaryOutput *> relays_;
   std::vector<UFHZoneClimate *> climates_;
@@ -522,20 +522,33 @@ class UFHComponent : public Component
   volatile uint32_t udp_ms_{0};
   bool udp_task_started_{false};
   bool udp_wanted_{false};
-  // tank module
+  // tank board (values received over UDP)
+  ESPPreferenceObject pref_tank_link_;
+  TankLinkCfg tank_link_{};
+  static constexpr uint8_t MAX_TANK_SEEN = 8;
+  struct TankSeen {
+    char name[32];
+    uint32_t ms;
+    float temp;
+    int8_t pump;    // -1 unknown, 0/1
+    int8_t heater;
+    int8_t manual;
+    int8_t comp_zero;
+    float pwm;
+  };
+  TankSeen tank_seen_[MAX_TANK_SEEN]{};
+  uint8_t tank_seen_n_{0};
   volatile float tank_temp_{NAN};
   volatile uint32_t tank_temp_ms_{0};
-#ifdef USE_UFH_ONE_WIRE
-  uint64_t ow_tank_addr_{0};
-#endif
+  volatile float tank_pwm_{NAN};
   bool tank_pump_out_{false};
   bool tank_heater_out_{false};
   bool heater_manual_on_{false};
-  bool heater_auto_blocked_{false};  // user turned heater off during a fault
-  uint32_t heater_since_ms_{0};
-  uint32_t tank_cut_warn_ms_{0};
-  uint32_t comp_zero_since_ms_{0};
   bool comp_zero_warn_{false};
+  uint8_t open_zones_{0};
+  bool heat_demand_tx_{false};
+  uint32_t last_tx_ms_{0};
+  bool tx_dirty_{true};
 };
 
 extern UFHComponent *global_ufh;

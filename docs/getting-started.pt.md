@@ -15,4 +15,4 @@
 - Os relés a seguir às zonas comandam a **bomba circuladora** e/ou pedem calor à **bomba de calor / caldeira**. A bomba arranca com atraso (os atuadores demoram 2-4 min a abrir) e para depois de fechar a última zona.
 - **Divisões com vários circuitos:** uma zona pode seguir outra (mesmo sensor, mesmo termóstato).
 - Tudo se configura num **assistente** na página web da placa. Um só firmware para todas as instalações.
-- Extras opcionais: deteção de janela aberta, arranque antecipado, excedente solar, tarifa bi-horária, anti-bloqueio da bomba e dos atuadores, limite do pavimento, ligação ao ESPHome_Altherma, tanque pulmão opcional.
+- Extras opcionais: deteção de janela aberta, arranque antecipado, excedente solar, tarifa bi-horária, anti-bloqueio da bomba e dos atuadores, limite do pavimento, ligação ao ESPHome_Altherma, segunda placa opcional para o tanque de inércia.

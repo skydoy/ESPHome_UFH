@@ -1,5 +1,6 @@
 // Host-side test for components/ufh/packet_rx.h (no ESPHome).
 #include "packet_rx.h"
+#include "packet_tx.h"
 #include <cstdio>
 #include <cstdint>
 #include <vector>
@@ -93,6 +94,37 @@ int main() {
 
   // empty
   CHECK(!parse(nullptr, 0, p), "reject empty");
+
+  // build() round-trip: UFH demand + open zones
+  {
+    TxSensor sensors[1] = {{"ufh_open_zones", 3.0f}};
+    TxBinary binary[1] = {{"ufh_heat_demand", 1}};
+    uint8_t buf[256];
+    size_t n = 0;
+    CHECK(build(buf, sizeof(buf), n, "esphome-ufh-aabbcc", sensors, 1, binary, 1), "build ufh");
+    Packet q{};
+    CHECK(parse(buf, n, q), "parse built ufh");
+    CHECK(looks_like_ufh(q) && !looks_like_altherma(q) && !looks_like_tank(q), "ufh ids");
+    const SensorVal *zs = find_sensor(q, "ufh_open_zones");
+    CHECK(zs && std::fabs(zs->value - 3.0f) < 0.01f, "open zones");
+    const BinaryVal *d = find_binary(q, "ufh_heat_demand");
+    CHECK(d && d->value == 1, "heat demand");
+  }
+  {
+    TxSensor sensors[1] = {{"tank_temp", 38.5f}};
+    TxBinary binary[2] = {{"tank_pump", 1}, {"tank_heater", 0}};
+    uint8_t buf[256];
+    size_t n = 0;
+    CHECK(build(buf, sizeof(buf), n, "esphome-ufh-tank-ccbbaa", sensors, 1, binary, 2), "build tank");
+    Packet q{};
+    CHECK(parse(buf, n, q), "parse built tank");
+    CHECK(looks_like_tank(q) && !looks_like_ufh(q), "tank ids");
+    const SensorVal *tt = find_sensor(q, "tank_temp");
+    CHECK(tt && std::fabs(tt->value - 38.5f) < 0.01f, "tank temp");
+  }
+  CHECK(std::fabs(speed_to_duty(100.0f, true) - 10.0f) < 0.01f, "profile A max speed -> 10% duty");
+  CHECK(std::fabs(speed_to_duty(0.0f, true) - 91.0f) < 0.01f, "profile A min speed -> 91% duty");
+  CHECK(std::fabs(speed_to_duty(50.0f, false) - 50.0f) < 0.01f, "direct duty equals speed");
 
   if (fails) {
     std::fprintf(stderr, "%d check(s) failed\n", fails);

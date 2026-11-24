@@ -3,31 +3,35 @@
 All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
-## [Unreleased]
-
-## [0.6.0] - 2026-11-24
+## [0.6.0] - Unreleased
 
 ### Added
-- Custom UDP `packet_transport` receiver on port 18511: the UFH lists Altherma boards
-  heard on the LAN and you pick one (name stored in NVS). No encryption, no recompile,
-  works from the web installer. Values older than 60 s are treated as unknown.
-- HTTP fallback from 0.5.3: if UDP is quiet for 60 s and an HTTP address is set, flow,
-  return and outdoor temperatures come from the Altherma web_server as before. The
-  emergency heater never uses HTTP or stale UDP to switch on by itself.
-- Heat-pump fault and error codes (E7, U3, …) decoded from the raw Altherma bytes;
-  compressor frequency; “Altherma Link” text (UDP / HTTP / none).
-- Optional buffer-tank module: new tank pump (relay 13) and emergency heater (relay 14),
-  DS18B20 on the existing GPIO11 bus. Auto heater only when `altherma_fault` is on;
-  target 40 °C, 3 °C hysteresis, software cutoff 45 °C, no time limit. A mechanical
-  thermostat in series is required (no mixing valve). The tank pump starts whenever a
-  zone calls for heat, even with a cold tank. If the compressor sits at 0 with heat
-  demand, the UFH warns after a configurable 15 min and you turn the heater on by hand.
-- Configurator and web panel (PT/EN) for the board list, tank options, source/age/fault
-  and the manual heater switch. Home Assistant entities in the Tank and Altherma groups.
+- Second board **UFH tanque** (M5Stack Unit PoE-P4) in the same repo and installer:
+  pump relay, emergency heater relay, DS18B20 on GPIO11, optional PWM on GPIO10.
+  One installer, board choice «UFH zonas» / «UFH tanque». Both boards share the
+  version; 0.6.0 is both.
+- Unencrypted UDP `packet_transport` on port 18511 between the three boards. The zones
+  board sends `ufh_heat_demand` and `ufh_open_zones`. The tank board sends `tank_temp`,
+  `tank_pump` and `tank_heater` back. Each board lists peers and you pick them by name
+  (the tank board has two lists: UFH and Altherma). Values older than 60 s are unknown.
+- HTTP fallback from 0.5.3 on the zones board: if UDP is quiet for 60 s and an HTTP
+  address is set, flow, return and outdoor temperatures come from the Altherma
+  web_server as before. The emergency heater never uses HTTP or stale UDP to switch on.
+- Heat-pump fault and error codes (E7, U3, …) on the zones board; compressor frequency;
+  “Altherma Link” / “Tank Link” text.
+- Tank logic: pump starts whenever the UFH reports heat demand, even with a cold tank;
+  auto heater only on a fresh `altherma_fault`; target 40 °C, 3 °C hysteresis, software
+  cutoff 45 °C, no time limit. Mechanical thermostat in series required (no mixing
+  valve). If UFH data is stale for 60 s, pump and heater stop. If the probe fails, the
+  heater stays off. Compressor at 0 with demand: warning after 15 min, manual heater
+  on the tank board. PWM speed by number of open zones, profile A (inverted) by
+  default; only if the pump nameplate says PWM (the UPML 25-95 130 is listed as AUTO).
 
 ### Changed
-- Firmware version 0.6.0. Existing behaviour is unchanged when the tank module is off
-  and until an Altherma board is chosen.
+- Firmware version 0.6.0. The unreleased tank-in-UFH relays 13/14 on the zones board
+  are removed; old NVS roles are migrated to unused. Existing zone behaviour is
+  unchanged until you turn on the tank link and pick a tank board, and until an
+  Altherma board is chosen.
 
 ## [0.5.3] - 2026-11-24
 ### Fixed

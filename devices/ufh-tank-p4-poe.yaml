@@ -1,0 +1,37 @@
+# Device: ESPHome UFH tanque on an M5Stack Unit PoE-P4 (Ethernet + PoE).
+#
+# BASE configuration: this is the file the ESPHome Device Builder adopts.
+# The web-installer firmware is built from ufh-tank-p4-poe.factory.yaml.
+substitutions:
+  name: esphome-ufh-tank
+  friendly_name: UFH tanque
+  project_version: "0.6.0"
+  firmware_source: "self-built"
+  timezone: Europe/Lisbon
+  update_manifest_url: https://skydoy.github.io/ESPHome_UFH/firmware/p4-poe-tank/manifest.json
+  ufh_components: github://skydoy/ESPHome_UFH@stable
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: skydoy.esphome-ufh-tank
+    version: ${project_version}
+
+dashboard_import:
+  package_import_url: github://skydoy/ESPHome_UFH/devices/ufh-tank-p4-poe.yaml@stable
+  import_full_config: false
+
+external_components:
+  - source: ${ufh_components}
+    components: [ufh_tank]
+
+packages:
+  board: !include ../core/boards/m5stack-unit-poe-p4.yaml
+  relays: !include ../core/relays/tank-2.yaml
+  controller: !include ../ufh/tank-controller.yaml
+  provisioning: !include ../core/provisioning.yaml
+  diagnostics: !include ../core/diagnostics.yaml
+  web_server: !include ../core/web-server-tank.yaml
+  update_check: !include ../core/update-check.yaml

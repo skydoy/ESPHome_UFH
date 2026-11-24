@@ -27,10 +27,12 @@ enum RelayRole : uint8_t {
   ROLE_PUMP = 1,         // circulation pump
   ROLE_DEMAND = 2,       // heat demand contact (heat pump / boiler)
   ROLE_PUMP_DEMAND = 3,  // one relay does both
-  ROLE_TANK_PUMP = 4,    // buffer-tank recirculation pump
-  ROLE_TANK_HEATER = 5,  // emergency tank heater
+  // 4 and 5 were local tank pump/heater in the unreleased 0.6.0-in-UFH firmware.
+  // Migrated to ROLE_NONE on load; no longer offered in the wizard.
+  ROLE_TANK_PUMP = 4,
+  ROLE_TANK_HEATER = 5,
 };
-static constexpr uint8_t ROLE_MAX = ROLE_TANK_HEATER;
+static constexpr uint8_t ROLE_MAX = ROLE_PUMP_DEMAND;
 
 enum HouseMode : uint8_t { HOUSE_HOME = 0, HOUSE_AWAY = 1, HOUSE_HOLIDAY = 2, HOUSE_SUMMER = 3 };
 enum ZoneMode : uint8_t { ZONE_OFF = 0, ZONE_AUTO = 1, ZONE_HEAT = 2 };
@@ -164,6 +166,14 @@ struct ExtraCfg {
   char tank_probe[22];         // DS18B20 address (hex, colons optional)
 };
 static_assert(sizeof(ExtraCfg) == 156, "ExtraCfg size must stay 156 so NVS blobs still load");
+
+// Link to the UFH tanque board (own NVS entry, so ExtraCfg stays 156 bytes).
+static constexpr uint32_t TANK_LINK_MAGIC = 0x55465431;  // "UFT1"
+struct TankLinkCfg {
+  uint32_t magic;
+  char tank_provider[32];  // packet_transport hostname of the tank board
+  uint8_t reserved[28];
+};
 
 // Minutes of heating per zone for the last days (weekly chart). Own NVS entry, saved once a day.
 static constexpr uint32_t WEEK_MAGIC = 0x55465731;  // "UFW1"

@@ -55,6 +55,23 @@ inline bool looks_like_altherma(const Packet &p) {
   return false;
 }
 
+inline bool looks_like_prefix(const Packet &p, const char *prefix) {
+  size_t n = std::strlen(prefix);
+  for (uint8_t i = 0; i < p.n_sensors; i++) {
+    if (std::strncmp(p.sensors[i].id, prefix, n) == 0)
+      return true;
+  }
+  for (uint8_t i = 0; i < p.n_binary; i++) {
+    if (std::strncmp(p.binary[i].id, prefix, n) == 0)
+      return true;
+  }
+  return false;
+}
+
+inline bool looks_like_tank(const Packet &p) { return looks_like_prefix(p, "tank_"); }
+inline bool looks_like_ufh(const Packet &p) { return looks_like_prefix(p, "ufh_"); }
+
+
 inline const SensorVal *find_sensor(const Packet &p, const char *id) {
   for (uint8_t i = 0; i < p.n_sensors; i++) {
     if (std::strcmp(p.sensors[i].id, id) == 0)
