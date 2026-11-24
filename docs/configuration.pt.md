@@ -31,7 +31,7 @@ Os Shelly H&T a pilhas só enviam quando a temperatura muda: se uma divisão fic
 | Excedente solar | +°C nas zonas escolhidas enquanto houver excedente (ação `set_pv_surplus` ou tópico MQTT) |
 | Tarifa bi-horária | +°C nas horas de vazio, −°C no resto do dia |
 | Ligação ao ESPHome_Altherma | Lê a ida e o retorno da outra placa para o diagrama |
-| Limite do pavimento | Por zona: fecha acima de X °C medidos por uma sonda no chão |
+| Limite do pavimento | Por zona: fecha acima de X °C medidos por uma sonda no chão. Se a sonda deixar de responder enquanto a zona está a aquecer, a zona mantém-se aberta até à hora prevista pela taxa de aquecimento aprendida; depois fecha e só volta a abrir quando houver uma leitura válida do chão. As entidades *Avisos* e *Problema* no Home Assistant mostram “sonda do chão”. |
 
 ## Zonas externas (pela rede)
 
@@ -53,7 +53,7 @@ e de **arrefecimento** aprendidas (°C/h).
 
 ## Modos da casa
 
-**Casa** (normal), **Ausente** (Eco em todas as zonas), **Férias** (anti-gelo, 7 °C por omissão), **Verão** (aquecimento e bomba desligados; o anti-bloqueio continua).
+**Casa** (normal), **Ausente** (Eco em todas as zonas), **Férias** (anti-gelo, 7 °C por omissão, inclusive nas zonas em Off), **Verão** (sem anti-gelo; aquecimento e bomba desligados; o anti-bloqueio da bomba e dos atuadores continua).
 
 ## No teu YAML (placa adotada)
 

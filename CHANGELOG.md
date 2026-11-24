@@ -5,6 +5,23 @@ All notable changes to the firmware and installer. Format:
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-11-24
+### Fixed
+- Holiday frost protection (default 7 °C) also applies to zones left Off. Summer still has
+  no frost protection; pump and actuator anti-seize keep running in every house mode,
+  including Summer.
+- A silent floor probe no longer clears an over-temperature block. If the zone is heating,
+  it stays open until the learned heating rate says the room will reach the target, then
+  closes and does not reopen until a fresh floor reading arrives. The *Warnings* and
+  *Problem* entities in Home Assistant report this as “floor probe”.
+
+### Changed
+- Documentation can be published on its own (`publish-docs.yml`) without rebuilding or
+  replacing the live installer, OTA manifests or firmware images.
+- `publish.yml` deploys firmware, manifests and checksums only for a release (tag `v*`,
+  or an automatic release when `project_version` is new). A manual `workflow_dispatch`
+  still builds the images as artifacts, but does not publish them to GitHub Pages.
+
 ## [0.5.2] - 2026-11-23
 ### Changed
 - The Altherma reader is started from the main loop once the network is up (never from setup).
@@ -131,7 +148,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.5.3...HEAD
+[0.5.3]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.3
 [0.5.2]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.2
 [0.5.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.1
 [0.5.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.0

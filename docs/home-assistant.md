@@ -43,4 +43,4 @@ Optional: the device heats on its own. Home Assistant adds remote control, histo
 - `esphome_ufh_temperature_from_ha.yaml` — sends a Home Assistant temperature sensor to a zone.
 - `esphome_ufh_update_available.yaml` — notification when a new firmware is out.
 - `esphome_ufh_presence.yaml` — sets the house to Away when everyone leaves and Home when someone arrives (leaves Holiday and Summer alone).
-- `esphome_ufh_warnings.yaml` — phone notification when a problem shows up (sensor silent, battery, zone not heating, floor, flow/return) and when it is fixed.
+- `esphome_ufh_warnings.yaml` — phone notification when a problem shows up (sensor silent, battery, zone not heating, floor limit, floor probe, flow/return) and when it is fixed.

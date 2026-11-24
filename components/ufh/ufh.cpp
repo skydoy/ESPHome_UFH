@@ -712,10 +712,14 @@ float UFHComponent::target_for_(uint8_t i, const ESPTime &now) {
   r.comfort_now = false;
   r.early_start = false;
   r.early_stop = false;
-  if (s_.house_mode == HOUSE_SUMMER || z.mode == ZONE_OFF)
+  // Summer: no heating and no frost protection (anti-seize still runs in update_outputs_).
+  if (s_.house_mode == HOUSE_SUMMER)
     return NAN;
+  // Holiday frost applies even to zones left Off, so an unused room cannot freeze.
   if (s_.house_mode == HOUSE_HOLIDAY)
     return x10(s_.holiday_x10);
+  if (z.mode == ZONE_OFF)
+    return NAN;
   float t;
   bool follow = z.follow_main && z.leader == 0;
   if (follow) {
@@ -1124,17 +1128,54 @@ void UFHComponent::update_zone_(uint8_t i, uint32_t now_ms, const ESPTime &now) 
   if (z.floor_max_x10 > 0 && z.floor.type != SRC_NONE) {
     bool ffresh = !std::isnan(r.floor_temp) && (now_ms - r.floor_ms) < (uint32_t) s_.stale_min * 60000UL;
     if (ffresh) {
+      r.floor_stale_lock = false;
+      r.floor_pred_close_ms = 0;
       if (r.floor_temp >= x10(z.floor_max_x10))
         r.floor_block = true;
       else if (r.floor_temp <= x10(z.floor_max_x10) - 1.0f)
         r.floor_block = false;
     } else {
-      r.floor_block = false;
+      r.warn |= WARN_FLOOR_STALE;
+      // Do not clear an existing over-temperature block just because the probe went quiet.
+      if (r.floor_block) {
+        r.floor_stale_lock = true;
+        r.floor_pred_close_ms = 0;
+      } else if (!r.floor_stale_lock && r.floor_pred_close_ms == 0) {
+        // First stale tick: if the zone is heating, keep going until the learned rate
+        // says the room will hit the target; otherwise do not open until the probe is back.
+        bool heating = r.relay || want;
+        if (heating && r.has_temp && !std::isnan(r.target)) {
+          float rate = std::clamp(p_.rate_c_per_h[i], 0.1f, 5.0f);
+          float need = r.target - r.temp;
+          if (need <= 0.0f) {
+            r.floor_stale_lock = true;
+          } else {
+            float pred_ms = need / rate * 3600000.0f;
+            if (pred_ms > 24.0f * 3600000.0f)
+              pred_ms = 24.0f * 3600000.0f;
+            r.floor_pred_close_ms = now_ms + (uint32_t) pred_ms;
+            ESP_LOGI(TAG, "Zone %u: floor probe stale, heating until predicted target in %.0f min", i + 1,
+                     pred_ms / 60000.0f);
+          }
+        } else {
+          r.floor_stale_lock = true;
+        }
+      }
+      if (!r.floor_stale_lock && r.floor_pred_close_ms != 0) {
+        bool time_up = (int32_t) (now_ms - r.floor_pred_close_ms) >= 0;
+        if (!want || time_up) {
+          r.floor_stale_lock = true;
+          r.floor_pred_close_ms = 0;
+          ESP_LOGI(TAG, "Zone %u: closing with stale floor probe (%s)", i + 1,
+                   time_up ? "predicted time reached" : "room already at target");
+        }
+      }
     }
-    if (r.floor_block) {
+    if (r.floor_block || r.floor_stale_lock) {
       want = false;
       forced = true;
-      r.warn |= WARN_FLOOR;
+      if (r.floor_block)
+        r.warn |= WARN_FLOOR;
     }
   }
   if (r.batt >= 0 && r.batt < 20)
@@ -1260,6 +1301,7 @@ void UFHComponent::update_outputs_(uint32_t now_ms, const ESPTime &now) {
     p_.last_demand_epoch = now.timestamp;
 
   bool pump = false;
+  // Anti-seize (ex_state_ != 0) runs in every house mode, including Summer.
   if (ex_state_ == 2) {
     pump = true;
   } else if (ex_state_ != 0) {
@@ -1442,6 +1484,8 @@ void UFHComponent::per_second_(uint32_t now_ms, const ESPTime &now) {
         w += (w.empty() ? "" : "; ") + std::string(s_.zones[i].name) + ": not heating";
       if (bits & WARN_FLOOR)
         w += (w.empty() ? "" : "; ") + std::string(s_.zones[i].name) + ": floor limit";
+      if (bits & WARN_FLOOR_STALE)
+        w += (w.empty() ? "" : "; ") + std::string(s_.zones[i].name) + ": floor probe";
       if (bits & WARN_EXT_FAIL)
         w += (w.empty() ? "" : "; ") + std::string(s_.zones[i].name) + ": device offline";
     }

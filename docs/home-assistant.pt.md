@@ -43,4 +43,4 @@ Opcional: a placa aquece sozinha. O Home Assistant junta controlo remoto, histó
 - `esphome_ufh_temperature_from_ha.yaml` — envia um sensor de temperatura do Home Assistant para uma zona.
 - `esphome_ufh_update_available.yaml` — aviso quando sai firmware novo.
 - `esphome_ufh_presence.yaml` — põe a casa em Ausente quando todos saem e em Casa quando alguém chega (não mexe em Férias nem Verão).
-- `esphome_ufh_warnings.yaml` — aviso no telemóvel quando aparece um problema (sensor sem dados, pilha, zona que não aquece, chão, ida/retorno) e quando fica resolvido.
+- `esphome_ufh_warnings.yaml` — aviso no telemóvel quando aparece um problema (sensor sem dados, pilha, zona que não aquece, limite do chão, sonda do chão, ida/retorno) e quando fica resolvido.

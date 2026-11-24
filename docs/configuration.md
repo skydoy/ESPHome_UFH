@@ -31,7 +31,7 @@ Battery Shelly H&T only report when the temperature changes: if a room is stable
 | Solar surplus | +°C on the chosen zones while there is surplus (action `set_pv_surplus` or an MQTT topic) |
 | Two-rate tariff | +°C in the cheap hours, −°C the rest of the day |
 | ESPHome_Altherma link | Reads flow / return water from the other board for the diagram |
-| Floor limit | Per zone: closes above X °C measured by a floor probe |
+| Floor limit | Per zone: closes above X °C measured by a floor probe. If the probe goes silent while the zone is heating, the zone stays open until the learned heating rate says the room will reach the target, then closes and does not reopen until a fresh floor reading arrives. The *Warnings* and *Problem* entities in Home Assistant report this as “floor probe”. |
 
 ## External zones (over the network)
 
@@ -53,7 +53,7 @@ page and in Home Assistant.
 
 ## House modes
 
-**Home** (normal), **Away** (Eco everywhere), **Holiday** (frost protection, default 7 °C), **Summer** (heating and pump off; anti-seize still runs).
+**Home** (normal), **Away** (Eco everywhere), **Holiday** (frost protection, default 7 °C, including zones left Off), **Summer** (no frost protection; heating and pump off; actuator and pump anti-seize still run).
 
 ## In your own YAML (adopted device)
 

@@ -156,6 +156,8 @@ struct ZoneRt {
   float floor_temp{NAN};
   uint32_t floor_ms{0};
   bool floor_block{false};
+  bool floor_stale_lock{false};   // stale floor probe: do not reopen until a fresh reading
+  uint32_t floor_pred_close_ms{0};  // predicted close while heating with a stale floor probe
   bool demand{false};        // thermostat wants heat
   bool relay{false};         // relay output state
   uint32_t relay_changed_ms{0};
@@ -192,6 +194,7 @@ enum WarnBits : uint32_t {
   WARN_WINDOW = 1 << 4,
   WARN_NO_SENSOR = 1 << 5,
   WARN_EXT_FAIL = 1 << 6,  // external zone: the device did not answer
+  WARN_FLOOR_STALE = 1 << 7,  // floor probe silent: predicted close, then locked
 };
 
 struct BleSeen {

@@ -3,7 +3,7 @@ blueprint:
   description: >-
     Sends a notification to your phone when an ESPHome UFH device reports a new warning:
     a temperature sensor stopped sending, low battery, a zone that does not heat, the floor
-    limit, or an odd flow / return difference of the heat pump. Waits a few minutes so short
+    limit, a silent floor probe, or an odd flow / return difference of the heat pump. Waits a few minutes so short
     hiccups do not notify, and tells you again when everything is back to normal.
   domain: automation
   author: skydoy

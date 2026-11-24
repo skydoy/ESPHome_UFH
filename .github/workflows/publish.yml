@@ -124,9 +124,11 @@ jobs:
         with:
           path: site
   deploy:
-    # Publish the installer and the OTA manifests only for release tags (or a manual run), so
-    # devices in the field only ever see releases.
-    if: needs.meta.outputs.release == 'true' || github.event_name == 'workflow_dispatch'
+    # Publish the installer, OTA manifests and checksums only for a release (a v* tag, or
+    # an automatic release when project_version has no tag yet). A manual workflow_dispatch
+    # still builds the images as artifacts, but must not publish them to Pages: use
+    # publish-docs.yml to update documentation without touching live firmware.
+    if: needs.meta.outputs.release == 'true'
     needs: [meta, pages]
     runs-on: ubuntu-24.04
     permissions:

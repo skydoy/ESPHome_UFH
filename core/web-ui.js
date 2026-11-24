@@ -430,7 +430,7 @@
   function warnPT(w) {
     if (L() !== 'pt') return w;
     return w.replace(/^setup(; )?/, 'por configurar$1').replace(/: sensor/g, ': sensor sem dados').replace(/: battery/g, ': pilha fraca')
-      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace(/: device offline/g, ': aparelho sem resposta').replace('pump on, no zone open', 'bomba ligada sem zonas abertas').replace(/flow\/return dT ([\d.-]+) C/, 'diferença ida/retorno $1 °C (caudal?)');
+      .replace(/: not heating/g, ': não aquece').replace(/: floor limit/g, ': limite do chão').replace(/: floor probe/g, ': sonda do chão').replace(/: device offline/g, ': aparelho sem resposta').replace('pump on, no zone open', 'bomba ligada sem zonas abertas').replace(/flow\/return dT ([\d.-]+) C/, 'diferença ida/retorno $1 °C (caudal?)');
   }
 
   // ---------- live diagram ----------
@@ -487,6 +487,7 @@
       if (z.w & 2) badge.push('🔋');
       if (z.w & 4) badge.push('⚠ ' + T('não aquece', 'not heating'));
       if (z.w & 8) badge.push(T('chão', 'floor') + ' ⛔');
+      if (z.w & 128) badge.push('⚠ ' + T('sonda do chão', 'floor probe'));
       if (z.w & 16) badge.push('🪟');
       if (z.w & 64) badge.push('🌐 ' + T('sem resposta', 'offline'));
       if (z.early) badge.push('⏰');
