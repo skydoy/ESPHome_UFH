@@ -29,6 +29,7 @@ All notable changes to the firmware and installer. Format:
   (Home Assistant entity object_ids are unchanged).
 - Docs on a narrow screen no longer truncate the header title; the House modes YAML
   example scrolls horizontally; long HTTP paths in `code` wrap instead of overflowing.
+- Installer and docs dark themes use the brand background `#0b1b3f`.
 
 ### Changed
 - Documentation can be published on its own (`publish-docs.yml`) without rebuilding or
