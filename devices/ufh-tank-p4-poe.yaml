@@ -5,7 +5,7 @@
 substitutions:
   name: esphome-ufh-tank
   friendly_name: UFH tanque
-  project_version: "0.6.0"
+  project_version: "0.6.1"
   firmware_source: "self-built"
   timezone: Europe/Lisbon
   update_manifest_url: https://skydoy.github.io/ESPHome_UFH/firmware/p4-poe-tank/manifest.json

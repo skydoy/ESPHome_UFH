@@ -5,6 +5,8 @@ All notable changes to the firmware and installer. Format:
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-28
+
 ### Changed
 - Zones that are off because the main thermostat is Off, or the Heating switch is off (Summer), now show **Off** in Home Assistant and the web UI, instead of their Eco temperature.
 - Thermostat setpoints (Comfort, Eco, manual and the main thermostat) are limited to **16–26 °C**. Stored values outside the range are moved into it. Holiday frost protection is not affected.
@@ -201,7 +203,8 @@ All notable changes to the firmware and installer. Format:
   OTA from GitHub Pages with nightly Auto Update (factory builds).
 - Web installer, device web page with PT/EN toggle, MkDocs documentation (PT/EN), CI.
 
-[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/skydoy/ESPHome_UFH/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.6.1
 [0.6.0]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.6.0
 [0.5.3]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.3
 [0.5.2]: https://github.com/skydoy/ESPHome_UFH/releases/tag/v0.5.2
