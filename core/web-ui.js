@@ -1061,8 +1061,8 @@
         if (zz.leader) continue;
         h += '<div class="zone"><h4>' + esc(zz.name) + '</h4><div class="row">' +
           '<div><label>' + T('Modo', 'Mode') + '</label><select id="zm' + q + '">' + opts([[1, T('Automático (horário)', 'Auto (schedule)')], [2, T('Fixo', 'Fixed')], [0, T('Desligado', 'Off')]], zz.mode) + '</select></div>' +
-          '<div><label>' + T('Conforto °C', 'Comfort °C') + '</label><input type="number" step="0.5" id="zc' + q + '" value="' + zz.comfort + '"></div>' +
-          '<div><label>Eco °C</label><input type="number" step="0.5" id="ze' + q + '" value="' + zz.eco + '"></div></div>' +
+          '<div><label>' + T('Conforto °C', 'Comfort °C') + '</label><input type="number" step="0.5" min="16" max="26" id="zc' + q + '" value="' + zz.comfort + '"></div>' +
+          '<div><label>Eco °C</label><input type="number" step="0.5" min="16" max="26" id="ze' + q + '" value="' + zz.eco + '"></div></div>' +
           '<details><summary>' + T('Horário', 'Schedule') + '</summary>' + schedEditor('s' + q + '_', zz.sched) +
           (q > 0 ? '' : '<div class="hint"><button type="button" data-copyall="1">' + T('Usar este horário em todas as zonas', 'Use this schedule for all zones') + '</button></div>') + '</details></div>';
       }
@@ -1213,8 +1213,8 @@
         T('As zonas com “Segue a geral” ligado usam estas temperaturas e este horário. Se escolheres Conforto ou Eco à mão no termóstato geral, vale até à próxima mudança do horário.',
           'Zones with “Follows main” on use these temperatures and this schedule. Choosing Comfort or Eco by hand on the main thermostat holds until the next schedule change.') + '</div><div class="row">' +
         '<div><label>' + T('Modo', 'Mode') + '</label><select id="mm">' + opts([[1, T('Automático (horário)', 'Auto (schedule)')], [2, T('Fixo', 'Fixed')], [0, T('Desligado', 'Off')]], M.mode) + '</select></div>' +
-        '<div><label>' + T('Conforto °C', 'Comfort °C') + '</label><input type="number" step="0.5" id="mc" value="' + M.comfort + '"></div>' +
-        '<div><label>Eco °C</label><input type="number" step="0.5" id="me" value="' + M.eco + '"></div></div>' +
+        '<div><label>' + T('Conforto °C', 'Comfort °C') + '</label><input type="number" step="0.5" min="16" max="26" id="mc" value="' + M.comfort + '"></div>' +
+        '<div><label>Eco °C</label><input type="number" step="0.5" min="16" max="26" id="me" value="' + M.eco + '"></div></div>' +
         '<details><summary>' + T('Horário', 'Schedule') + '</summary>' + schedEditor('sm_', M.sched) + '</details></div>';
       for (var q = 0; q < ZT(); q++) {
         var zz = W.zones[q];
@@ -1222,8 +1222,8 @@
         h += '<div class="zone"><h4>' + esc(zz.name) + '</h4>' +
           '<label class="lbl"><input type="checkbox" id="zfm' + q + '"' + (zz.follow ? ' checked' : '') + '> ' + T('Segue a geral (usa as temperaturas e o horário da geral)', 'Follows main (uses the main temperatures and schedule)') + '</label><div class="row">' +
           '<div><label>' + T('Modo', 'Mode') + '</label><select id="zm' + q + '">' + opts([[1, T('Automático (horário)', 'Auto (schedule)')], [2, T('Fixo', 'Fixed')], [0, T('Desligado', 'Off')]], zz.mode) + '</select></div>' +
-          '<div><label>' + T('Conforto °C', 'Comfort °C') + '</label><input type="number" step="0.5" id="zc' + q + '" value="' + zz.comfort + '"></div>' +
-          '<div><label>Eco °C</label><input type="number" step="0.5" id="ze' + q + '" value="' + zz.eco + '"></div></div>' +
+          '<div><label>' + T('Conforto °C', 'Comfort °C') + '</label><input type="number" step="0.5" min="16" max="26" id="zc' + q + '" value="' + zz.comfort + '"></div>' +
+          '<div><label>Eco °C</label><input type="number" step="0.5" min="16" max="26" id="ze' + q + '" value="' + zz.eco + '"></div></div>' +
           '<details><summary>' + T('Horário', 'Schedule') + '</summary>' + schedEditor('s' + q + '_', zz.sched) + '</details></div>';
       }
       h += '<div class="nav"><button type="button" data-n="close">' + T('Cancelar', 'Cancel') + '</button><button type="button" class="pri" data-n="save">💾 ' + T('Gravar', 'Save') + '</button></div>';

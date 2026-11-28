@@ -704,9 +704,9 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
       }
       if (zv["pv_boost"].is<bool>())
         z.pv_boost = zv["pv_boost"].as<bool>();
-      t10(zv["comfort"], z.comfort_x10, 5.0f, 30.0f);
-      t10(zv["eco"], z.eco_x10, 5.0f, 30.0f);
-      t10(zv["manual"], z.manual_x10, 5.0f, 30.0f);
+      t10(zv["comfort"], z.comfort_x10, T_MIN, T_MAX);
+      t10(zv["eco"], z.eco_x10, T_MIN, T_MAX);
+      t10(zv["manual"], z.manual_x10, T_MIN, T_MAX);
       if (zv["floor_max"].is<float>() || zv["floor_max"].is<int>()) {
         float f = zv["floor_max"].as<float>();
         z.floor_max_x10 = f <= 0 ? 0 : to_x10(std::max(18.0f, std::min(40.0f, f)));
@@ -788,8 +788,8 @@ bool UFHComponent::web_apply_config(const std::string &body, std::string &error)
       m_.mode = (uint8_t) std::max(0, std::min((int) ZONE_HEAT, mv["mode"].as<int>()));
     if (mv["fixed_eco"].is<bool>())
       m_.fixed_eco = mv["fixed_eco"].as<bool>();
-    t10(mv["comfort"], m_.comfort_x10, 5.0f, 30.0f);
-    t10(mv["eco"], m_.eco_x10, 5.0f, 30.0f);
+    t10(mv["comfort"], m_.comfort_x10, T_MIN, T_MAX);
+    t10(mv["eco"], m_.eco_x10, T_MIN, T_MAX);
     if (mv["sched"].is<JsonArrayConst>()) {
       uint8_t d = 0;
       for (JsonVariantConst dv : mv["sched"].as<JsonArrayConst>()) {

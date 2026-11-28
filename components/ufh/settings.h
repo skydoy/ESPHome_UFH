@@ -10,6 +10,9 @@ namespace ufh {
 
 static constexpr uint8_t MAX_ZONES = 16;
 static constexpr uint8_t MAX_RELAYS = 16;
+// thermostat setpoints (Comfort, Eco, manual, main) stay inside this range
+static constexpr float T_MIN = 16.0f;
+static constexpr float T_MAX = 26.0f;
 static constexpr uint32_t SETTINGS_MAGIC = 0x55464831;  // "UFH1"
 static constexpr uint16_t SETTINGS_VERSION = 1;
 

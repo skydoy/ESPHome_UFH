@@ -270,6 +270,8 @@ void UFHComponent::setup() {
     default_main(this->m_);
   if (this->m_.mode > ZONE_HEAT)
     this->m_.mode = ZONE_AUTO;
+  for (int16_t *v : {&this->m_.comfort_x10, &this->m_.eco_x10})
+    *v = std::clamp<int16_t>(*v, T_MIN * 10, T_MAX * 10);
   this->pref_extra_ = global_preferences->make_preference<ExtraCfg>(fnv1_hash("ufh_extra_v1"));
   bool extra_ok = this->pref_extra_.load(&this->x_) && this->x_.magic == EXTRA_MAGIC;
   if (!extra_ok)
@@ -385,6 +387,8 @@ void UFHComponent::load_settings_() {
       z.leader = 0;
     if (z.follow_main > 1)
       z.follow_main = 0;
+    for (int16_t *v : {&z.comfort_x10, &z.eco_x10, &z.manual_x10})
+      *v = std::clamp<int16_t>(*v, T_MIN * 10, T_MAX * 10);
   }
   this->fix_leaders_();
   s_.mqtt_host[sizeof(s_.mqtt_host) - 1] = 0;
@@ -760,7 +764,7 @@ void UFHComponent::ha_set_zone_target(int zone, float t) {
     force_publish_ = true;
     return;
   }
-  t = std::clamp(t, 5.0f, 30.0f);
+  t = std::clamp(t, T_MIN, T_MAX);
   if (z.mode == ZONE_AUTO) {
     ESPTime now = time_ != nullptr ? time_->now() : ESPTime{};
     zr_[i].override_active = true;
@@ -801,8 +805,8 @@ climate::ClimateTraits UFHZoneClimate::traits() {
     t.add_supported_preset(climate::CLIMATE_PRESET_COMFORT);
     t.add_supported_preset(climate::CLIMATE_PRESET_ECO);
   }
-  t.set_visual_min_temperature(5);
-  t.set_visual_max_temperature(30);
+  t.set_visual_min_temperature(T_MIN);
+  t.set_visual_max_temperature(T_MAX);
   t.set_visual_target_temperature_step(0.5f);
   t.set_visual_current_temperature_step(0.1f);
   return t;
@@ -1001,7 +1005,7 @@ void UFHComponent::main_control_(const climate::ClimateCall &call) {
     }
   }
   if (call.get_target_temperature().has_value()) {
-    float t = std::clamp(*call.get_target_temperature(), 5.0f, 30.0f);
+    float t = std::clamp(*call.get_target_temperature(), T_MIN, T_MAX);
     this->main_target_(now);  // which one is active now
     if (main_comfort_now_)
       m_.comfort_x10 = to_x10(t);
@@ -1844,12 +1848,14 @@ void UFHComponent::publish_entities_() {
       continue;
     const ZoneCfg &z = s_.zones[i];
     ZoneRt &r = zr_[i];
-    climate::ClimateMode m = z.mode == ZONE_OFF   ? climate::CLIMATE_MODE_OFF
+    // no target = the zone is off (its own mode, main thermostat off, or Summer): show it as Off
+    bool off = z.mode == ZONE_OFF || std::isnan(r.target);
+    climate::ClimateMode m = off                   ? climate::CLIMATE_MODE_OFF
                              : z.mode == ZONE_AUTO ? climate::CLIMATE_MODE_AUTO
                                                    : climate::CLIMATE_MODE_HEAT;
-    float tgt = std::isnan(r.target) ? x10(z.mode == ZONE_HEAT ? z.manual_x10 : z.eco_x10) : r.target;
+    float tgt = std::isnan(r.target) ? x10(z.mode == ZONE_HEAT ? z.manual_x10 : z.comfort_x10) : r.target;
     float cur = r.has_temp ? r.temp : NAN;
-    climate::ClimateAction a = z.mode == ZONE_OFF ? climate::CLIMATE_ACTION_OFF
+    climate::ClimateAction a = off ? climate::CLIMATE_ACTION_OFF
                                : r.relay          ? climate::CLIMATE_ACTION_HEATING
                                                   : climate::CLIMATE_ACTION_IDLE;
     bool changed = force || c->mode != m || c->action != a || std::fabs(c->target_temperature - tgt) > 0.01f ||

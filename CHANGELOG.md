@@ -3,6 +3,12 @@
 All notable changes to the firmware and installer. Format:
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Zones that are off because the main thermostat is Off, or the Heating switch is off (Summer), now show **Off** in Home Assistant and the web UI, instead of their Eco temperature.
+- Thermostat setpoints (Comfort, Eco, manual and the main thermostat) are limited to **16–26 °C**. Stored values outside the range are moved into it. Holiday frost protection is not affected.
+
 ## [0.6.0] - 2026-11-24
 
 ### Added
